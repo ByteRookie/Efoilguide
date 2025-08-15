@@ -1,27 +1,10 @@
-/* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
-const ZIP_CENTROIDS = {
-  /* SF */
-  "94102":[37.7793,-122.4193],"94103":[37.7739,-122.4114],"94105":[37.7890,-122.3942],
-  "94107":[37.7609,-122.4017],"94109":[37.7960,-122.4220],"94110":[37.7486,-122.4158],
-  "94114":[37.7583,-122.4358],"94121":[37.7771,-122.4941],"94122":[37.7609,-122.4842],
-  "94123":[37.8019,-122.4380],"94124":[37.7277,-122.3828],
-  /* Peninsula */
-  "94080":[37.6536,-122.4194],"94404":[37.5585,-122.2689],"94401":[37.5779,-122.3202],
-  "94402":[37.5256,-122.3370],"94403":[37.5387,-122.3023],"94010":[37.5779,-122.3481],
-  "94025":[37.4510,-122.1826],"94063":[37.4836,-122.2050],"94065":[37.5200,-122.2520],
-  "94019":[37.4636,-122.4286],
-  /* East Bay */
-  "94501":[37.7719,-122.2666],"94607":[37.8044,-122.2711],"94608":[37.8347,-122.2833],
-  "94710":[37.8715,-122.2989],"94804":[37.9255,-122.3408],"94606":[37.7936,-122.2490],
-  "94566":[37.6619,-121.8758],"94550":[37.6819,-121.7680],
-  /* North Bay */
-  "94965":[37.8591,-122.4853],"94920":[37.8880,-122.4555],"94952":[38.2324,-122.6367],
-  "94954":[38.2437,-122.6060],"94923":[38.3332,-123.0418],
-  /* South Bay */
-  "95030":[37.2266,-121.9747],
-  /* Napa */
-  "94558":[38.5101,-122.3329]
-};
+/* ---------- ZIP -> lat/lng centroids (full US) ---------- */
+let ZIP_CENTROIDS = {};
+
+async function loadZipCentroids(){
+  const resp = await fetch('data/zip_centroids.json');
+  return resp.json();
+}
 
 let SPOTS = [];// loaded from CSV
 
@@ -186,12 +169,12 @@ ${detail('Address', s.addr)}
 }
 
 function render(){
-  // sort by distance if origin set; otherwise by name
+  if(!ORIGIN){
+    spotsBody.innerHTML = '<tr id="noResultsRow"><td colspan="5">No results</td></tr>';
+    if(sortArrow) sortArrow.style.display = 'none';
+    return;
+  }
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN){
-      sortCol = 'name';
-      return a.name.localeCompare(b.name);
-    }
     sortCol = 'dist';
     const da = haversine(ORIGIN,[a.lat,a.lng]);
     const db = haversine(ORIGIN,[b.lat,b.lng]);
@@ -199,7 +182,7 @@ function render(){
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('') + '<tr id="noResultsRow" class="hide"><td colspan="5">No results</td></tr>';
   attachRowHandlers();
-  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
+  if(sortArrow) sortArrow.style.display = '';
   applyFilters(); // in case filters active
 }
 
@@ -355,8 +338,10 @@ function setupDrag(chips){
 
     setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
+    ZIP_CENTROIDS = await loadZipCentroids();
+
     updateOriginInfo();
-    showLocationControls();
+    hideLocationControls();
 
     zip.addEventListener('input', () => {
       const z = (zip.value || '').trim();
