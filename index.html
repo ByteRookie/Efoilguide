@@ -1,15 +1,589 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Online Efoil Guide</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Online Efoil Guide</title>
+<style>
+  :root{
+    color-scheme: light dark;
+    --radius:12px; --hover:rgba(0,0,0,.04);
+    --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
+    --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
+    --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
+    --easy:#70e000; --med:#ffd166; --hard:#ff6b6b;
+    --badge:#e9ecf2; --chip:#e7ecf3; --gem:#ffd166; --ok:#006d2c; --warn:#8d7409; --no:#c74f4f;
+    --badge-border:#d0d7e2; --chip-border:#cfd6e1; --control-border:#d0d7e2; --table-border:#d0d7e2;
+    --input-bg:#ffffff; --input-border:#d0d7e2; --btn-bg:#e0e4ea; --btn-border:#cfd6e1;
+    --btn-alt-bg:#d0e9f1; --btn-alt-border:#bcd3db; --toggle-off:#cfd6e1;
+    --header-grad1:rgba(255,255,255,.9); --header-grad2:rgba(255,255,255,.6);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1116; --card:#151a22; --muted:#8892a6; --text:#e6eefc; --accent:#5ae0ff;
+      --badge:#1d2430; --chip:#202735; --badge-border:#2a3346; --chip-border:#263044;
+      --control-border:#1f2632; --table-border:#1f2632;
+      --input-bg:#0f141c; --input-border:#243046;
+      --btn-bg:#233044; --btn-border:#2f3c52;
+      --btn-alt-bg:#234a5a; --btn-alt-border:#2f667a;
+      --toggle-off:#263044;
+      --header-grad1:rgba(14,17,22,.9); --header-grad2:rgba(14,17,22,.6);
+      --ok:#2fd277; --warn:#ffad42; --no:#ff6b6b;
+      --hover:rgba(255,255,255,.06);
+    }
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif;font-size:clamp(16px,1.5vw,18px);line-height:1.6;margin:0}
+  a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
+  header{position:sticky;top:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
+  .wrap{max-width:1200px;margin:auto;padding:clamp(16px,4vw,32px)}
+  header .wrap{padding-top:8px}
+  main.wrap{padding-top:0}
+  h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
+  .sub{color:var(--muted);font-size:14px}
+  details{margin:8px 0}
+  details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
+  details[open] summary{margin-bottom:8px}
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border);cursor:pointer;user-select:none}
+  .chip.active{background:var(--btn-alt-bg);border-color:var(--accent);color:var(--text)}
+  .chip-group{display:flex;align-items:center;gap:6px}
+  .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
+  .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
+  .legend-row::-webkit-scrollbar{height:6px}
+  .legend-row::-webkit-scrollbar-thumb{background:var(--control-border);border-radius:3px}
+  .chip.b-yr{border-left:4px solid var(--yr)}
+  .chip.b-sprfall{border-left:4px solid var(--sprfall)}
+  .chip.b-sum{border-left:4px solid var(--summer)}
+  .chip.b-win{border-left:4px solid var(--winter)}
+  .split{width:1px;height:24px;background:var(--control-border)}
+  .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
+  .toggle:checked{background:var(--accent)}
+  .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
+  .toggle:checked:before{transform:translateX(18px)}
+  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
+    table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
+    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
+    tbody tr{transition:background .2s}
+    tbody tr.hide{display:none}
+    tbody tr.parent{cursor:pointer}
+    tbody tr.detail-row{background:var(--card)}
+    tbody tr:hover{background:var(--hover)}
+  .spot{font-weight:700}
+  .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
+  .b-salt{border-left:4px solid var(--salt)}
+  .b-fresh{border-left:4px solid var(--fresh)}
+  .b-brack{border-left:4px solid var(--brack)}
+  .b-yr{border-left:4px solid var(--yr)}
+  .b-sprfall{border-left:4px solid var(--sprfall)}
+  .b-sum{border-left:4px solid var(--summer)}
+  .b-win{border-left:4px solid var(--winter)}
+  .lvl{display:inline-flex;gap:4px}
+  .lvl .dot{width:8px;height:8px;border-radius:50%}
+  .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
+  .gem{display:inline-block;margin-left:4px;color:var(--accent);font-size:14px}
+  .pop{white-space:normal}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
+    .foot{color:var(--muted);font-size:12px;margin-top:8px}
+  section{scroll-margin-top:var(--header-h)}
+  .card{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:16px;margin:16px 0}
+  .law{font-size:13px;color:var(--accent)}
+  .source{font-size:11px;vertical-align:super;margin-left:4px;color:var(--muted)}
+  .source a{color:inherit;text-decoration:none}
+  .amen{color:var(--accent)}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  .muted{color:var(--muted)}
+    .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:var(--text);padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
+    .hint{font-size:12px;color:var(--muted)}
+    td.detail{padding:16px;font-size:14px}
+    td.detail p{margin:6px 0}
+    .detail-grid{display:flex;flex-wrap:wrap;gap:16px}
+    .detail-grid img{max-width:300px;width:100%;height:auto;border-radius:8px;flex:1 1 250px}
+    .detail-grid .info{flex:2 1 260px}
+    #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
+  #toTop.show{display:block}
+  @media (max-width:800px){
+    thead{display:none}
+    tr{display:block;margin-bottom:12px}
+    td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
+    td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
+    td.detail{display:block}
+  }
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2prSBT5GF7//3GzZhPMlmYtL1I7y58EN4OwJgIQ=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-SmZQVfQWc7xKeoQgCXnH3zJsMfwZL+xnz6VfxwGD5l0=" crossorigin=""></script>
 </head>
 <body>
-  <h1>Online Efoil Guide</h1>
-  <p>A community-maintained list of places to ride with links to official rules.</p>
-  <div id="locations"></div>
-  <script src="js/main.js"></script>
+<header>
+  <div class="wrap">
+    <h1>Online Efoil Guide</h1>
+    <div class="sub">
+      Rig: <strong>Fliteboard Pro + Jet2</strong> • Wings: <strong>MN 1300 C</strong> (front) + <strong>Flow 245 C</strong> (stab) • Battery: <strong>Sport</strong>
+      <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;width:100%">
+      <input id="q" placeholder="Search all details" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+      <button id="viewToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Map</button>
+      <button id="filterToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Filters</button>
+    </div>
+    <div id="filters" class="controls" style="display:none;margin-top:8px">
+      <div class="control">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
+          <span class="split"></span>
+          <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+          <span class="hint" id="minsVal">≤ 180 min</span>
+        </div>
+        <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
+      </div>
+      <div class="control">
+        <div class="legend-row">
+          <div class="chip-group">
+            <span class="chip-group-label">Water:</span>
+            <span class="chip f-water active" data-value="salt">🟦 Salt</span>
+            <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
+            <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Season:</span>
+            <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+            <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+            <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Skill:</span>
+            <span class="chip f-skill active" data-value="B">Beginner [B]</span>
+            <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
+            <span class="chip f-skill active" data-value="A">Advanced [A]</span>
+          </div>
+          <div class="chip-group">
+            <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div id="viewWindow" style="overflow:hidden">
+    <div id="viewSlider" style="display:flex;transition:transform .3s">
+      <div class="table-wrap" id="tableView" style="min-width:100%">
+        <table id="tbl">
+          <thead>
+              <tr>
+
+                <th class="sortable" tabindex="0" role="button">Spot</th>
+                <th class="sortable" tabindex="0" role="button">Dist / Time</th>
+                <th class="sortable" tabindex="0" role="button">Water</th>
+                <th class="sortable" tabindex="0" role="button">Season</th>
+                <th class="sortable" tabindex="0" role="button">Skill</th>
+
+              </tr>
+          </thead>
+          <tbody id="spotsBody"></tbody>
+        </table>
+      </div>
+      <div id="map" style="min-width:100%;height:600px;margin-top:16px;border-radius:var(--radius);border:1px solid var(--table-border)"></div>
+    </div>
+  </div>
+  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
+</main>
+
+<button id="toTop" aria-label="Back to top">↑</button>
+
+<script>
+/* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
+const ZIP_CENTROIDS = {
+  /* SF */
+  "94102":[37.7793,-122.4193],"94103":[37.7739,-122.4114],"94105":[37.7890,-122.3942],
+  "94107":[37.7609,-122.4017],"94109":[37.7960,-122.4220],"94110":[37.7486,-122.4158],
+  "94114":[37.7583,-122.4358],"94121":[37.7771,-122.4941],"94122":[37.7609,-122.4842],
+  "94123":[37.8019,-122.4380],"94124":[37.7277,-122.3828],
+  /* Peninsula */
+  "94080":[37.6536,-122.4194],"94404":[37.5585,-122.2689],"94401":[37.5779,-122.3202],
+  "94402":[37.5256,-122.3370],"94403":[37.5387,-122.3023],"94010":[37.5779,-122.3481],
+  "94025":[37.4510,-122.1826],"94063":[37.4836,-122.2050],"94065":[37.5200,-122.2520],
+  "94019":[37.4636,-122.4286],
+  /* East Bay */
+  "94501":[37.7719,-122.2666],"94607":[37.8044,-122.2711],"94608":[37.8347,-122.2833],
+  "94710":[37.8715,-122.2989],"94804":[37.9255,-122.3408],"94606":[37.7936,-122.2490],
+  "94566":[37.6619,-121.8758],"94550":[37.6819,-121.7680],
+  /* North Bay */
+  "94965":[37.8591,-122.4853],"94920":[37.8880,-122.4555],"94952":[38.2324,-122.6367],
+  "94954":[38.2437,-122.6060],"94923":[38.3332,-123.0418],
+  /* South Bay */
+  "95030":[37.2266,-121.9747],
+  /* Napa */
+  "94558":[38.5101,-122.3329]
+};
+
+/* ---------- Spots (with coordinates) ---------- */
+const SPOTS = loadSpotsFromCSV("data/locations.csv");
+
+function loadSpotsFromCSV(path){
+  const req = new XMLHttpRequest();
+  req.open("GET", path, false);
+  try { req.send(null); } catch(e){ console.error("Failed to load CSV", e); return []; }
+  if(req.status !== 200) return [];
+  const lines = req.responseText.trim().split("\n");
+  const headers = lines[0].split(",").map(h=>h.trim());
+  return lines.slice(1).map(line=>{
+    const values = line.split(",").map(v=>v.trim());
+    const s = {};
+    headers.forEach((h,i)=>{ s[h] = values[i] || ""; });
+    s.gem = s.gem === "true";
+    s.lat = parseFloat(s.lat);
+    s.lng = parseFloat(s.lng);
+    s.skill = s.skill ? s.skill.split(";").map(v=>v.trim()) : [];
+    return s;
+  });
+}
+
+function withSource(text){
+  const m = text && text.match(/^(.*)\{\{([^}]+)\}\}$/);
+  if(m){
+    return `${m[1]}<sup class="source"><a href="${m[2]}" target="_blank" rel="noopener">source</a></sup>`;
+  }
+  return text;
+}
+
+
+
+/* ---------- Distance & ETA ---------- */
+let ORIGIN = null; // [lat,lng]
+let sortCol = 'name';
+let originInfo, spotsBody, q, mins, minsVal,
+    waterChips, seasonChips, skillChips, gemChip,  // new chip sets
+    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
+    viewToggle, viewSlider, mapEl, map;
+
+function haversine(a,b){
+  const toRad = d=>d*Math.PI/180;
+  const R=3958.761; // miles
+  const dLat=toRad(b[0]-a[0]); const dLng=toRad(b[1]-a[1]);
+  const lat1=toRad(a[0]), lat2=toRad(b[0]);
+  const h=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+// Simple road time model: first 10 mi @ 28 mph (urban), next 30 @ 45 mph, remaining @ 60 mph
+function etaMinutes(mi){
+  if(mi<=0) return 0;
+  let left=mi, mins=0;
+  const segs=[[10,28],[30,45],[Infinity,60]];
+  for(const [miles,speed] of segs){
+    if(left<=0) break;
+    const use=Math.min(left,miles);
+    mins += (use/speed)*60;
+    left -= use;
+  }
+  // add a signal/parking fudge (5 min) for short trips, 10 min for >30mi
+  mins += mi>30?10:5;
+  return Math.round(mins);
+}
+
+function badgeWater(w){
+  const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
+  const icon=w==='salt'?'🟦':w==='fresh'?'🟩':'🟪';
+  const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
+  return `<span class="badge ${cls}">${icon} ${label}</span>`;
+}
+function badgeSeason(s){
+  const cls={year:'b-yr','spring-fall':'b-sprfall','late-spring-fall':'b-sprfall','summer':'b-sum','winter':'b-win'}[s]||'b-yr';
+  const label={year:'Year‑round','spring-fall':'Spring–Fall','late-spring-fall':'Late Spring–Fall','summer':'Summer','winter':'Winter'}[s]||s;
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function chipsSkill(arr){
+  const dot={'B':'lvle','I':'lvlm','A':'lvlh'};
+  return `<span class="lvl">${arr.map(k=>`<span title="${k}" class="dot ${dot[k]}"></span>`).join('')}</span>`;
+}
+
+function rowHTML(s){
+  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
+  const eta = distMi!=null ? etaMinutes(distMi) : null;
+  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
+  const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
+  return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
+    <td class="spot" data-label="Spot">${s.name}${gem}</td>
+    <td data-label="Dist / Time">${distTxt}</td>
+    <td data-label="Water">${badgeWater(s.water)}</td>
+    <td data-label="Season">${badgeSeason(s.season)}</td>
+    <td data-label="Skill">${chipsSkill(s.skill)}</td>
+  </tr>
+  <tr class="detail-row hide">
+    <td colspan="5" class="detail">
+      <div class="detail-grid">
+        <img data-src="https://staticmap.openstreetmap.org/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map" loading="lazy" onerror="this.remove()">
+        <div class="info">
+          <p><strong>Address:</strong> ${withSource(s.addr)}</p>
+          <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
+          <p><strong>Launch:</strong> ${withSource(s.launch)}</p>
+          <p><strong>Parking:</strong> ${withSource(s.parking)}</p>
+          <p><strong>Amenities:</strong> <span class="amen">${withSource(s.amenities)}</span></p>
+          <p><strong>Pros:</strong> <span class="ok">${withSource(s.pros)}</span></p>
+          <p><strong>Cons:</strong> <span class="warn">${withSource(s.cons)}</span></p>
+          <p><strong>Best For:</strong> ${withSource(s.best)}</p>
+          <p><strong>Gear Fit:</strong> ${withSource(s.gear)}</p>
+          <p><strong>Hazards & Tips:</strong> ${withSource(s.tips)}</p>
+          <p class="law"><strong>Laws / Regs:</strong> ${withSource(s.law)}</p>
+        </div>
+      </div>
+    </td>
+  </tr>`;
+}
+
+function render(){
+  // sort by distance if origin set; otherwise by name
+  const rows = SPOTS.slice().sort((a,b)=>{
+    if(!ORIGIN){
+      sortCol = 'name';
+      return a.name.localeCompare(b.name);
+    }
+    sortCol = 'dist';
+    const da = haversine(ORIGIN,[a.lat,a.lng]);
+    const db = haversine(ORIGIN,[b.lat,b.lng]);
+    return da-db;
+  });
+  spotsBody.innerHTML = rows.map(rowHTML).join('');
+  attachRowHandlers();
+  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
+  applyFilters(); // in case filters active
+}
+
+function attachRowHandlers(){
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
+    tr.addEventListener('click',()=>{
+      const wasOpen = tr.classList.contains('open');
+      document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+        if(o!==tr){
+          o.classList.remove('open');
+          const d=o.nextElementSibling;
+          if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+        }
+      });
+      tr.classList.toggle('open', !wasOpen);
+      const detail = tr.nextElementSibling;
+      if(detail && detail.classList.contains('detail-row')){
+        detail.classList.toggle('hide', wasOpen);
+        if(!wasOpen){
+          const img = detail.querySelector('img[data-src]');
+          if(img && !img.src) img.src = img.dataset.src;
+        }
+      }
+    });
+  });
+}
+
+function initMap(){
+  if(map) return;
+  map = L.map('map').setView([37.7749,-122.4194],10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  SPOTS.forEach(s=>{
+    L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
+  });
+}
+
+/* ---------- Filters ---------- */
+function applyFilters(){
+  const qv = q.value.toLowerCase().trim();
+  const useFilters = !qv;
+  const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const gemOnly = gemChip.classList.contains('active');
+  const tmax = +mins.value;
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
+    const id = tr.getAttribute('data-id');
+    const s = SPOTS.find(x=>x.id===id);
+    let ok = true;
+    if(useFilters){
+      if(!allowedWater.has(s.water)) ok=false;
+      const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
+      if(!allowedSeason.has(seasonVal)) ok=false;
+      if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
+      if(gemOnly && !s.gem) ok=false;
+      if(ORIGIN){
+        const eta = +tr.getAttribute('data-eta');
+        if(eta > tmax) ok=false;
+      }
+    }
+    if(qv){
+      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
+      if(!hay.includes(qv)) ok=false;
+    }
+    tr.classList.toggle('hide', !ok);
+    const detail = tr.nextElementSibling;
+    if(detail && detail.classList.contains('detail-row')){
+      detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
+    }
+  });
+  minsVal.textContent = `≤ ${mins.value} min`;
+}
+
+function setupDrag(chips){
+  let dragging=false, dragVal=false;
+  chips.forEach(chip=>{
+    chip.addEventListener('mousedown',e=>{
+      dragging=true;
+      dragVal=!chip.classList.contains('active');
+      chip.classList.toggle('active', dragVal);
+      applyFilters();
+      e.preventDefault();
+    });
+    chip.addEventListener('mouseenter',e=>{
+      if(dragging){
+        chip.classList.toggle('active', dragVal);
+        applyFilters();
+      }
+    });
+  });
+  document.addEventListener('mouseup',()=>dragging=false);
+}
+
+/* ---------- Origin controls ---------- */
+function setOrigin(lat,lng,label){
+  ORIGIN = [lat,lng];
+  originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  render();
+}
+  document.addEventListener('DOMContentLoaded', () => {
+    originInfo = document.getElementById('originInfo');
+    spotsBody = document.getElementById('spotsBody');
+    q = document.getElementById('q');
+    mins = document.getElementById('mins');
+    minsVal = document.getElementById('minsVal');
+    waterChips = [...document.querySelectorAll('.f-water')];
+    seasonChips = [...document.querySelectorAll('.f-season')];
+    skillChips = [...document.querySelectorAll('.f-skill')];
+    gemChip = document.getElementById('gemFilter');
+    zip = document.getElementById('zip');
+    useGeo = document.getElementById('useGeo');
+    filterToggle = document.getElementById('filterToggle');
+    filtersEl = document.getElementById('filters');
+    headerEl = document.querySelector('header');
+    toTop = document.getElementById('toTop');
+    viewToggle = document.getElementById('viewToggle');
+    viewSlider = document.getElementById('viewSlider');
+    mapEl = document.getElementById('map');
+
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          th.click();
+        }
+      });
+    });
+
+    sortArrow = document.getElementById('sortArrow');
+
+    let showingMap = false;
+    viewToggle.addEventListener('click', () => {
+      showingMap = !showingMap;
+      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
+      viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+    });
+
+    filterToggle.addEventListener('click', () => {
+      const open = filtersEl.style.display === 'none';
+      filtersEl.style.display = open ? '' : 'none';
+      updateHeaderOffset();
+    });
+
+    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
+
+
+
+  function updateHeaderOffset(){
+    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+  }
+    window.addEventListener('resize', updateHeaderOffset);
+    updateHeaderOffset();
+
+    [q, mins].forEach(el => {
+      el.addEventListener('input', () => {
+        applyFilters();
+      });
+    });
+
+setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
+
+zip.addEventListener('input', async () => {
+  const z = (zip.value || '').trim();
+  if (z.length !== 5) return;
+
+  if (ZIP_CENTROIDS[z]) {
+    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+    return;
+  }
+  if (zipCache[z]) {
+    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
+    return;
+  }
+
+  originInfo.textContent = `Looking up ZIP ${z}…`;
+  try {
+    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
+    if (resp.status === 404) {
+      originInfo.textContent = `ZIP ${z} not found.`;
+      return;
+    }
+    if (!resp.ok) throw new Error('Network error');
+    const data = await resp.json();
+    const place = data && data.places && data.places[0];
+    if (place) {
+      const lat = parseFloat(place.latitude);
+      const lng = parseFloat(place.longitude);
+      zipCache[z] = [lat, lng];
+      localStorage.setItem('zipCache', JSON.stringify(zipCache));
+      setOrigin(lat, lng, `ZIP ${z}`);
+    } else {
+      originInfo.textContent = `ZIP ${z} not found.`;
+    }
+  } catch {
+    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+  }
+});
+
+  useGeo.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      originInfo.textContent = 'Geolocation not supported by this browser.';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
+      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
+    );
+  });
+
+  render();
+
+  window.addEventListener('scroll', () => {
+    toTop.classList.toggle('show', window.scrollY > 200);
+  });
+  toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+});
+</script>
+
+<section class="wrap" style="margin-bottom:40px">
+  <h2>Regulatory quick‑reference</h2>
+  <ul class="muted">
+    <li><strong>Harbors/Marinas:</strong> No‑wake (typically 5 mph) inside fairways until outside breakwaters.</li>
+    <li><strong>CA proximity rule (common‑sense baseline):</strong> 5 mph within ~100 ft of swimmers and ~200 ft of beaches, docks, and moored boats. Always obey posted signs.</li>
+    <li><strong>COLREGS (“Rules of the Road”):</strong> Applies everywhere—give way to vessels constrained by draft (ships/ferries), cross channels at right angles, show lights if dusk/night (avoid night on eFoil).</li>
+    <li><strong>Sanctuaries/Wildlife:</strong> Keep clear of marine mammals; never chase. Heed local eelgrass/sanctuary zones (e.g., parts of Richardson & Tomales bays).</li>
+    <li><strong>Inland lakes:</strong> Expect <em>quagga mussel inspections</em> (arrive clean & dry), day‑use hours, and occasional algae advisories.</li>
+  </ul>
+  <p class="hint">This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</p>
+</section>
+
 </body>
 </html>
