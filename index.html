@@ -441,7 +441,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img src="https://maps.googleapis.com/maps/api/staticmap?center=${s.lat},${s.lng}&zoom=14&size=400x200&maptype=terrain&markers=color:red%7C${s.lat},${s.lng}" alt="${s.name} map">
+        <img src="https://staticmap.openstreetmap.org/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map">
         <div class="info">
           <p><strong>Address:</strong> ${s.addr}</p>
           <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
@@ -551,6 +551,9 @@ function setOrigin(lat,lng,label){
     toTop = document.getElementById('toTop');
     sortArrow = document.getElementById('sortArrow');
 
+    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
+
+
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
@@ -564,12 +567,38 @@ function setOrigin(lat,lng,label){
       });
     });
 
-  setZip.addEventListener('click', () => {
+  setZip.addEventListener('click', async () => {
     const z = (zip.value || '').trim();
+    if (!z) return;
     if (ZIP_CENTROIDS[z]) {
       setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-    } else {
-      originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
+      return;
+    }
+    if (zipCache[z]) {
+      setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
+      return;
+    }
+    originInfo.textContent = `Looking up ZIP ${z}…`;
+    try {
+      const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
+      if (resp.status === 404) {
+        originInfo.textContent = `ZIP ${z} not found.`;
+        return;
+      }
+      if (!resp.ok) throw new Error('Network error');
+      const data = await resp.json();
+      const place = data && data.places && data.places[0];
+      if (place) {
+        const lat = parseFloat(place.latitude);
+        const lng = parseFloat(place.longitude);
+        zipCache[z] = [lat, lng];
+        localStorage.setItem('zipCache', JSON.stringify(zipCache));
+        setOrigin(lat, lng, `ZIP ${z}`);
+      } else {
+        originInfo.textContent = `ZIP ${z} not found.`;
+      }
+    } catch (e) {
+      originInfo.textContent = `Network error while looking up ZIP ${z}.`;
     }
   });
     useGeo.addEventListener('click', () => {
