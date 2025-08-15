@@ -101,14 +101,12 @@
     .detail-grid img{max-width:300px;width:100%;height:auto;border-radius:8px;flex:1 1 250px}
     .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
-  #toTop.show{display:block}
-  @media (max-width:800px){
-    thead{display:none}
-    tr{display:block;margin-bottom:12px}
-    td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
-    td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
-    td.detail{display:block}
-  }
+#toTop.show{display:block}
+thead th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+thead th.sortable .sort-icon{margin-left:6px;font-size:12px;transition:transform .2s, opacity .2s;opacity:0}
+thead th.sortable.sorted-asc .sort-icon,
+thead th.sortable.sorted-desc .sort-icon{opacity:1}
+thead th.sortable.sorted-desc .sort-icon{transform:rotate(180deg)}
 </style>
 </head>
 <body>
@@ -171,13 +169,11 @@
     <table id="tbl">
       <thead>
           <tr>
-
-            <th class="sortable" tabindex="0" role="button">Spot</th>
-            <th class="sortable" tabindex="0" role="button">Dist / Time</th>
-            <th class="sortable" tabindex="0" role="button">Water</th>
-            <th class="sortable" tabindex="0" role="button">Season</th>
-            <th class="sortable" tabindex="0" role="button">Skill</th>
-
+            <th class="sortable" data-col="name" tabindex="0" role="button">Spot<span class="sort-icon">▲</span></th>
+            <th class="sortable" data-col="dist" tabindex="0" role="button">Dist / Time<span class="sort-icon">▲</span></th>
+            <th class="sortable" data-col="water" tabindex="0" role="button">Water<span class="sort-icon">▲</span></th>
+            <th class="sortable" data-col="season" tabindex="0" role="button">Season<span class="sort-icon">▲</span></th>
+            <th class="sortable" data-col="skill" tabindex="0" role="button">Skill<span class="sort-icon">▲</span></th>
           </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
@@ -386,10 +382,10 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let sortCol = 'name';
+let currentSort = {col:'dist', dir:'asc'};
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips, gemChip,  // new chip sets
-    zip, useGeo, filterBox, headerEl, toTop, sortArrow;
+    zip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -432,11 +428,9 @@ function chipsSkill(arr){
 }
 
 function rowHTML(s){
-  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
-  const eta = distMi!=null ? etaMinutes(distMi) : null;
-  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
+  const distTxt = s.distMi!=null ? `${Math.round(s.distMi)} mi / ~${s.eta} min` : '—';
   const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
-  return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
+  return `<tr class="parent" data-id="${s.id}" data-mi="${s.distMi!=null?s.distMi:9999}" data-eta="${s.eta!=null?s.eta:9999}">
     <td class="spot" data-label="Spot">${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
     <td data-label="Water">${badgeWater(s.water)}</td>
@@ -466,21 +460,65 @@ function rowHTML(s){
 }
 
 function render(){
-  // sort by distance if origin set; otherwise by name
-  const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN){
-      sortCol = 'name';
-      return a.name.localeCompare(b.name);
+  const rows = SPOTS.map(s=>{
+    const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
+    const eta = distMi!=null ? etaMinutes(distMi) : null;
+    return {...s, distMi, eta};
+  }).sort((a,b)=>{
+    switch(currentSort.col){
+      case 'dist':{
+        const da = a.distMi ?? Infinity;
+        const db = b.distMi ?? Infinity;
+        return currentSort.dir==='asc'? da-db : db-da;
+      }
+      case 'water':
+        return currentSort.dir==='asc'? a.water.localeCompare(b.water) : b.water.localeCompare(a.water);
+      case 'season':
+        return currentSort.dir==='asc'? a.season.localeCompare(b.season) : b.season.localeCompare(a.season);
+      case 'skill':{
+        const rank = sk => Math.min(...sk.map(k=>({B:0,I:1,A:2}[k])));
+        const ra = rank(a.skill), rb = rank(b.skill);
+        return currentSort.dir==='asc'? ra-rb : rb-ra;
+      }
+      case 'name':
+      default:
+        return currentSort.dir==='asc'? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
     }
-    sortCol = 'dist';
-    const da = haversine(ORIGIN,[a.lat,a.lng]);
-    const db = haversine(ORIGIN,[b.lat,b.lng]);
-    return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
-  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
+  updateSortIndicators();
+}
+
+function updateSortIndicators(){
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    th.classList.remove('sorted-asc','sorted-desc');
+    if(th.dataset.col===currentSort.col){
+      th.classList.add(currentSort.dir==='asc'?'sorted-asc':'sorted-desc');
+    }
+  });
+}
+
+function setupSorting(){
+  document.querySelectorAll('th.sortable').forEach(th=>{
+    const col = th.dataset.col;
+    th.addEventListener('click',()=>{
+      if(currentSort.col===col){
+        currentSort.dir = currentSort.dir==='asc' ? 'desc' : 'asc';
+      }else{
+        currentSort.col = col;
+        currentSort.dir = 'asc';
+      }
+      render();
+    });
+    th.addEventListener('keydown',e=>{
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        th.click();
+      }
+    });
+  });
 }
 
 function attachRowHandlers(){
@@ -565,6 +603,7 @@ function setupDrag(chips){
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  currentSort = {col:'dist', dir:'asc'};
   render();
 }
   document.addEventListener('DOMContentLoaded', () => {
@@ -583,16 +622,7 @@ function setOrigin(lat,lng,label){
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
 
-    document.querySelectorAll('th.sortable').forEach(th => {
-      th.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          th.click();
-        }
-      });
-    });
-
-    sortArrow = document.getElementById('sortArrow');
+    setupSorting();
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
