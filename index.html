@@ -6,62 +6,99 @@
 <title>SF Bay Area eFoil Guide — Filterable (Fliteboard Pro + Jet2, MN1300C / Flow245C)</title>
 <style>
   :root{
-    --bg:#0e1116; --card:#151a22; --muted:#8892a6; --text:#e6eefc; --accent:#5ae0ff;
+    color-scheme: light dark;
+    --radius:12px; --hover:rgba(0,0,0,.04);
+    --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
     --easy:#70e000; --med:#ffd166; --hard:#ff6b6b;
-    --badge:#1d2430; --chip:#202735; --gem:#ffd166; --ok:#2fd277; --warn:#ffad42; --no:#ff6b6b;
+    --badge:#e9ecf2; --chip:#e7ecf3; --gem:#ffd166; --ok:#006d2c; --warn:#8d7409; --no:#c74f4f;
+    --badge-border:#d0d7e2; --chip-border:#cfd6e1; --control-border:#d0d7e2; --table-border:#d0d7e2;
+    --input-bg:#ffffff; --input-border:#d0d7e2; --btn-bg:#e0e4ea; --btn-border:#cfd6e1;
+    --btn-alt-bg:#d0e9f1; --btn-alt-border:#bcd3db; --toggle-off:#cfd6e1;
+    --header-grad1:rgba(255,255,255,.9); --header-grad2:rgba(255,255,255,.6);
   }
-  html,body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif;margin:0}
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1116; --card:#151a22; --muted:#8892a6; --text:#e6eefc; --accent:#5ae0ff;
+      --badge:#1d2430; --chip:#202735; --badge-border:#2a3346; --chip-border:#263044;
+      --control-border:#1f2632; --table-border:#1f2632;
+      --input-bg:#0f141c; --input-border:#243046;
+      --btn-bg:#233044; --btn-border:#2f3c52;
+      --btn-alt-bg:#234a5a; --btn-alt-border:#2f667a;
+      --toggle-off:#263044;
+      --header-grad1:rgba(14,17,22,.9); --header-grad2:rgba(14,17,22,.6);
+      --ok:#2fd277; --warn:#ffad42; --no:#ff6b6b;
+      --hover:rgba(255,255,255,.06);
+    }
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif;font-size:clamp(16px,1.5vw,18px);line-height:1.6;margin:0}
   a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
-  header{position:sticky;top:0;background:linear-gradient(180deg,rgba(14,17,22,.9),rgba(14,17,22,.6));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
-  .wrap{max-width:1200px;margin:auto;padding:18px}
-  h1{margin:8px 0 4px;font-weight:800;font-size:clamp(22px,3.2vw,32px)}
+  header{position:sticky;top:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
+  .wrap{max-width:1200px;margin:auto;padding:clamp(16px,4vw,32px)}
+  header .wrap{padding-top:8px}
+  main.wrap{padding-top:0}
+  h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
   .sub{color:var(--muted);font-size:14px}
-  .controls{display:grid;gap:10px;grid-template-columns:repeat(12,1fr);align-items:end;margin:14px 0 12px}
-  .control{grid-column:span 3;background:var(--card);border-radius:10px;padding:10px;border:1px solid #1f2632}
-  .control label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:12px;margin:2px 6px 2px 0;border:1px solid #263044}
+  details{margin:8px 0}
+  details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
+  details[open] summary{margin-bottom:8px}
+  .controls{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:end}
+  .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .control.wide{grid-column:1/-1}
+  .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border)}
   .chip input{accent-color:var(--accent)}
-  .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:#263044;position:relative;outline:none;cursor:pointer;vertical-align:middle}
+  .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .table-wrap{overflow:auto;border-radius:12px;border:1px solid #1f2632}
-  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card)}
-  thead th{position:sticky;top:118px;background:var(--card);z-index:2}
-  th,td{padding:10px 12px;border-bottom:1px solid #1f2632;vertical-align:top}
-  tbody tr{transition:opacity .25s, transform .25s} tbody tr.hide{opacity:.0;transform:translateX(-8px);pointer-events:none}
+  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
+    table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
+    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
+    tbody tr{transition:background .2s}
+    tbody tr.hide{display:none}
+    tbody tr.parent{cursor:pointer}
+    tbody tr.detail-row{background:var(--card)}
+    tbody tr:hover{background:var(--hover)}
   .spot{font-weight:700}
-  .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid #2a3346}
-  .b-salt{background:rgba(74,166,255,.15);color:#bcdcff;border-color:rgba(74,166,255,.35)}
-  .b-fresh{background:rgba(65,227,110,.12);color:#bfffd1;border-color:rgba(65,227,110,.35)}
-  .b-brack{background:rgba(176,123,255,.12);color:#e2d1ff;border-color:rgba(176,123,255,.35)}
-  .b-yr{background:rgba(255,176,32,.12);color:#ffd9a1;border-color:rgba(255,176,32,.35)}
-  .b-sprfall{background:rgba(47,210,119,.12);color:#caffd7;border-color:rgba(47,210,119,.35)}
-  .b-sum{background:rgba(255,210,77,.12);color:#fff0c1;border-color:rgba(255,210,77,.35)}
-  .b-win{background:rgba(125,211,252,.12);color:#d7f1ff;border-color:rgba(125,211,252,.35)}
+  .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
+  .b-salt{border-left:4px solid var(--salt)}
+  .b-fresh{border-left:4px solid var(--fresh)}
+  .b-brack{border-left:4px solid var(--brack)}
+  .b-yr{border-left:4px solid var(--yr)}
+  .b-sprfall{border-left:4px solid var(--sprfall)}
+  .b-sum{border-left:4px solid var(--summer)}
+  .b-win{border-left:4px solid var(--winter)}
   .lvl{display:inline-flex;gap:4px}
   .lvl .dot{width:8px;height:8px;border-radius:50%}
   .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
-  .gem{display:inline-flex;align-items:center;gap:6px;margin-left:6px;color:#111;background:var(--gem);border-radius:6px;padding:1px 6px;font-weight:700}
-  .pop{white-space:nowrap}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
-  .cols-advanced{display:table-cell} .simple .cols-advanced{display:none}
-  .foot{color:var(--muted);font-size:12px;margin-top:8px}
-  section{scroll-margin-top:110px}
-  .card{background:var(--card);border:1px solid #1f2632;border-radius:12px;padding:16px;margin:16px 0}
-  .law{font-size:13px;color:#cfe0ff}
-  .amen{color:#cfe0ff}
+  .gem{display:inline-block;margin-left:4px;color:var(--accent);font-size:14px}
+  .pop{white-space:normal}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
+    .foot{color:var(--muted);font-size:12px;margin-top:8px}
+  section{scroll-margin-top:var(--header-h)}
+  .card{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:16px;margin:16px 0}
+  .law{font-size:13px;color:var(--accent)}
+  .amen{color:var(--accent)}
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   .muted{color:var(--muted)}
-  .pill{display:inline-block;background:#1f2632;border:1px solid #2a3346;color:#cfe0ff;padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
-  .hint{font-size:12px;color:#9fb3d9}
-  @media (max-width:980px){
-    .controls{grid-template-columns:repeat(6,1fr)}
-    .control{grid-column:span 6}
-    thead{display:none} tr{display:block} td{display:flex;justify-content:space-between;border-bottom:1px dashed #223}
-    td:before{content:attr(data-label);color:var(--muted);padding-right:10px}
+    .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:var(--text);padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
+    .hint{font-size:12px;color:var(--muted)}
+    td.detail{padding:16px;font-size:14px}
+    td.detail p{margin:6px 0}
+    .detail-grid{display:flex;flex-wrap:wrap;gap:16px}
+    .detail-grid img{max-width:300px;width:100%;height:auto;border-radius:8px;flex:1 1 250px}
+    .detail-grid .info{flex:2 1 260px}
+    #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
+  #toTop.show{display:block}
+  @media (max-width:800px){
+    thead{display:none}
+    tr{display:block;margin-bottom:12px}
+    td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
+    td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
+    td.detail{display:block}
   }
 </style>
 </head>
@@ -74,23 +111,25 @@
       <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
     </div>
 
-    <div class="controls">
+    <details id="filterBox">
+      <summary>Filters</summary>
+      <div class="controls">
       <!-- Origin controls -->
-      <div class="control" style="grid-column:span 6">
+      <div class="control wide">
         <label>Set Origin by ZIP (or Use My Location)</label>
-        <div style="display:flex; gap:8px; align-items:center">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP (e.g., 94103)" style="flex:1;background:#0f141c;border:1px solid #243046;border-radius:8px;color:#e6eefc;padding:8px" />
-          <button id="setZip" style="background:#233044;border:1px solid #2f3c52;color:#e6eefc;border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
-          <button id="useGeo" style="background:#234a5a;border:1px solid #2f667a;color:#e6eefc;border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP (e.g., 94103)" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+          <button id="setZip" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
+          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
         </div>
         <div class="hint" id="zipHint">Works offline with common Bay Area ZIPs. If a ZIP isn’t recognized, “Use My Location” is best.</div>
       </div>
 
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Search spots</label>
-        <input id="q" placeholder="name, city, notes…" style="width:100%;background:#0f141c;border:1px solid #243046;border-radius:8px;color:#e6eefc;padding:8px" />
+        <input id="q" placeholder="name, city, notes…" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Water type</label>
         <div>
           <label class="chip"><input type="checkbox" class="f-water" value="salt" checked> 🟦 Salt</label>
@@ -98,7 +137,7 @@
           <label class="chip"><input type="checkbox" class="f-water" value="brackish" checked> 🟪 Brackish</label>
         </div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Skill level</label>
         <div>
           <label class="chip"><input type="checkbox" class="f-skill" value="B" checked> B</label>
@@ -106,31 +145,23 @@
           <label class="chip"><input type="checkbox" class="f-skill" value="A" checked> A</label>
         </div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Max drive time (one way)</label>
         <input id="mins" type="range" min="15" max="180" step="5" value="180" style="width:100%">
         <div class="hint"><span id="minsVal">≤ 180</span> minutes</div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Highlight</label>
         <label class="chip"><input type="checkbox" id="gems" checked> 🌟 Hidden gems</label>
       </div>
-      <div class="control" style="grid-column:span 3">
-        <label>Mode</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="muted">Simple</span>
-          <input id="mode" class="toggle" type="checkbox" />
-          <span class="muted">Advanced</span>
+        <div class="control wide">
+          <label>Legend</label>
+          <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
+          <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
+          <span class="pill">Skill: <span class="dot lvle"></span>B <span class="dot lvlm"></span>I <span class="dot lvlh"></span>A</span>
         </div>
-        <div class="hint">Simple hides in‑depth columns.</div>
-      </div>
-      <div class="control" style="grid-column:span 6">
-        <label>Legend</label>
-        <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
-        <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
-        <span class="pill">Skill: <span class="dot lvle"></span>B <span class="dot lvlm"></span>I <span class="dot lvlh"></span>A</span>
-      </div>
     </div>
+    </details>
   </div>
 </header>
 
@@ -138,33 +169,22 @@
   <div class="table-wrap">
     <table id="tbl">
       <thead>
-        <tr>
-          <th>Spot</th>
-          <th>Dist / Time</th>
-          <th>Water</th>
-          <th>Season</th>
-          <th>Skill</th>
-          <th>Launch</th>
-          <th class="cols-advanced">Parking</th>
-          <th class="cols-advanced">Amenities</th>
-          <th>Pros (Peak)</th>
-          <th>Cons (Min)</th>
-          <th>Popularity</th>
-          <th>Best Use</th>
-          <th>Gear Fit</th>
-          <th class="cols-advanced">Hazards / Tips</th>
-          <th class="cols-advanced">Laws / Regs</th>
-        </tr>
+          <tr>
+            <th>Spot</th>
+            <th>Dist / Time</th>
+            <th>Water</th>
+            <th>Season</th>
+            <th>Skill</th>
+          </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
     </table>
   </div>
 
-  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
-
-  <h2 style="margin-top:30px">Detailed Spot Guide</h2>
-  <div id="details"></div>
+    <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
+
+<button id="toTop" aria-label="Back to top">↑</button>
 
 <script>
 /* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
@@ -195,49 +215,49 @@ const ZIP_CENTROIDS = {
 /* ---------- Spots (with coordinates) ---------- */
 const SPOTS = [
 /* SF / Peninsula */
-{ id:"crane-cove", gem:true, name:"Crane Cove Park (Dogpatch, SF)", city:"San Francisco", lat:37.7577, lng:-122.3872,
+{ id:"crane-cove", gem:true, name:"Crane Cove Park (Dogpatch, SF)", city:"San Francisco", addr:"18th St & Illinois St, San Francisco, CA", lat:37.7577, lng:-122.3872,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Sandy beach", parking:"Street + paid lot (~1 block)", amenities:"Restrooms; no showers",
   pros:"Calm, close-in; skyline views", cons:"Crowded weekends; small area",
   pop:"Medium", best:"Warm-up laps; teach friends", gear:"Perfect as‑is; optional bigger wing if windy PM",
   tips:"Go early; avoid swimmers & SUP lesson zones; watch tug/ship wake outside Pier 50",
   law:"Harbor/cove no‑wake; CA 5 mph within 100 ft of swimmers & 200 ft of beaches/docks; wear PFD"
 },
-{ id:"crissy", gem:false, name:"Crissy Field / City Front (SF) — Advanced", city:"San Francisco", lat:37.8076, lng:-122.4649,
+{ id:"crissy", gem:false, name:"Crissy Field / City Front (SF) — Advanced", city:"San Francisco", addr:"1199 East Beach, San Francisco, CA", lat:37.8076, lng:-122.4649,
   water:"salt", season:"year", skill:["A"], launch:"Beach", parking:"Paid lots at East Beach", amenities:"Restrooms; outdoor rinse",
   pros:"Iconic GG Bridge runs; ferry wakes", cons:"Strong wind/currents; heavy traffic",
   pop:"Low (elite)", best:"Adrenaline downwinders; photo ops", gear:"Consider larger front wing + steadier stab on big days",
   tips:"Target slack or moderate flood; buddy system; bailout at Horseshoe Cove; avoid Aquatic Park swim zone",
   law:"GGNRA area: no‑wake near shore; stay clear of shipping lane; keep 100 yd from bridge piers; obey COLREGS; PFD required"
 },
-{ id:"oyster-point", gem:true, name:"Oyster Point Marina (South SF) 🌟", city:"South San Francisco", lat:37.6647, lng:-122.3777,
+{ id:"oyster-point", gem:true, name:"Oyster Point Marina (South SF) 🌟", city:"South San Francisco", addr:"95 Harbormaster Rd, South San Francisco, CA", lat:37.6647, lng:-122.3777,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Ramp & guest dock", parking:"Large free lot (<200 ft)", amenities:"Restrooms; rinse hose",
   pros:"Protected start; scenic shoreline", cons:"Windy PM; weekday ferry wake",
   pop:"Low–Medium", best:"Scenic cruising; wake play", gear:"MN 1300C great; bigger wing if choppy PM",
   tips:"Give ferry path room; avoid fishing pier lines; mornings are glassy",
   law:"Harbor no‑wake; 5 mph in fairways; CA 5 mph proximity rule"
 },
-{ id:"coyote-point", gem:false, name:"Coyote Point (San Mateo)", city:"San Mateo", lat:37.5904, lng:-122.3205,
+{ id:"coyote-point", gem:false, name:"Coyote Point (San Mateo)", city:"San Mateo", addr:"1701 Coyote Point Dr, San Mateo, CA", lat:37.5904, lng:-122.3205,
   water:"salt", season:"year", skill:["I","A"], launch:"Marina ramp or small beach", parking:"Gate/launch fees (county park)", amenities:"Restrooms; marina water",
   pros:"Harbor for flat starts; open bay outside", cons:"Strong PM wind/chop; reflected chop off point",
   pop:"Low–Medium", best:"AM speed laps; harbor practice", gear:"As‑is AM; swap to 1500C if nuking",
   tips:"Idle to breakwater; wide berth to rocks; retreat inside if rough",
   law:"Harbor no‑wake; CA 5 mph proximity rule"
 },
-{ id:"foster-lagoon", gem:true, name:"Foster City Lagoon / Canals 🌟 (Speed‑limited)", city:"Foster City", lat:37.5585, lng:-122.2710,
+{ id:"foster-lagoon", gem:true, name:"Foster City Lagoon / Canals 🌟 (Speed‑limited)", city:"Foster City", addr:"Foster City, CA", lat:37.5585, lng:-122.2710,
   water:"brackish", season:"year", skill:["B"], launch:"City boat parks & ramps", parking:"Lots by parks", amenities:"Restrooms in parks",
   pros:"Glassy, sheltered", cons:"Legal 5 mph max → no foiling at speed",
   pop:"Very Low (efoil)", best:"No‑foil taxi practice only", gear:"Keep current setup; larger wing won’t make 5 mph fly",
   tips:"Avoid swimmers; courteous near homes; bridges ~15–22 ft clearance",
   law:"Electric only; **5 mph limit**; DMV reg needed"
 },
-{ id:"redwood-slough", gem:true, name:"Redwood City – Westpoint Slough 🌟", city:"Redwood City", lat:37.5156, lng:-122.2137,
+{ id:"redwood-slough", gem:true, name:"Redwood City – Westpoint Slough 🌟", city:"Redwood City", addr:"Westpoint Harbor, 101 Westpoint Harbor Blvd, Redwood City, CA", lat:37.5156, lng:-122.2137,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Port ramp / Westpoint Harbor", parking:"Ramp ~$5; marina lots", amenities:"Restrooms; rinse",
   pros:"Flat, warmish, low traffic", cons:"Shallow mud off channel at low tide",
   pop:"Medium", best:"Technique reps; mellow long runs", gear:"MN 1300C perfect; Flow 245C for carving",
   tips:"Stay in dredged channel on low tides; debris after storms",
   law:"Harbor no‑wake; follow nav aids"
 },
-{ id:"baywinds", gem:false, name:"Baywinds Park (Foster City – 3rd Ave Bayfront)", city:"Foster City", lat:37.5629, lng:-122.2624,
+{ id:"baywinds", gem:false, name:"Baywinds Park (Foster City – 3rd Ave Bayfront)", city:"Foster City", addr:"1603 Beach Park Blvd, Foster City, CA", lat:37.5629, lng:-122.2624,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Beach/levee entry", parking:"Free turnout by levee", amenities:"None on site",
   pros:"Glass mornings; training ground", cons:"PM nuking winds; mudflats at low tide",
   pop:"High (wind sports)", best:"AM speed runs; chop practice PM", gear:"MN 1300C AM; bring 1500C if cranking",
@@ -246,28 +266,28 @@ const SPOTS = [
 },
 
 /* East Bay */
-{ id:"alameda", gem:false, name:"Alameda – Crown Beach / Encinal Ramp", city:"Alameda", lat:37.7646, lng:-122.2730,
+{ id:"alameda", gem:false, name:"Alameda – Crown Beach / Encinal Ramp", city:"Alameda", addr:"Encinal Boat Ramp, 190 Central Ave, Alameda, CA", lat:37.7646, lng:-122.2730,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Beach or ramp", parking:"Street & paid lots (close)", amenities:"Restrooms; seasonal showers",
   pros:"Beginner‑friendly; protected cove", cons:"Very shallow at low tide; summer beach crowds",
   pop:"High (efoil hub)", best:"Learning; relaxed cruising; sunsets", gear:"As‑is ideal; 1500C if ultra‑slow training",
   tips:"Use breakwater lee for flat water; mind swim buoys in summer",
   law:"Keep 5 mph within swim zones/docks; marina no‑wake"
 },
-{ id:"berkeley", gem:true, name:"Berkeley Marina / Frontage 🌟", city:"Berkeley", lat:37.8656, lng:-122.3130,
+{ id:"berkeley", gem:true, name:"Berkeley Marina / Frontage 🌟", city:"Berkeley", addr:"201 University Ave, Berkeley, CA", lat:37.8656, lng:-122.3130,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Ramp or sheltered coves", parking:"Marina lots", amenities:"Restrooms; cafes nearby",
   pros:"AM windows; boat wakes outside", cons:"Afternoon wind & chop; weeds sometimes",
   pop:"Low–Medium", best:"Exploration laps; wake carving", gear:"MN 1300C fine; upsize if blown out",
   tips:"No‑wake in harbor; avoid fishing lines on pier",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"emeryville", gem:false, name:"Emeryville Marina", city:"Emeryville", lat:37.8370, lng:-122.3135,
+{ id:"emeryville", gem:false, name:"Emeryville Marina", city:"Emeryville", addr:"3310 Powell St, Emeryville, CA", lat:37.8370, lng:-122.3135,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Ramp / dock", parking:"Marina lots", amenities:"Restrooms; food nearby",
   pros:"Easy freeway access; lee behind breakwaters", cons:"Tight fairways; PM breeze",
   pop:"Low", best:"Short after‑work foils", gear:"As‑is good",
   tips:"Idle out; watch Oakland ferry route outside",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"point-isabel", gem:true, name:"Point Isabel / Richmond Marina 🌟", city:"Richmond", lat:37.9085, lng:-122.3274,
+{ id:"point-isabel", gem:true, name:"Point Isabel / Richmond Marina 🌟", city:"Richmond", addr:"1901 Isabel St, Richmond, CA", lat:37.9085, lng:-122.3274,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Small beaches / ramp", parking:"Free lots near parks", amenities:"Restrooms",
   pros:"Scenic shoreline; quieter vibe", cons:"Windy PM; mudflats at very low tide",
   pop:"Low", best:"Morning cruises", gear:"As‑is; bigger wing for chop tolerance",
@@ -276,21 +296,21 @@ const SPOTS = [
 },
 
 /* North Bay */
-{ id:"sausalito", gem:false, name:"Sausalito – Richardson Bay / Schoonmaker", city:"Sausalito", lat:37.8675, lng:-122.4830,
+{ id:"sausalito", gem:false, name:"Sausalito – Richardson Bay / Schoonmaker", city:"Sausalito", addr:"1 Schoonmaker Point Marina, Sausalito, CA", lat:37.8675, lng:-122.4830,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Beach / ramp", parking:"Free/street (arrive early)", amenities:"Restrooms; cafes",
   pros:"Gorgeous, calm inside; GG access", cons:"Anchored boats; gusts; shallow north end",
   pop:"Medium", best:"Scenic tours; Gate forays (adv)", gear:"MN 1300C efficient; take 1500C toward Gate",
   tips:"Stay west side; give ferries space; watch ebb near Gate",
   law:"Richardson Bay channels no‑wake; no‑discharge; CA 5 mph buffers"
 },
-{ id:"paradise", gem:true, name:"Paradise Cay / Tiburon 🌟", city:"Tiburon", lat:37.8960, lng:-122.4790,
+{ id:"paradise", gem:true, name:"Paradise Cay / Tiburon 🌟", city:"Tiburon", addr:"Paradise Cay, Tiburon, CA", lat:37.8960, lng:-122.4790,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Small beaches / ramps", parking:"Neighborhood street / small lots", amenities:"Limited",
   pros:"Sheltered pockets; Angel Island views", cons:"Tight channels; weekend boat traffic",
   pop:"Low", best:"Protected laps; photo ops", gear:"As‑is; optional larger stab for tracking",
   tips:"Polite near homes; stay clear of marinas",
   law:"No‑wake in channels; CA 5 mph proximity"
 },
-{ id:"tomales", gem:false, name:"Tomales Bay (Miller / Nick’s Cove)", city:"Inverness/Marshall", lat:38.1020, lng:-122.8510,
+{ id:"tomales", gem:false, name:"Tomales Bay (Miller / Nick’s Cove)", city:"Inverness/Marshall", addr:"23240 CA-1, Marshall, CA", lat:38.1020, lng:-122.8510,
   water:"brackish", season:"spring-fall", skill:["B","I","A"], launch:"County ramps", parking:"Lots; day‑use rules", amenities:"Restrooms",
   pros:"Flat water, wildlife, scenery", cons:"Eelgrass; shallow margins at low tide; PM wind",
   pop:"Medium", best:"Long relaxed cruising", gear:"As‑is; Jet good vs eelgrass",
@@ -299,21 +319,21 @@ const SPOTS = [
 },
 
 /* Ocean / Coast */
-{ id:"pillar", gem:false, name:"Pillar Point Harbor (Half Moon Bay)", city:"Half Moon Bay", lat:37.5030, lng:-122.4800,
+{ id:"pillar", gem:false, name:"Pillar Point Harbor (Half Moon Bay)", city:"Half Moon Bay", addr:"1 Johnson Pier, Half Moon Bay, CA", lat:37.5030, lng:-122.4800,
   water:"salt", season:"late-spring-fall", skill:["B","I","A"], launch:"Ramp / beach (inside breakwater)", parking:"Harbor lots", amenities:"Restrooms; water",
   pros:"Ocean vibe but protected", cons:"Fog & wind; fishing fleets",
   pop:"Medium", best:"Harbor laps; small‑swell carving", gear:"As‑is; larger wing if outside gets bumpy",
   tips:"Stay inside if swell up; hail Harbor on VHF 74 if unsure",
   law:"Harbor no‑wake; 5 mph fairways; Harbor District rules"
 },
-{ id:"princeton", gem:true, name:"Princeton Harbor Beach (inside breakwater) 🌟", city:"Half Moon Bay", lat:37.5020, lng:-122.4820,
+{ id:"princeton", gem:true, name:"Princeton Harbor Beach (inside breakwater) 🌟", city:"Half Moon Bay", addr:"400 Princeton Ave, Half Moon Bay, CA", lat:37.5020, lng:-122.4820,
   water:"salt", season:"late-spring-fall", skill:["B","I"], launch:"Harbor beach", parking:"Harbor lots (close)", amenities:"Restrooms",
   pros:"Gentle rollers; easy entry", cons:"Kelp strands; fishermen lines",
   pop:"Low–Medium", best:"Beginner ocean feel", gear:"As‑is ideal",
   tips:"Keep clear of Johnson Pier & boat lanes",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"bodega", gem:true, name:"Bodega Harbor (Sonoma Coast) 🌟", city:"Bodega Bay", lat:38.3250, lng:-123.0400,
+{ id:"bodega", gem:true, name:"Bodega Harbor (Sonoma Coast) 🌟", city:"Bodega Bay", addr:"1410 Bay Flat Rd, Bodega Bay, CA", lat:38.3250, lng:-123.0400,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Harbor ramp / beaches", parking:"Harbor lots", amenities:"Restrooms; food nearby",
   pros:"Protected harbor inside jetties", cons:"Wind/coastal fog; cold water",
   pop:"Low", best:"Harbor laps; wildlife viewing", gear:"As‑is; bigger wing outside in swell",
@@ -322,7 +342,7 @@ const SPOTS = [
 },
 
 /* Rivers / Estuary */
-{ id:"petaluma", gem:true, name:"Petaluma River Mouth 🌟", city:"Sonoma / San Pablo Bay", lat:38.1180, lng:-122.4850,
+{ id:"petaluma", gem:true, name:"Petaluma River Mouth 🌟", city:"Sonoma / San Pablo Bay", addr:"Lakeville Hwy & Hwy 37, Sonoma, CA", lat:38.1180, lng:-122.4850,
   water:"brackish", season:"spring-fall", skill:["I"], launch:"Shore access / small ramps inland", parking:"Park pullouts", amenities:"Limited",
   pros:"Wildlife; flat reaches on calm days", cons:"Tidal currents; muddy edges",
   pop:"Low", best:"Exploratory flatwater foils", gear:"As‑is; watch depths on low tides",
@@ -331,28 +351,28 @@ const SPOTS = [
 },
 
 /* Lakes / Reservoirs */
-{ id:"shadow", gem:false, name:"Shadow Cliffs (Pleasanton) — Freshwater", city:"Pleasanton", lat:37.6610, lng:-121.8220,
+{ id:"shadow", gem:false, name:"Shadow Cliffs (Pleasanton) — Freshwater", city:"Pleasanton", addr:"2500 Stanley Blvd, Pleasanton, CA", lat:37.6610, lng:-121.8220,
   water:"fresh", season:"summer", skill:["B"], launch:"Beach / small ramp", parking:"EBRPD lot (fee) next to water", amenities:"Restrooms; seasonal showers",
   pros:"Warm, flat, lesson‑friendly", cons:"Small size; algae risk late summer",
   pop:"Medium", best:"Intro sessions & drills", gear:"As‑is; larger wing for ultra‑slow hover if desired",
   tips:"Electric only; check algae + inspection at gate",
   law:"Electric only; quagga inspections; CA 5 mph proximity"
 },
-{ id:"delvalle", gem:false, name:"Lake Del Valle (Livermore) — Freshwater", city:"Livermore", lat:37.5890, lng:-121.6870,
+{ id:"delvalle", gem:false, name:"Lake Del Valle (Livermore) — Freshwater", city:"Livermore", addr:"7000 Del Valle Rd, Livermore, CA", lat:37.5890, lng:-121.6870,
   water:"fresh", season:"spring-fall", skill:["B","I","A"], launch:"Ramps", parking:"EBRPD lots near ramps", amenities:"Restrooms; showers; marina",
   pros:"Large warm lake; coves to explore", cons:"Busy weekends; algae blooms possible",
   pop:"Medium–High (summer)", best:"Distance cruising; teaching", gear:"As‑is; bigger stab for tracking if desired",
   tips:"Expect inspection & launch fees; wind builds PM",
   law:"EBRPD inspections; 5 mph in restricted zones; day fees posted"
 },
-{ id:"lex", gem:true, name:"Lexington Reservoir (Los Gatos) 🌟 — Freshwater", city:"Los Gatos", lat:37.2120, lng:-121.9860,
+{ id:"lex", gem:true, name:"Lexington Reservoir (Los Gatos) 🌟 — Freshwater", city:"Los Gatos", addr:"17770 Alma Bridge Rd, Los Gatos, CA", lat:37.2120, lng:-121.9860,
   water:"fresh", season:"spring-fall", skill:["B","I"], launch:"Ramp", parking:"County lot near ramp", amenities:"Porta‑potties",
   pros:"Calm; no wakeboats", cons:"Limited hours/inspections; levels vary",
   pop:"Low", best:"Quiet practice; carving drills", gear:"As‑is; bigger wing for super‑slow training",
   tips:"Verify boating hours & inspection status",
   law:"Santa Clara Co. inspection program; seasonal hours"
 },
-{ id:"berryessa", gem:false, name:"Lake Berryessa (Napa) — Freshwater", city:"Napa", lat:38.5120, lng:-122.2150,
+{ id:"berryessa", gem:false, name:"Lake Berryessa (Napa) — Freshwater", city:"Napa", addr:"5800 Knoxville Rd, Napa, CA", lat:38.5120, lng:-122.2150,
   water:"fresh", season:"spring-fall", skill:["B","I","A"], launch:"Multiple ramps (Capell, Steele, Putah)", parking:"Marina/park lots", amenities:"Restrooms; showers at marinas",
   pros:"Huge warm lake; long runs", cons:"Inspections & launch fees; busy coves",
   pop:"Medium–High (summer)", best:"Endurance; exploration", gear:"As‑is; bigger wing for slower carve with friends",
@@ -363,7 +383,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, details, q, mins, minsVal, mode, waterChecks, skillChecks, gems, zip, setZip, useGeo;
+let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -409,40 +429,34 @@ function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const skill = chipsSkill(s.skill);
   const gem = s.gem ? `<span class="gem">🌟 hidden gem</span>` : '';
-  return `<tr data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
-    <td class="spot" data-label="Spot"><a href="#${s.id}">${s.name}</a>${gem}</td>
+  return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
+    <td class="spot" data-label="Spot">${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
     <td data-label="Water">${badgeWater(s.water)}</td>
     <td data-label="Season">${badgeSeason(s.season)}</td>
-    <td data-label="Skill">${skill}</td>
-    <td data-label="Launch">${s.launch}</td>
-    <td data-label="Parking" class="cols-advanced">${s.parking}</td>
-    <td data-label="Amenities" class="cols-advanced">${s.amenities}</td>
-    <td data-label="Pros">${s.pros}</td>
-    <td data-label="Cons">${s.cons}</td>
-    <td data-label="Popularity">${s.pop}</td>
-    <td data-label="Best Use">${s.best}</td>
-    <td data-label="Gear Fit">${s.gear}</td>
-    <td data-label="Hazards / Tips" class="cols-advanced">${s.tips}</td>
-    <td data-label="Laws / Regs" class="cols-advanced">${s.law}</td>
+    <td data-label="Skill">${chipsSkill(s.skill)}</td>
+  </tr>
+  <tr class="detail-row hide">
+    <td colspan="5" class="detail">
+      <div class="detail-grid">
+        <img src="https://maps.googleapis.com/maps/api/staticmap?center=${s.lat},${s.lng}&zoom=14&size=400x200&maptype=terrain&markers=color:red%7C${s.lat},${s.lng}" alt="${s.name} map">
+        <div class="info">
+          <p><strong>Address:</strong> ${s.addr}</p>
+          <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
+          <p><strong>Launch:</strong> ${s.launch}</p>
+          <p><strong>Parking:</strong> ${s.parking}</p>
+          <p><strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
+          <p><strong>Pros:</strong> <span class="ok">${s.pros}</span></p>
+          <p><strong>Cons:</strong> <span class="warn">${s.cons}</span></p>
+          <p><strong>Best For:</strong> ${s.best}</p>
+          <p><strong>Gear Fit:</strong> ${s.gear}</p>
+          <p><strong>Hazards & Tips:</strong> ${s.tips}</p>
+          <p class="law"><strong>Laws / Regs:</strong> ${s.law}</p>
+        </div>
+      </div>
+    </td>
   </tr>`;
-}
-function detailHTML(s){
-  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
-  const eta = distMi!=null ? etaMinutes(distMi) : null;
-  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  return `<section id="${s.id}" class="card">
-    <h3>${s.name}</h3>
-    <div class="muted">${s.city} • ${distTxt} • ${badgeWater(s.water)} • ${badgeSeason(s.season)} • ${chipsSkill(s.skill)}</div>
-    <p><strong>Launch:</strong> ${s.launch} &nbsp; <strong>Parking:</strong> ${s.parking} &nbsp; <strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
-    <p><strong>Peak (Pros):</strong> <span class="ok">${s.pros}</span><br/><strong>Min (Cons):</strong> <span class="warn">${s.cons}</span></p>
-    <p><strong>Best For:</strong> ${s.best}</p>
-    <p><strong>Gear Fit (your setup):</strong> ${s.gear}</p>
-    <p><strong>Hazards & Local Tips:</strong> ${s.tips}</p>
-    <p class="law"><strong>Laws / Coast Guard & Local:</strong> ${s.law}</p>
-  </section>`;
 }
 
 function render(){
@@ -454,8 +468,28 @@ function render(){
     return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
-  details.innerHTML = rows.map(detailHTML).join('');
+  attachRowHandlers();
   applyFilters(); // in case filters active
+}
+
+function attachRowHandlers(){
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
+    tr.addEventListener('click',()=>{
+      const wasOpen = tr.classList.contains('open');
+      document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+        if(o!==tr){
+          o.classList.remove('open');
+          const d=o.nextElementSibling;
+          if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+        }
+      });
+      tr.classList.toggle('open', !wasOpen);
+      const detail = tr.nextElementSibling;
+      if(detail && detail.classList.contains('detail-row')){
+        detail.classList.toggle('hide', wasOpen);
+      }
+    });
+  });
 }
 
 /* ---------- Filters ---------- */
@@ -464,7 +498,7 @@ function applyFilters(){
   const allowedWater = new Set([...document.querySelectorAll('.f-water')].filter(c=>c.checked).map(c=>c.value));
   const allowedSkill = new Set([...document.querySelectorAll('.f-skill')].filter(c=>c.checked).map(c=>c.value));
   const tmax = +mins.value;
-  document.querySelectorAll('#tbl tbody tr').forEach(tr=>{
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
     let ok = true;
@@ -475,10 +509,14 @@ function applyFilters(){
       if(eta>tmax) ok=false;
     }
     if(qv){
-      const hay = (s.name+' '+s.city+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
+        const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
+    const detail = tr.nextElementSibling;
+    if(detail && detail.classList.contains('detail-row')){
+      detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
+    }
     tr.style.filter = (gems.checked && s.gem) ? "drop-shadow(0 0 0.45rem rgba(255,209,102,.35))" : "none";
   });
   minsVal.textContent = `≤ ${mins.value}`;
@@ -490,29 +528,34 @@ function setOrigin(lat,lng,label){
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
 }
-document.addEventListener('DOMContentLoaded', () => {
-  originInfo = document.getElementById('originInfo');
-  spotsBody = document.getElementById('spotsBody');
-  details = document.getElementById('details');
-  q = document.getElementById('q');
-  mins = document.getElementById('mins');
-  minsVal = document.getElementById('minsVal');
-  mode = document.getElementById('mode');
-  waterChecks = [...document.querySelectorAll('.f-water')];
-  skillChecks = [...document.querySelectorAll('.f-skill')];
-  gems = document.getElementById('gems');
-  zip = document.getElementById('zip');
-  setZip = document.getElementById('setZip');
-  useGeo = document.getElementById('useGeo');
+  document.addEventListener('DOMContentLoaded', () => {
+    originInfo = document.getElementById('originInfo');
+    spotsBody = document.getElementById('spotsBody');
+    q = document.getElementById('q');
+    mins = document.getElementById('mins');
+    minsVal = document.getElementById('minsVal');
+    waterChecks = [...document.querySelectorAll('.f-water')];
+    skillChecks = [...document.querySelectorAll('.f-skill')];
+    gems = document.getElementById('gems');
+    zip = document.getElementById('zip');
+    setZip = document.getElementById('setZip');
+    useGeo = document.getElementById('useGeo');
+    filterBox = document.getElementById('filterBox');
+    headerEl = document.querySelector('header');
+    toTop = document.getElementById('toTop');
 
-  [q, mins, mode, gems, ...waterChecks, ...skillChecks].forEach(el => {
-    el.addEventListener('input', () => {
-      if (el === mode) {
-        document.body.classList.toggle('simple', !mode.checked);
-      }
-      applyFilters();
+  function updateHeaderOffset(){
+    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+  }
+    filterBox.addEventListener('toggle', updateHeaderOffset);
+    window.addEventListener('resize', updateHeaderOffset);
+    updateHeaderOffset();
+
+    [q, mins, gems, ...waterChecks, ...skillChecks].forEach(el => {
+      el.addEventListener('input', () => {
+        applyFilters();
+      });
     });
-  });
 
   setZip.addEventListener('click', () => {
     const z = (zip.value || '').trim();
@@ -522,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
       originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
     }
   });
-  useGeo.addEventListener('click', () => {
+    useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
       originInfo.textContent = 'Geolocation not supported by this browser.';
       return;
@@ -533,9 +576,13 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  document.body.classList.add('simple');
-  render();
-});
+    render();
+
+    window.addEventListener('scroll', () => {
+      toTop.classList.toggle('show', window.scrollY > 200);
+    });
+    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  });
 </script>
 
 <section class="wrap" style="margin-bottom:40px">
