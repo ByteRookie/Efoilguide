@@ -41,12 +41,12 @@
   .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border);cursor:pointer;user-select:none}
 .chip.active{background:var(--btn-alt-bg);border-color:var(--accent);color:var(--text)}
-.chip.b-salt.active{background:var(--salt);border-color:var(--salt);color:#000}
-.chip.b-fresh.active{background:var(--fresh);border-color:var(--fresh);color:#000}
-.chip.b-brack.active{background:var(--brack);border-color:var(--brack);color:#000}
-.chip.b-lvle.active{background:var(--easy);border-color:var(--easy);color:#000}
-.chip.b-lvlm.active{background:var(--med);border-color:var(--med);color:#000}
-.chip.b-lvlh.active{background:var(--hard);border-color:var(--hard);color:#000}
+.chip.b-salt.active{border-left:4px solid var(--salt)}
+.chip.b-fresh.active{border-left:4px solid var(--fresh)}
+.chip.b-brack.active{border-left:4px solid var(--brack)}
+.chip.b-lvle.active{border-left:4px solid var(--easy)}
+.chip.b-lvlm.active{border-left:4px solid var(--med)}
+.chip.b-lvlh.active{border-left:4px solid var(--hard)}
   .chip-group{display:flex;align-items:center;gap:6px}
   .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
   .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
