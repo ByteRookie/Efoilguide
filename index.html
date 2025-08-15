@@ -43,12 +43,21 @@
   details{margin:8px 0}
   details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
   details[open] summary{margin-bottom:8px}
-  .controls{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:end}
+  .controls{display:flex;flex-direction:column;gap:12px}
   .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
-  .control.wide{grid-column:1/-1}
   .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border)}
-  .chip input{accent-color:var(--accent)}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border);cursor:pointer;user-select:none}
+  .chip.active{background:var(--btn-alt-bg);border-color:var(--accent);color:var(--text)}
+  .chip-group{display:flex;align-items:center;gap:6px}
+  .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
+  .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
+  .legend-row::-webkit-scrollbar{height:6px}
+  .legend-row::-webkit-scrollbar-thumb{background:var(--control-border);border-radius:3px}
+  .chip.b-yr{border-left:4px solid var(--yr)}
+  .chip.b-sprfall{border-left:4px solid var(--sprfall)}
+  .chip.b-sum{border-left:4px solid var(--summer)}
+  .chip.b-win{border-left:4px solid var(--winter)}
+  .split{width:1px;height:24px;background:var(--control-border)}
   .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
@@ -111,57 +120,49 @@
       <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
     </div>
 
-    <details id="filterBox">
-      <summary>Filters</summary>
-      <div class="controls">
-      <!-- Origin controls -->
-      <div class="control wide">
-        <label>Set Origin by ZIP (or Use My Location)</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP (e.g., 94103)" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-          <button id="setZip" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
-          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="q" placeholder="Search spots" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+      <details id="filterBox">
+        <summary>Filters</summary>
+        <div class="controls">
+          <div class="control">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+              <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+              <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
+              <span class="split"></span>
+              <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+              <span class="hint" id="minsVal">≤ 180 min</span>
+            </div>
+            <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
+          </div>
+          <div class="control">
+            <div class="legend-row">
+              <div class="chip-group">
+                <span class="chip-group-label">Water:</span>
+                <span class="chip f-water active" data-value="salt">🟦 Salt</span>
+                <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
+                <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
+              </div>
+              <div class="chip-group">
+                <span class="chip-group-label">Season:</span>
+                <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+                <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+                <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+              </div>
+              <div class="chip-group">
+                <span class="chip-group-label">Skill:</span>
+                <span class="chip f-skill active" data-value="B">Beginner [B]</span>
+                <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
+                <span class="chip f-skill active" data-value="A">Advanced [A]</span>
+              </div>
+              <div class="chip-group">
+                <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="hint" id="zipHint">Works offline with common Bay Area ZIPs. If a ZIP isn’t recognized, “Use My Location” is best.</div>
-      </div>
-
-      <div class="control">
-        <label>Search spots</label>
-        <input id="q" placeholder="name, city, notes…" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-      </div>
-      <div class="control">
-        <label>Water type</label>
-        <div>
-          <label class="chip"><input type="checkbox" class="f-water" value="salt" checked> 🟦 Salt</label>
-          <label class="chip"><input type="checkbox" class="f-water" value="fresh" checked> 🟩 Fresh</label>
-          <label class="chip"><input type="checkbox" class="f-water" value="brackish" checked> 🟪 Brackish</label>
-        </div>
-      </div>
-      <div class="control">
-        <label>Skill level</label>
-        <div>
-          <label class="chip"><input type="checkbox" class="f-skill" value="B" checked> B</label>
-          <label class="chip"><input type="checkbox" class="f-skill" value="I" checked> I</label>
-          <label class="chip"><input type="checkbox" class="f-skill" value="A" checked> A</label>
-        </div>
-      </div>
-      <div class="control">
-        <label>Max drive time (one way)</label>
-        <input id="mins" type="range" min="15" max="180" step="5" value="180" style="width:100%">
-        <div class="hint"><span id="minsVal">≤ 180</span> minutes</div>
-      </div>
-      <div class="control">
-        <label>Highlight</label>
-        <label class="chip"><input type="checkbox" id="gems" checked> 🌟 Hidden gems</label>
-      </div>
-        <div class="control wide">
-          <label>Legend</label>
-          <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
-          <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
-          <span class="pill">Skill: <span class="dot lvle"></span>B <span class="dot lvlm"></span>I <span class="dot lvlh"></span>A</span>
-        </div>
+      </details>
     </div>
-    </details>
   </div>
 </header>
 
@@ -386,7 +387,9 @@ const SPOTS = [
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
-let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop, sortArrow;
+let originInfo, spotsBody, q, mins, minsVal,
+    waterChips, seasonChips, skillChips, gemChip,  // new chip sets
+    zip, useGeo, filterBox, headerEl, toTop, sortArrow;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -419,8 +422,8 @@ function badgeWater(w){
   return `<span class="badge ${cls}">${icon} ${label}</span>`;
 }
 function badgeSeason(s){
-  const cls={year:'b-yr','spring-fall':'b-sprfall','summer':'b-sum','winter':'b-win'}[s]||'b-yr';
-  const label={year:'Year‑round','spring-fall':'Spring–Fall','summer':'Summer','winter':'Winter'}[s]||s;
+  const cls={year:'b-yr','spring-fall':'b-sprfall','late-spring-fall':'b-sprfall','summer':'b-sum','winter':'b-win'}[s]||'b-yr';
+  const label={year:'Year‑round','spring-fall':'Spring–Fall','late-spring-fall':'Late Spring–Fall','summer':'Summer','winter':'Winter'}[s]||s;
   return `<span class="badge ${cls}">${label}</span>`;
 }
 function chipsSkill(arr){
@@ -432,7 +435,7 @@ function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const gem = s.gem ? `<span class="gem">🌟 hidden gem</span>` : '';
+  const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
   return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
     <td class="spot" data-label="Spot">${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
@@ -503,21 +506,26 @@ function attachRowHandlers(){
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
-  const allowedWater = new Set([...document.querySelectorAll('.f-water')].filter(c=>c.checked).map(c=>c.value));
-  const allowedSkill = new Set([...document.querySelectorAll('.f-skill')].filter(c=>c.checked).map(c=>c.value));
+  const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const gemOnly = gemChip.classList.contains('active');
   const tmax = +mins.value;
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
     let ok = true;
     if(!allowedWater.has(s.water)) ok=false;
+    const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
+    if(!allowedSeason.has(seasonVal)) ok=false;
     if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
+    if(gemOnly && !s.gem) ok=false;
     if(ORIGIN){
       const eta = +tr.getAttribute('data-eta');
-      if(eta>tmax) ok=false;
+      if(eta > tmax) ok=false;
     }
     if(qv){
-        const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
+      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
@@ -525,9 +533,28 @@ function applyFilters(){
     if(detail && detail.classList.contains('detail-row')){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
     }
-    tr.style.filter = (gems.checked && s.gem) ? "drop-shadow(0 0 0.45rem rgba(255,209,102,.35))" : "none";
   });
-  minsVal.textContent = `≤ ${mins.value}`;
+  minsVal.textContent = `≤ ${mins.value} min`;
+}
+
+function setupDrag(chips){
+  let dragging=false, dragVal=false;
+  chips.forEach(chip=>{
+    chip.addEventListener('mousedown',e=>{
+      dragging=true;
+      dragVal=!chip.classList.contains('active');
+      chip.classList.toggle('active', dragVal);
+      applyFilters();
+      e.preventDefault();
+    });
+    chip.addEventListener('mouseenter',e=>{
+      if(dragging){
+        chip.classList.toggle('active', dragVal);
+        applyFilters();
+      }
+    });
+  });
+  document.addEventListener('mouseup',()=>dragging=false);
 }
 
 /* ---------- Origin controls ---------- */
@@ -542,11 +569,11 @@ function setOrigin(lat,lng,label){
     q = document.getElementById('q');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
-    waterChecks = [...document.querySelectorAll('.f-water')];
-    skillChecks = [...document.querySelectorAll('.f-skill')];
-    gems = document.getElementById('gems');
+    waterChips = [...document.querySelectorAll('.f-water')];
+    seasonChips = [...document.querySelectorAll('.f-season')];
+    skillChips = [...document.querySelectorAll('.f-skill')];
+    gemChip = document.getElementById('gemFilter');
     zip = document.getElementById('zip');
-    setZip = document.getElementById('setZip');
     useGeo = document.getElementById('useGeo');
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
@@ -574,44 +601,51 @@ function setOrigin(lat,lng,label){
     window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
-    [q, mins, gems, ...waterChecks, ...skillChecks].forEach(el => {
+    [q, mins].forEach(el => {
       el.addEventListener('input', () => {
         applyFilters();
       });
     });
 
-  setZip.addEventListener('click', async () => {
-    const z = (zip.value || '').trim();
-    if (!z) return;
-    if (ZIP_CENTROIDS[z]) {
-      setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
+
+zip.addEventListener('input', async () => {
+  const z = (zip.value || '').trim();
+  if (z.length !== 5) return;
+
+  if (ZIP_CENTROIDS[z]) {
+    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+    return;
+  }
+  if (zipCache[z]) {
+    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
+    return;
+  }
+
+  originInfo.textContent = `Looking up ZIP ${z}…`;
+  try {
+    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
+    if (resp.status === 404) {
+      originInfo.textContent = `ZIP ${z} not found.`;
       return;
     }
-    if (zipCache[z]) {
-      setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
-      return;
+    if (!resp.ok) throw new Error('Network error');
+    const data = await resp.json();
+    const place = data && data.places && data.places[0];
+    if (place) {
+      const lat = parseFloat(place.latitude);
+      const lng = parseFloat(place.longitude);
+      zipCache[z] = [lat, lng];
+      localStorage.setItem('zipCache', JSON.stringify(zipCache));
+      setOrigin(lat, lng, `ZIP ${z}`);
+    } else {
+      originInfo.textContent = `ZIP ${z} not found.`;
     }
-    originInfo.textContent = `Looking up ZIP ${z}…`;
-    try {
-      const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
-      if (resp.status === 404) {
-        originInfo.textContent = `ZIP ${z} not found.`;
-        return;
-      }
-      if (!resp.ok) throw new Error('Network error');
-      const data = await resp.json();
-      const place = data && data.places && data.places[0];
-      if (place) {
-        const lat = parseFloat(place.latitude);
-        const lng = parseFloat(place.longitude);
-        zipCache[z] = [lat, lng];
-        localStorage.setItem('zipCache', JSON.stringify(zipCache));
-        setOrigin(lat, lng, `ZIP ${z}`);
-      } else {
-        originInfo.textContent = `ZIP ${z} not found.`;
-      }
-    } catch (e) {
-      originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+  } catch {
+    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+  }
+});
+
     }
   });
     useGeo.addEventListener('click', () => {
