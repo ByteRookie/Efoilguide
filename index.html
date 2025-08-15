@@ -53,11 +53,14 @@
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
   .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(-1 * var(--header-h));padding-top:var(--header-h)}
-  table{width:100%;min-width:1200px;border-collapse:separate;border-spacing:0;background:var(--card)}
-  thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
-  th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
-  tbody tr{transition:background .2s, opacity .25s, transform .25s} tbody tr.hide{opacity:.0;transform:translateX(-8px);pointer-events:none}
-  tbody tr:hover{background:var(--hover)}
+    table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
+    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
+    tbody tr{transition:background .2s}
+    tbody tr.hide{display:none}
+    tbody tr.parent{cursor:pointer}
+    tbody tr.detail-row{background:var(--card)}
+    tbody tr:hover{background:var(--hover)}
   .spot{font-weight:700}
   .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
   .b-salt{border-left:4px solid var(--salt)}
@@ -72,24 +75,26 @@
   .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
   .gem{display:inline-block;margin-left:4px;color:var(--accent);font-size:14px}
   .pop{white-space:normal}
-  .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
-  .cols-advanced{display:table-cell} .simple .cols-advanced{display:none}
-  .foot{color:var(--muted);font-size:12px;margin-top:8px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
+    .foot{color:var(--muted);font-size:12px;margin-top:8px}
   section{scroll-margin-top:var(--header-h)}
   .card{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:16px;margin:16px 0}
   .law{font-size:13px;color:var(--accent)}
   .amen{color:var(--accent)}
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   .muted{color:var(--muted)}
-  .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:var(--text);padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
-  .hint{font-size:12px;color:var(--muted)}
-  #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
+    .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:var(--text);padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
+    .hint{font-size:12px;color:var(--muted)}
+    td.detail{padding:16px;font-size:14px}
+    td.detail p{margin:6px 0}
+    #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
   @media (max-width:800px){
     thead{display:none}
     tr{display:block;margin-bottom:12px}
     td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
     td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
+    td.detail{display:block}
   }
 </style>
 </head>
@@ -145,21 +150,12 @@
         <label>Highlight</label>
         <label class="chip"><input type="checkbox" id="gems" checked> 🌟 Hidden gems</label>
       </div>
-      <div class="control">
-        <label>Mode</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="muted">Simple</span>
-          <input id="mode" class="toggle" type="checkbox" />
-          <span class="muted">Advanced</span>
+        <div class="control wide">
+          <label>Legend</label>
+          <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
+          <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
+          <span class="pill">Skill: <span class="dot lvle"></span>B <span class="dot lvlm"></span>I <span class="dot lvlh"></span>A</span>
         </div>
-        <div class="hint">Simple hides in‑depth columns.</div>
-      </div>
-      <div class="control wide">
-        <label>Legend</label>
-        <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
-        <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
-        <span class="pill">Skill: <span class="dot lvle"></span>B <span class="dot lvlm"></span>I <span class="dot lvlh"></span>A</span>
-      </div>
     </div>
     </details>
   </div>
@@ -169,32 +165,19 @@
   <div class="table-wrap">
     <table id="tbl">
       <thead>
-        <tr>
-          <th>Spot</th>
-          <th>Dist / Time</th>
-          <th>Water</th>
-          <th>Season</th>
-          <th>Skill</th>
-          <th>Launch</th>
-          <th class="cols-advanced">Parking</th>
-          <th class="cols-advanced">Amenities</th>
-          <th>Pros (Peak)</th>
-          <th>Cons (Min)</th>
-          <th>Popularity</th>
-          <th>Best Use</th>
-          <th>Gear Fit</th>
-          <th class="cols-advanced">Hazards / Tips</th>
-          <th class="cols-advanced">Laws / Regs</th>
-        </tr>
+          <tr>
+            <th>Spot</th>
+            <th>Dist / Time</th>
+            <th>Water</th>
+            <th>Season</th>
+            <th>Skill</th>
+          </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
     </table>
   </div>
 
-  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
-
-  <h2 style="margin-top:30px">Detailed Spot Guide</h2>
-  <div id="details"></div>
+    <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
 
 <button id="toTop" aria-label="Back to top">↑</button>
@@ -396,7 +379,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, details, q, mins, minsVal, mode, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
+let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -442,40 +425,27 @@ function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const skill = chipsSkill(s.skill);
   const gem = s.gem ? `<span class="gem">🌟 hidden gem</span>` : '';
-  return `<tr data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
-    <td class="spot" data-label="Spot"><a href="#${s.id}">${s.name}</a>${gem}</td>
+  return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
+    <td class="spot" data-label="Spot">${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
     <td data-label="Water">${badgeWater(s.water)}</td>
     <td data-label="Season">${badgeSeason(s.season)}</td>
-    <td data-label="Skill">${skill}</td>
-    <td data-label="Launch">${s.launch}</td>
-    <td data-label="Parking" class="cols-advanced">${s.parking}</td>
-    <td data-label="Amenities" class="cols-advanced">${s.amenities}</td>
-    <td data-label="Pros">${s.pros}</td>
-    <td data-label="Cons">${s.cons}</td>
-    <td data-label="Popularity">${s.pop}</td>
-    <td data-label="Best Use">${s.best}</td>
-    <td data-label="Gear Fit">${s.gear}</td>
-    <td data-label="Hazards / Tips" class="cols-advanced">${s.tips}</td>
-    <td data-label="Laws / Regs" class="cols-advanced">${s.law}</td>
+    <td data-label="Skill">${chipsSkill(s.skill)}</td>
+  </tr>
+  <tr class="detail-row hide">
+    <td colspan="5" class="detail">
+      <p><strong>Launch:</strong> ${s.launch}</p>
+      <p><strong>Parking:</strong> ${s.parking}</p>
+      <p><strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
+      <p><strong>Pros:</strong> <span class="ok">${s.pros}</span></p>
+      <p><strong>Cons:</strong> <span class="warn">${s.cons}</span></p>
+      <p><strong>Best For:</strong> ${s.best}</p>
+      <p><strong>Gear Fit:</strong> ${s.gear}</p>
+      <p><strong>Hazards & Tips:</strong> ${s.tips}</p>
+      <p class="law"><strong>Laws / Regs:</strong> ${s.law}</p>
+    </td>
   </tr>`;
-}
-function detailHTML(s){
-  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
-  const eta = distMi!=null ? etaMinutes(distMi) : null;
-  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  return `<section id="${s.id}" class="card">
-    <h3>${s.name}</h3>
-    <div class="muted">${s.city} • ${distTxt} • ${badgeWater(s.water)} • ${badgeSeason(s.season)} • ${chipsSkill(s.skill)}</div>
-    <p><strong>Launch:</strong> ${s.launch} &nbsp; <strong>Parking:</strong> ${s.parking} &nbsp; <strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
-    <p><strong>Peak (Pros):</strong> <span class="ok">${s.pros}</span><br/><strong>Min (Cons):</strong> <span class="warn">${s.cons}</span></p>
-    <p><strong>Best For:</strong> ${s.best}</p>
-    <p><strong>Gear Fit (your setup):</strong> ${s.gear}</p>
-    <p><strong>Hazards & Local Tips:</strong> ${s.tips}</p>
-    <p class="law"><strong>Laws / Coast Guard & Local:</strong> ${s.law}</p>
-  </section>`;
 }
 
 function render(){
@@ -487,8 +457,20 @@ function render(){
     return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
-  details.innerHTML = rows.map(detailHTML).join('');
+  attachRowHandlers();
   applyFilters(); // in case filters active
+}
+
+function attachRowHandlers(){
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
+    tr.addEventListener('click',()=>{
+      tr.classList.toggle('open');
+      const detail = tr.nextElementSibling;
+      if(detail && detail.classList.contains('detail-row')){
+        detail.classList.toggle('hide', !tr.classList.contains('open'));
+      }
+    });
+  });
 }
 
 /* ---------- Filters ---------- */
@@ -497,7 +479,7 @@ function applyFilters(){
   const allowedWater = new Set([...document.querySelectorAll('.f-water')].filter(c=>c.checked).map(c=>c.value));
   const allowedSkill = new Set([...document.querySelectorAll('.f-skill')].filter(c=>c.checked).map(c=>c.value));
   const tmax = +mins.value;
-  document.querySelectorAll('#tbl tbody tr').forEach(tr=>{
+  document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
     let ok = true;
@@ -512,6 +494,10 @@ function applyFilters(){
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
+    const detail = tr.nextElementSibling;
+    if(detail && detail.classList.contains('detail-row')){
+      detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
+    }
     tr.style.filter = (gems.checked && s.gem) ? "drop-shadow(0 0 0.45rem rgba(255,209,102,.35))" : "none";
   });
   minsVal.textContent = `≤ ${mins.value}`;
@@ -523,14 +509,12 @@ function setOrigin(lat,lng,label){
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
 }
-document.addEventListener('DOMContentLoaded', () => {
-  originInfo = document.getElementById('originInfo');
-  spotsBody = document.getElementById('spotsBody');
-    details = document.getElementById('details');
+  document.addEventListener('DOMContentLoaded', () => {
+    originInfo = document.getElementById('originInfo');
+    spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
-    mode = document.getElementById('mode');
     waterChecks = [...document.querySelectorAll('.f-water')];
     skillChecks = [...document.querySelectorAll('.f-skill')];
     gems = document.getElementById('gems');
@@ -544,18 +528,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
-  filterBox.addEventListener('toggle', updateHeaderOffset);
-  window.addEventListener('resize', updateHeaderOffset);
+    filterBox.addEventListener('toggle', updateHeaderOffset);
+    window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
-    [q, mins, mode, gems, ...waterChecks, ...skillChecks].forEach(el => {
-    el.addEventListener('input', () => {
-      if (el === mode) {
-        document.body.classList.toggle('simple', !mode.checked);
-      }
-      applyFilters();
+    [q, mins, gems, ...waterChecks, ...skillChecks].forEach(el => {
+      el.addEventListener('input', () => {
+        applyFilters();
+      });
     });
-  });
 
   setZip.addEventListener('click', () => {
     const z = (zip.value || '').trim();
@@ -576,7 +557,6 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-    document.body.classList.add('simple');
     render();
 
     window.addEventListener('scroll', () => {
