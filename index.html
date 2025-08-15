@@ -110,6 +110,8 @@
     td.detail{display:block}
   }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2prSBT5GF7//3GzZhPMlmYtL1I7y58EN4OwJgIQ=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-SmZQVfQWc7xKeoQgCXnH3zJsMfwZL+xnz6VfxwGD5l0=" crossorigin=""></script>
 </head>
 <body>
 <header>
@@ -120,8 +122,9 @@
       <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
     </div>
 
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input id="q" placeholder="Search spots" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:nowrap">
+      <input id="q" placeholder="Search all details" style="flex:1 1 250px;max-width:300px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+      <button id="viewToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Map</button>
       <details id="filterBox">
         <summary>Filters</summary>
         <div class="controls">
@@ -167,7 +170,7 @@
 </header>
 
 <main class="wrap" id="main">
-  <div class="table-wrap">
+  <div class="table-wrap" id="tableView">
     <table id="tbl">
       <thead>
           <tr>
@@ -183,8 +186,8 @@
       <tbody id="spotsBody"></tbody>
     </table>
   </div>
-
-    <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
+  <div id="map" style="height:600px;display:none;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:16px"></div>
+  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
 
 <button id="toTop" aria-label="Back to top">↑</button>
@@ -389,7 +392,8 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips, gemChip,  // new chip sets
-    zip, useGeo, filterBox, headerEl, toTop, sortArrow;
+    zip, useGeo, filterBox, headerEl, toTop, sortArrow,
+    viewToggle, mapEl, tableWrap, map;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -507,9 +511,22 @@ function attachRowHandlers(){
   });
 }
 
+function initMap(){
+  if(map) return;
+  map = L.map('map').setView([37.7749,-122.4194],10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  SPOTS.forEach(s=>{
+    L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
+  });
+}
+
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
+  const useFilters = !qv;
   const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
@@ -519,17 +536,19 @@ function applyFilters(){
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
     let ok = true;
-    if(!allowedWater.has(s.water)) ok=false;
-    const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
-    if(!allowedSeason.has(seasonVal)) ok=false;
-    if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
-    if(gemOnly && !s.gem) ok=false;
-    if(ORIGIN){
-      const eta = +tr.getAttribute('data-eta');
-      if(eta > tmax) ok=false;
+    if(useFilters){
+      if(!allowedWater.has(s.water)) ok=false;
+      const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
+      if(!allowedSeason.has(seasonVal)) ok=false;
+      if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
+      if(gemOnly && !s.gem) ok=false;
+      if(ORIGIN){
+        const eta = +tr.getAttribute('data-eta');
+        if(eta > tmax) ok=false;
+      }
     }
     if(qv){
-      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
+      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
@@ -582,6 +601,9 @@ function setOrigin(lat,lng,label){
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
+    viewToggle = document.getElementById('viewToggle');
+    mapEl = document.getElementById('map');
+    tableWrap = document.getElementById('tableView');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
@@ -593,6 +615,14 @@ function setOrigin(lat,lng,label){
     });
 
     sortArrow = document.getElementById('sortArrow');
+
+    viewToggle.addEventListener('click', () => {
+      const showMap = mapEl.style.display === 'none';
+      mapEl.style.display = showMap ? '' : 'none';
+      tableWrap.style.display = showMap ? 'none' : '';
+      viewToggle.textContent = showMap ? 'Table' : 'Map';
+      if(showMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+    });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
