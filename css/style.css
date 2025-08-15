@@ -105,12 +105,14 @@
     .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
-  @media (max-width:800px){
-    thead{display:none}
-    tr{display:block;margin-bottom:12px}
-    td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
-    td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
-    td.detail{display:block}
-  }
+@media (max-width:800px){
+  thead{display:block}
+  thead tr{display:flex}
+  thead th{flex:1}
+  tr{display:block;margin-bottom:12px}
+  td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
+  td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
+  td.detail{display:block}
+}
 .cite-group{display:inline-flex;gap:4px;margin-left:4px;font-size:0.75em;}
 .cite-group a{color:var(--muted);background:var(--badge);border:1px solid var(--badge-border);border-radius:4px;padding:0 4px;text-decoration:none;}
