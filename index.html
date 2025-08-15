@@ -110,6 +110,8 @@
     td.detail{display:block}
   }
 </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2prSBT5GF7//3GzZhPMlmYtL1I7y58EN4OwJgIQ=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-SmZQVfQWc7xKeoQgCXnH3zJsMfwZL+xnz6VfxwGD5l0=" crossorigin=""></script>
 </head>
 <body>
 <header>
@@ -120,71 +122,74 @@
       <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
     </div>
 
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input id="q" placeholder="Search spots" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-      <details id="filterBox">
-        <summary>Filters</summary>
-        <div class="controls">
-          <div class="control">
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-              <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-              <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
-              <span class="split"></span>
-              <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
-              <span class="hint" id="minsVal">≤ 180 min</span>
-            </div>
-            <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
+    <div style="display:flex;gap:8px;align-items:center;width:100%">
+      <input id="q" placeholder="Search all details" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+      <button id="viewToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Map</button>
+      <button id="filterToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Filters</button>
+    </div>
+    <div id="filters" class="controls" style="display:none;margin-top:8px">
+      <div class="control">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
+          <span class="split"></span>
+          <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+          <span class="hint" id="minsVal">≤ 180 min</span>
+        </div>
+        <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
+      </div>
+      <div class="control">
+        <div class="legend-row">
+          <div class="chip-group">
+            <span class="chip-group-label">Water:</span>
+            <span class="chip f-water active" data-value="salt">🟦 Salt</span>
+            <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
+            <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
           </div>
-          <div class="control">
-            <div class="legend-row">
-              <div class="chip-group">
-                <span class="chip-group-label">Water:</span>
-                <span class="chip f-water active" data-value="salt">🟦 Salt</span>
-                <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
-                <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
-              </div>
-              <div class="chip-group">
-                <span class="chip-group-label">Season:</span>
-                <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
-                <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
-                <span class="chip f-season active b-sum" data-value="summer">Summer</span>
-              </div>
-              <div class="chip-group">
-                <span class="chip-group-label">Skill:</span>
-                <span class="chip f-skill active" data-value="B">Beginner [B]</span>
-                <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
-                <span class="chip f-skill active" data-value="A">Advanced [A]</span>
-              </div>
-              <div class="chip-group">
-                <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
-              </div>
-            </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Season:</span>
+            <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+            <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+            <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Skill:</span>
+            <span class="chip f-skill active" data-value="B">Beginner [B]</span>
+            <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
+            <span class="chip f-skill active" data-value="A">Advanced [A]</span>
+          </div>
+          <div class="chip-group">
+            <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
           </div>
         </div>
-      </details>
+      </div>
     </div>
   </div>
 </header>
 
 <main class="wrap" id="main">
-  <div class="table-wrap">
-    <table id="tbl">
-      <thead>
-          <tr>
+  <div id="viewWindow" style="overflow:hidden">
+    <div id="viewSlider" style="display:flex;transition:transform .3s">
+      <div class="table-wrap" id="tableView" style="min-width:100%">
+        <table id="tbl">
+          <thead>
+              <tr>
 
-            <th class="sortable" tabindex="0" role="button">Spot</th>
-            <th class="sortable" tabindex="0" role="button">Dist / Time</th>
-            <th class="sortable" tabindex="0" role="button">Water</th>
-            <th class="sortable" tabindex="0" role="button">Season</th>
-            <th class="sortable" tabindex="0" role="button">Skill</th>
+                <th class="sortable" tabindex="0" role="button">Spot</th>
+                <th class="sortable" tabindex="0" role="button">Dist / Time</th>
+                <th class="sortable" tabindex="0" role="button">Water</th>
+                <th class="sortable" tabindex="0" role="button">Season</th>
+                <th class="sortable" tabindex="0" role="button">Skill</th>
 
-          </tr>
-      </thead>
-      <tbody id="spotsBody"></tbody>
-    </table>
+              </tr>
+          </thead>
+          <tbody id="spotsBody"></tbody>
+        </table>
+      </div>
+      <div id="map" style="min-width:100%;height:600px;margin-top:16px;border-radius:var(--radius);border:1px solid var(--table-border)"></div>
+    </div>
   </div>
-
-    <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
+  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
 
 <button id="toTop" aria-label="Back to top">↑</button>
@@ -389,7 +394,8 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips, gemChip,  // new chip sets
-    zip, useGeo, filterBox, headerEl, toTop, sortArrow;
+    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
+    viewToggle, viewSlider, mapEl, map;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -507,9 +513,22 @@ function attachRowHandlers(){
   });
 }
 
+function initMap(){
+  if(map) return;
+  map = L.map('map').setView([37.7749,-122.4194],10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors'
+  }).addTo(map);
+  SPOTS.forEach(s=>{
+    L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
+  });
+}
+
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
+  const useFilters = !qv;
   const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
@@ -519,17 +538,19 @@ function applyFilters(){
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
     let ok = true;
-    if(!allowedWater.has(s.water)) ok=false;
-    const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
-    if(!allowedSeason.has(seasonVal)) ok=false;
-    if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
-    if(gemOnly && !s.gem) ok=false;
-    if(ORIGIN){
-      const eta = +tr.getAttribute('data-eta');
-      if(eta > tmax) ok=false;
+    if(useFilters){
+      if(!allowedWater.has(s.water)) ok=false;
+      const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
+      if(!allowedSeason.has(seasonVal)) ok=false;
+      if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
+      if(gemOnly && !s.gem) ok=false;
+      if(ORIGIN){
+        const eta = +tr.getAttribute('data-eta');
+        if(eta > tmax) ok=false;
+      }
     }
     if(qv){
-      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
+      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
@@ -579,9 +600,13 @@ function setOrigin(lat,lng,label){
     gemChip = document.getElementById('gemFilter');
     zip = document.getElementById('zip');
     useGeo = document.getElementById('useGeo');
-    filterBox = document.getElementById('filterBox');
+    filterToggle = document.getElementById('filterToggle');
+    filtersEl = document.getElementById('filters');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
+    viewToggle = document.getElementById('viewToggle');
+    viewSlider = document.getElementById('viewSlider');
+    mapEl = document.getElementById('map');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
@@ -594,6 +619,20 @@ function setOrigin(lat,lng,label){
 
     sortArrow = document.getElementById('sortArrow');
 
+    let showingMap = false;
+    viewToggle.addEventListener('click', () => {
+      showingMap = !showingMap;
+      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
+      viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+    });
+
+    filterToggle.addEventListener('click', () => {
+      const open = filtersEl.style.display === 'none';
+      filtersEl.style.display = open ? '' : 'none';
+      updateHeaderOffset();
+    });
+
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
 
@@ -601,7 +640,6 @@ function setOrigin(lat,lng,label){
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
-    filterBox.addEventListener('toggle', updateHeaderOffset);
     window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
