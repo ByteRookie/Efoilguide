@@ -1,0 +1,29 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.location {
+  margin-bottom: 24px;
+}
+
+.location h2 {
+  margin-bottom: 8px;
+}
+
+.source {
+  font-size: 0.8em;
+  vertical-align: super;
+}
+
+.source a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.source a:hover {
+  text-decoration: underline;
+}
