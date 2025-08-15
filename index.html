@@ -46,10 +46,18 @@
   .controls{display:flex;flex-direction:column;gap:12px}
   .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
   .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border)}
-  .chip-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px}
-  .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px}
-  .chip input{accent-color:var(--accent)}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border);cursor:pointer;user-select:none}
+  .chip.active{background:var(--accent);color:#fff}
+  .chip-group{display:flex;align-items:center;gap:6px}
+  .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
+  .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
+  .legend-row::-webkit-scrollbar{height:6px}
+  .legend-row::-webkit-scrollbar-thumb{background:var(--control-border);border-radius:3px}
+  .chip.b-yr{border-left:4px solid var(--yr)}
+  .chip.b-sprfall{border-left:4px solid var(--sprfall)}
+  .chip.b-sum{border-left:4px solid var(--summer)}
+  .chip.b-win{border-left:4px solid var(--winter)}
+  .split{width:1px;height:24px;background:var(--control-border)}
   .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
@@ -122,33 +130,38 @@
       <div class="control">
         <label>Set Origin by ZIP (or Use My Location)</label>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP (e.g., 94103)" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:80px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
           <button id="setZip" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
           <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
+          <span class="split"></span>
+          <input id="dist" type="range" min="5" max="100" step="5" value="100" style="flex:1">
+          <span class="hint" id="distVal">≤ 100 mi</span>
         </div>
         <div class="hint" id="zipHint">Works offline with common Bay Area ZIPs. If a ZIP isn’t recognized, “Use My Location” is best.</div>
       </div>
       <div class="control">
-        <div class="chip-group">
-          <span class="chip-group-label">Water:</span>
-          <label class="chip"><input type="checkbox" class="f-water" value="salt" checked> 🟦 Salt</label>
-          <label class="chip"><input type="checkbox" class="f-water" value="fresh" checked> 🟩 Fresh</label>
-          <label class="chip"><input type="checkbox" class="f-water" value="brackish" checked> 🟪 Brackish</label>
-        </div>
-        <div class="chip-group">
-          <span class="chip-group-label">Season:</span>
-          <label class="chip"><input type="checkbox" class="f-season" value="year" checked> <span class="badge b-yr">Year‑round</span></label>
-          <label class="chip"><input type="checkbox" class="f-season" value="spring-fall" checked> <span class="badge b-sprfall">Spring–Fall</span></label>
-          <label class="chip"><input type="checkbox" class="f-season" value="summer" checked> <span class="badge b-sum">Summer</span></label>
-        </div>
-        <div class="chip-group">
-          <span class="chip-group-label">Skill:</span>
-          <label class="chip"><input type="checkbox" class="f-skill" value="B" checked> Beginner [B]</label>
-          <label class="chip"><input type="checkbox" class="f-skill" value="I" checked> Intermediate [I]</label>
-          <label class="chip"><input type="checkbox" class="f-skill" value="A" checked> Advanced [A]</label>
-        </div>
-        <div class="chip-group">
-          <label class="chip" title="Shows Hidden Gem"><input type="checkbox" id="gemFilter"> 🌟</label>
+        <div class="legend-row">
+          <div class="chip-group">
+            <span class="chip-group-label">Water:</span>
+            <span class="chip f-water active" data-value="salt">🟦 Salt</span>
+            <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
+            <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Season:</span>
+            <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+            <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+            <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Skill:</span>
+            <span class="chip f-skill active" data-value="B">Beginner [B]</span>
+            <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
+            <span class="chip f-skill active" data-value="A">Advanced [A]</span>
+          </div>
+          <div class="chip-group">
+            <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
+          </div>
         </div>
       </div>
     </div>
@@ -374,7 +387,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, q, waterChecks, seasonChecks, skillChecks, gemCheck, zip, setZip, useGeo, filterBox, headerEl, toTop;
+let originInfo, spotsBody, q, dist, distVal, waterChips, seasonChips, skillChips, gemChip, zip, setZip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -486,10 +499,11 @@ function attachRowHandlers(){
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
-  const allowedWater = new Set([...document.querySelectorAll('.f-water')].filter(c=>c.checked).map(c=>c.value));
-  const allowedSeason = new Set([...document.querySelectorAll('.f-season')].filter(c=>c.checked).map(c=>c.value));
-  const allowedSkill = new Set([...document.querySelectorAll('.f-skill')].filter(c=>c.checked).map(c=>c.value));
-  const gemOnly = gemCheck.checked;
+  const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
+  const gemOnly = gemChip.classList.contains('active');
+  const dmax = +dist.value;
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
@@ -499,6 +513,10 @@ function applyFilters(){
     if(!allowedSeason.has(seasonVal)) ok=false;
     if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
     if(gemOnly && !s.gem) ok=false;
+    if(ORIGIN){
+      const mi = +tr.getAttribute('data-mi');
+      if(mi > dmax) ok=false;
+    }
     if(qv){
       const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
       if(!hay.includes(qv)) ok=false;
@@ -509,21 +527,22 @@ function applyFilters(){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
     }
   });
+  distVal.textContent = `≤ ${dist.value} mi`;
 }
 
-function setupDrag(inputs){
+function setupDrag(chips){
   let dragging=false, dragVal=false;
-  inputs.forEach(input=>{
-    input.addEventListener('mousedown',e=>{
+  chips.forEach(chip=>{
+    chip.addEventListener('mousedown',e=>{
       dragging=true;
-      dragVal=!input.checked;
-      input.checked=dragVal;
+      dragVal=!chip.classList.contains('active');
+      chip.classList.toggle('active', dragVal);
       applyFilters();
       e.preventDefault();
     });
-    input.addEventListener('mouseenter',e=>{
+    chip.addEventListener('mouseenter',e=>{
       if(dragging){
-        input.checked=dragVal;
+        chip.classList.toggle('active', dragVal);
         applyFilters();
       }
     });
@@ -541,10 +560,12 @@ function setOrigin(lat,lng,label){
     originInfo = document.getElementById('originInfo');
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
-    waterChecks = [...document.querySelectorAll('.f-water')];
-    seasonChecks = [...document.querySelectorAll('.f-season')];
-    skillChecks = [...document.querySelectorAll('.f-skill')];
-    gemCheck = document.getElementById('gemFilter');
+    dist = document.getElementById('dist');
+    distVal = document.getElementById('distVal');
+    waterChips = [...document.querySelectorAll('.f-water')];
+    seasonChips = [...document.querySelectorAll('.f-season')];
+    skillChips = [...document.querySelectorAll('.f-skill')];
+    gemChip = document.getElementById('gemFilter');
     zip = document.getElementById('zip');
     setZip = document.getElementById('setZip');
     useGeo = document.getElementById('useGeo');
@@ -559,13 +580,13 @@ function setOrigin(lat,lng,label){
     window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
-    [q, gemCheck, ...waterChecks, ...seasonChecks, ...skillChecks].forEach(el => {
+    [q, dist].forEach(el => {
       el.addEventListener('input', () => {
         applyFilters();
       });
     });
 
-    setupDrag([gemCheck, ...waterChecks, ...seasonChecks, ...skillChecks]);
+    setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
 
   setZip.addEventListener('click', () => {
     const z = (zip.value || '').trim();
