@@ -294,7 +294,7 @@ function setOrigin(lat,lng,label){
     let showingMap = false;
     viewToggle.addEventListener('click', () => {
       showingMap = !showingMap;
-      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
+      viewSlider.style.transform = showingMap ? 'translateX(-50%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
     });
