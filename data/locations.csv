@@ -1,2 +1,2 @@
-id,name,detail,source,source_url
-crissy-field,Crissy Field,5 mph speed limit within 200 ft of shore,CA Division of Boating and Waterways,https://www.boat-ed.com/california/study-guide/boating-speed-regulations/
+id,name,image,location,location_source,location_url,address,address_source,address_url,pros,pros_source,pros_url,cons,cons_source,cons_url,rules,rules_source,rules_url
+crissy-field,Crissy Field,https://upload.wikimedia.org/wikipedia/commons/0/02/Golden_Gate_Bridge,_SF_(cropped).jpg,San Francisco CA,NPS,https://www.nps.gov/prsf/planyourvisit/crissy-field.htm,1199 E Beach San Francisco CA 94129,Google Maps,https://maps.google.com/?q=Crissy+Field,Scenic views;Frequent wind,Local riders,https://community.example.com,Cold water;Crowded weekends,Local riders,https://community.example.com,5 mph speed limit within 200 ft of shore,CA Division of Boating and Waterways,https://www.boat-ed.com/california/study-guide/boating-speed-regulations/
