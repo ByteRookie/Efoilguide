@@ -192,7 +192,8 @@ function initMap(){
   map = L.map('map').setView([37.7749,-122.4194],10);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
-    attribution:'&copy; OpenStreetMap contributors'
+    attribution:'&copy; OpenStreetMap contributors',
+    crossOrigin:true
   }).addTo(map);
   SPOTS.forEach(s=>{
     L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);

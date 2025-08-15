@@ -77,6 +77,12 @@
 
 <script src="js/main.js" defer></script>
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
 <section class="wrap" style="margin-bottom:40px">
   <h2>Regulatory quick‑reference</h2>
   <ul class="muted">
