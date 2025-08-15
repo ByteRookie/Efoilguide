@@ -7,6 +7,7 @@
 <style>
   :root{
     color-scheme: light dark;
+    --radius:12px; --hover:rgba(0,0,0,.04);
     --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0366d6;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
@@ -28,31 +29,34 @@
       --toggle-off:#263044;
       --header-grad1:rgba(14,17,22,.9); --header-grad2:rgba(14,17,22,.6);
       --ok:#2fd277; --warn:#ffad42; --no:#ff6b6b;
+      --hover:rgba(255,255,255,.06);
     }
   }
-  html,body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif;margin:0}
+  html,body{background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Inter,Roboto,Arial,sans-serif;font-size:clamp(16px,1.5vw,18px);line-height:1.6;margin:0}
   a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
   header{position:sticky;top:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
-  .wrap{max-width:1200px;margin:auto;padding:18px}
-  h1{margin:8px 0 4px;font-weight:800;font-size:clamp(22px,3.2vw,32px)}
+  .wrap{max-width:1200px;margin:auto;padding:clamp(16px,4vw,32px)}
+  h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
   .sub{color:var(--muted);font-size:14px}
   details{margin:14px 0 12px}
-  details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none}
+  details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
   details[open] summary{margin-bottom:8px}
-  .controls{display:grid;gap:10px;grid-template-columns:repeat(12,1fr);align-items:end}
-  .control{grid-column:span 3;background:var(--card);border-radius:10px;padding:10px;border:1px solid var(--control-border)}
-  .control label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:12px;margin:2px 6px 2px 0;border:1px solid var(--chip-border)}
+  .controls{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:end}
+  .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .control.wide{grid-column:1/-1}
+  .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border)}
   .chip input{accent-color:var(--accent)}
   .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .table-wrap{overflow:auto;border-radius:12px;border:1px solid var(--table-border)}
+  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border)}
   table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card)}
   thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
-  th,td{padding:10px 12px;border-bottom:1px solid var(--table-border);vertical-align:top}
-  tbody tr{transition:opacity .25s, transform .25s} tbody tr.hide{opacity:.0;transform:translateX(-8px);pointer-events:none}
+  th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px}
+  tbody tr{transition:background .2s, opacity .25s, transform .25s} tbody tr.hide{opacity:.0;transform:translateX(-8px);pointer-events:none}
+  tbody tr:hover{background:var(--hover)}
   .spot{font-weight:700}
   .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
   .b-salt{border-left:4px solid var(--salt)}
@@ -71,18 +75,18 @@
   .cols-advanced{display:table-cell} .simple .cols-advanced{display:none}
   .foot{color:var(--muted);font-size:12px;margin-top:8px}
   section{scroll-margin-top:var(--header-h)}
-  .card{background:var(--card);border:1px solid var(--control-border);border-radius:12px;padding:16px;margin:16px 0}
+  .card{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:16px;margin:16px 0}
   .law{font-size:13px;color:#cfe0ff}
   .amen{color:#cfe0ff}
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   .muted{color:var(--muted)}
   .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:#cfe0ff;padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
   .hint{font-size:12px;color:#9fb3d9}
-  @media (max-width:980px){
-    .controls{grid-template-columns:repeat(6,1fr)}
-    .control{grid-column:span 6}
-    thead{display:none} tr{display:block} td{display:flex;justify-content:space-between;border-bottom:1px dashed #223}
-    td:before{content:attr(data-label);color:var(--muted);padding-right:10px}
+  @media (max-width:800px){
+    thead{display:none}
+    tr{display:block;margin-bottom:12px}
+    td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
+    td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
   }
 </style>
 </head>
@@ -99,9 +103,9 @@
       <summary>Filters</summary>
       <div class="controls">
       <!-- Origin controls -->
-      <div class="control" style="grid-column:span 6">
+      <div class="control wide">
         <label>Set Origin by ZIP (or Use My Location)</label>
-        <div style="display:flex; gap:8px; align-items:center">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
           <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP (e.g., 94103)" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
           <button id="setZip" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
           <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
@@ -109,11 +113,11 @@
         <div class="hint" id="zipHint">Works offline with common Bay Area ZIPs. If a ZIP isn’t recognized, “Use My Location” is best.</div>
       </div>
 
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Search spots</label>
         <input id="q" placeholder="name, city, notes…" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Water type</label>
         <div>
           <label class="chip"><input type="checkbox" class="f-water" value="salt" checked> 🟦 Salt</label>
@@ -121,7 +125,7 @@
           <label class="chip"><input type="checkbox" class="f-water" value="brackish" checked> 🟪 Brackish</label>
         </div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Skill level</label>
         <div>
           <label class="chip"><input type="checkbox" class="f-skill" value="B" checked> B</label>
@@ -129,16 +133,16 @@
           <label class="chip"><input type="checkbox" class="f-skill" value="A" checked> A</label>
         </div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Max drive time (one way)</label>
         <input id="mins" type="range" min="15" max="180" step="5" value="180" style="width:100%">
         <div class="hint"><span id="minsVal">≤ 180</span> minutes</div>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Highlight</label>
         <label class="chip"><input type="checkbox" id="gems" checked> 🌟 Hidden gems</label>
       </div>
-      <div class="control" style="grid-column:span 3">
+      <div class="control">
         <label>Mode</label>
         <div style="display:flex;align-items:center;gap:10px">
           <span class="muted">Simple</span>
@@ -147,7 +151,7 @@
         </div>
         <div class="hint">Simple hides in‑depth columns.</div>
       </div>
-      <div class="control" style="grid-column:span 6">
+      <div class="control wide">
         <label>Legend</label>
         <span class="pill">🟦 Salt</span><span class="pill">🟩 Fresh</span><span class="pill">🟪 Brackish</span>
         <span class="pill">Seasons: <span class="badge b-yr">Year‑round</span> <span class="badge b-sprfall">Spring–Fall</span> <span class="badge b-sum">Summer</span></span>
