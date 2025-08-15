@@ -64,6 +64,15 @@
     <div id="viewSlider" style="display:flex;transition:transform .3s">
       <div class="table-wrap" id="tableView" style="min-width:100%">
         <table id="tbl">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="name" tabindex="0">Spot</th>
+              <th class="sortable" data-sort="dist" tabindex="0">Dist / Time <span id="sortArrow">▲</span></th>
+              <th class="sortable" data-sort="water" tabindex="0">Water</th>
+              <th class="sortable" data-sort="season" tabindex="0">Season</th>
+              <th class="sortable" data-sort="skill" tabindex="0">Skill</th>
+            </tr>
+          </thead>
           <tbody id="spotsBody"></tbody>
         </table>
       </div>

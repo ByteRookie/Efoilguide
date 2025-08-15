@@ -67,7 +67,8 @@ function detail(label,value,spanClass='',pClass=''){
 }
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let sortCol = 'name';
+let sortCol = 'dist';
+let sortAsc = true;
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
@@ -146,20 +147,37 @@ ${detail('Address', s.addr)}
 }
 
 function render(){
-  // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN){
-      sortCol = 'name';
-      return a.name.localeCompare(b.name);
+    if(sortCol==='dist'){
+      if(!ORIGIN) return a.name.localeCompare(b.name);
+      const da = haversine(ORIGIN,[a.lat,a.lng]);
+      const db = haversine(ORIGIN,[b.lat,b.lng]);
+      return sortAsc ? da-db : db-da;
     }
-    sortCol = 'dist';
-    const da = haversine(ORIGIN,[a.lat,a.lng]);
-    const db = haversine(ORIGIN,[b.lat,b.lng]);
-    return da-db;
+    if(sortCol==='name'){
+      return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+    }
+    if(sortCol==='water'){
+      return sortAsc ? a.water.localeCompare(b.water) : b.water.localeCompare(a.water);
+    }
+    if(sortCol==='season'){
+      return sortAsc ? a.season.localeCompare(b.season) : b.season.localeCompare(a.season);
+    }
+    if(sortCol==='skill'){
+      const av = a.skill.join('');
+      const bv = b.skill.join('');
+      return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
+    return 0;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
-  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
+  if(sortArrow){
+    sortArrow.textContent = sortAsc ? '▲' : '▼';
+    const th = document.querySelector(`th[data-sort='${sortCol}']`);
+    if(th) th.appendChild(sortArrow);
+    sortArrow.style.display = sortCol==='dist' && !ORIGIN ? 'none' : '';
+  }
   applyFilters(); // in case filters active
 }
 
@@ -280,6 +298,16 @@ function setOrigin(lat,lng,label){
     mapEl = document.getElementById('map');
 
     document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.sort;
+        if(sortCol === col){
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = col;
+          sortAsc = true;
+        }
+        render();
+      });
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

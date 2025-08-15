@@ -70,6 +70,8 @@
     tbody tr.parent{cursor:pointer}
     tbody tr.detail-row{background:var(--card)}
     tbody tr:hover{background:var(--hover)}
+    th.sortable{cursor:pointer;user-select:none}
+    #sortArrow{margin-left:4px;font-size:0.75em}
   .spot{font-weight:700}
   .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
   .b-salt{border-left:4px solid var(--salt)}
