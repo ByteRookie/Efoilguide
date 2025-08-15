@@ -64,11 +64,14 @@
   .toggle:checked:before{transform:translateX(18px)}
   .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
+    caption.table-title{caption-side:top;text-align:left;padding:12px 14px;font-weight:700;font-size:16px}
     thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
     tbody tr{transition:background .2s}
     tbody tr.hide{display:none}
     tbody tr.parent{cursor:pointer}
+    tbody tr.parent .expander{margin-right:6px;transition:transform .2s;display:inline-block}
+    tbody tr.parent.open .expander{transform:rotate(90deg)}
     tbody tr.detail-row{background:var(--card)}
     tbody tr:hover{background:var(--hover)}
   .spot{font-weight:700}
@@ -167,6 +170,7 @@ thead th.sortable.sorted-desc .sort-icon{transform:rotate(180deg)}
 <main class="wrap" id="main">
   <div class="table-wrap">
     <table id="tbl">
+      <caption class="table-title">Spots</caption>
       <thead>
           <tr>
             <th class="sortable" data-col="name" tabindex="0" role="button">Spot<span class="sort-icon">▲</span></th>
@@ -431,7 +435,7 @@ function rowHTML(s){
   const distTxt = s.distMi!=null ? `${Math.round(s.distMi)} mi / ~${s.eta} min` : '—';
   const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
   return `<tr class="parent" data-id="${s.id}" data-mi="${s.distMi!=null?s.distMi:9999}" data-eta="${s.eta!=null?s.eta:9999}">
-    <td class="spot" data-label="Spot">${s.name}${gem}</td>
+    <td class="spot" data-label="Spot"><span class="expander">▶</span>${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
     <td data-label="Water">${badgeWater(s.water)}</td>
     <td data-label="Season">${badgeSeason(s.season)}</td>
