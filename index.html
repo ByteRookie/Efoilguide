@@ -65,7 +65,7 @@
   .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
     thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
-    th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
     tbody tr{transition:background .2s}
     tbody tr.hide{display:none}
     tbody tr.parent{cursor:pointer}
@@ -171,11 +171,13 @@
     <table id="tbl">
       <thead>
           <tr>
-            <th>Spot</th>
-            <th>Dist / Time</th>
-            <th>Water</th>
-            <th>Season</th>
-            <th>Skill</th>
+
+            <th class="sortable" tabindex="0" role="button">Spot</th>
+            <th class="sortable" tabindex="0" role="button">Dist / Time</th>
+            <th class="sortable" tabindex="0" role="button">Water</th>
+            <th class="sortable" tabindex="0" role="button">Season</th>
+            <th class="sortable" tabindex="0" role="button">Skill</th>
+
           </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
@@ -384,7 +386,10 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, q, mins, minsVal, waterChips, seasonChips, skillChips, gemChip, zip, useGeo, filterBox, headerEl, toTop;
+let sortCol = 'name';
+let originInfo, spotsBody, q, mins, minsVal,
+    waterChips, seasonChips, skillChips, gemChip,  // new chip sets
+    zip, useGeo, filterBox, headerEl, toTop, sortArrow;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -441,7 +446,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img src="https://maps.googleapis.com/maps/api/staticmap?center=${s.lat},${s.lng}&zoom=14&size=400x200&maptype=terrain&markers=color:red%7C${s.lat},${s.lng}" alt="${s.name} map">
+        <img src="https://staticmap.openstreetmap.org/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map">
         <div class="info">
           <p><strong>Address:</strong> ${s.addr}</p>
           <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
@@ -463,13 +468,18 @@ function rowHTML(s){
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN) return a.name.localeCompare(b.name);
+    if(!ORIGIN){
+      sortCol = 'name';
+      return a.name.localeCompare(b.name);
+    }
+    sortCol = 'dist';
     const da = haversine(ORIGIN,[a.lat,a.lng]);
     const db = haversine(ORIGIN,[b.lat,b.lng]);
     return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
+  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
 }
 
@@ -569,6 +579,21 @@ function setOrigin(lat,lng,label){
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
 
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          th.click();
+        }
+      });
+    });
+
+    sortArrow = document.getElementById('sortArrow');
+
+    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
+
+
+
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
@@ -582,16 +607,45 @@ function setOrigin(lat,lng,label){
       });
     });
 
-    setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
+setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
 
-  zip.addEventListener('input', () => {
-    const z = (zip.value || '').trim();
-    if (z.length === 5) {
-      if (ZIP_CENTROIDS[z]) {
-        setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-      } else {
-        originInfo.textContent = `ZIP ${z} not in offline list — try the location icon.`;
-      }
+zip.addEventListener('input', async () => {
+  const z = (zip.value || '').trim();
+  if (z.length !== 5) return;
+
+  if (ZIP_CENTROIDS[z]) {
+    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+    return;
+  }
+  if (zipCache[z]) {
+    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
+    return;
+  }
+
+  originInfo.textContent = `Looking up ZIP ${z}…`;
+  try {
+    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
+    if (resp.status === 404) {
+      originInfo.textContent = `ZIP ${z} not found.`;
+      return;
+    }
+    if (!resp.ok) throw new Error('Network error');
+    const data = await resp.json();
+    const place = data && data.places && data.places[0];
+    if (place) {
+      const lat = parseFloat(place.latitude);
+      const lng = parseFloat(place.longitude);
+      zipCache[z] = [lat, lng];
+      localStorage.setItem('zipCache', JSON.stringify(zipCache));
+      setOrigin(lat, lng, `ZIP ${z}`);
+    } else {
+      originInfo.textContent = `ZIP ${z} not found.`;
+    }
+  } catch {
+    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+  }
+});
+
     }
   });
     useGeo.addEventListener('click', () => {
