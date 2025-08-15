@@ -440,7 +440,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img src="https://maps.googleapis.com/maps/api/staticmap?center=${s.lat},${s.lng}&zoom=14&size=400x200&maptype=terrain&markers=color:red%7C${s.lat},${s.lng}" alt="${s.name} map">
+        <img src="https://staticmap.openstreetmap.org/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map">
         <div class="info">
           <p><strong>Address:</strong> ${s.addr}</p>
           <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
