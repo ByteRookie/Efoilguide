@@ -156,7 +156,7 @@
           <th class="cols-advanced">Laws / Regs</th>
         </tr>
       </thead>
-      <tbody id="body"></tbody>
+      <tbody id="spotsBody"></tbody>
     </table>
   </div>
 
@@ -363,7 +363,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-const originInfo = document.getElementById('originInfo');
+let originInfo, spotsBody, details, q, mins, minsVal, mode, waterChecks, skillChecks, gems, zip, setZip, useGeo;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -388,20 +388,6 @@ function etaMinutes(mi){
   mins += mi>30?10:5;
   return Math.round(mins);
 }
-
-/* ---------- UI Elements ---------- */
-const body = document.getElementById('body');
-const details = document.getElementById('details');
-const q = document.getElementById('q');
-const mins = document.getElementById('mins');
-const minsVal = document.getElementById('minsVal');
-const mode = document.getElementById('mode');
-const waterChecks = [...document.querySelectorAll('.f-water')];
-const skillChecks = [...document.querySelectorAll('.f-skill')];
-const gems = document.getElementById('gems');
-const zip = document.getElementById('zip');
-const setZip = document.getElementById('setZip');
-const useGeo = document.getElementById('useGeo');
 
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
@@ -467,7 +453,7 @@ function render(){
     const db = haversine(ORIGIN,[b.lat,b.lng]);
     return da-db;
   });
-  body.innerHTML = rows.map(rowHTML).join('');
+  spotsBody.innerHTML = rows.map(rowHTML).join('');
   details.innerHTML = rows.map(detailHTML).join('');
   applyFilters(); // in case filters active
 }
@@ -504,30 +490,52 @@ function setOrigin(lat,lng,label){
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
 }
-setZip.addEventListener('click', ()=>{
-  const z = (zip.value||'').trim();
-  if(ZIP_CENTROIDS[z]){ setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`); }
-  else { originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`; }
-});
-useGeo.addEventListener('click', ()=>{
-  if(!navigator.geolocation){ originInfo.textContent='Geolocation not supported by this browser.'; return; }
-  navigator.geolocation.getCurrentPosition(
-    pos=>setOrigin(pos.coords.latitude,pos.coords.longitude,'your current location'),
-    err=>{ originInfo.textContent='Location permission denied or unavailable.'; }
-  );
-});
+document.addEventListener('DOMContentLoaded', () => {
+  originInfo = document.getElementById('originInfo');
+  spotsBody = document.getElementById('spotsBody');
+  details = document.getElementById('details');
+  q = document.getElementById('q');
+  mins = document.getElementById('mins');
+  minsVal = document.getElementById('minsVal');
+  mode = document.getElementById('mode');
+  waterChecks = [...document.querySelectorAll('.f-water')];
+  skillChecks = [...document.querySelectorAll('.f-skill')];
+  gems = document.getElementById('gems');
+  zip = document.getElementById('zip');
+  setZip = document.getElementById('setZip');
+  useGeo = document.getElementById('useGeo');
 
-/* ---------- Listeners ---------- */
-[q,mins,mode,gems,...waterChecks,...skillChecks].forEach(el=>{
-  el.addEventListener('input', e=>{
-    if(el===mode){ document.body.classList.toggle('simple', !mode.checked); }
-    applyFilters();
+  [q, mins, mode, gems, ...waterChecks, ...skillChecks].forEach(el => {
+    el.addEventListener('input', () => {
+      if (el === mode) {
+        document.body.classList.toggle('simple', !mode.checked);
+      }
+      applyFilters();
+    });
   });
-});
 
-/* ---------- Init ---------- */
-document.body.classList.add('simple'); // default to simple mode
-render();
+  setZip.addEventListener('click', () => {
+    const z = (zip.value || '').trim();
+    if (ZIP_CENTROIDS[z]) {
+      setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+    } else {
+      originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
+    }
+  });
+  useGeo.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      originInfo.textContent = 'Geolocation not supported by this browser.';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
+      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
+    );
+  });
+
+  document.body.classList.add('simple');
+  render();
+});
 </script>
 
 <section class="wrap" style="margin-bottom:40px">
