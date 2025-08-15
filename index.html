@@ -8,7 +8,7 @@
   :root{
     color-scheme: light dark;
     --radius:12px; --hover:rgba(0,0,0,.04);
-    --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0366d6;
+    --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
     --easy:#70e000; --med:#ffd166; --hard:#ff6b6b;
@@ -36,9 +36,10 @@
   a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
   header{position:sticky;top:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
   .wrap{max-width:1200px;margin:auto;padding:clamp(16px,4vw,32px)}
+  main.wrap{padding-top:0}
   h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
   .sub{color:var(--muted);font-size:14px}
-  details{margin:14px 0 12px}
+  details{margin:8px 0}
   details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
   details[open] summary{margin-bottom:8px}
   .controls{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));align-items:end}
@@ -51,10 +52,10 @@
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border)}
-  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card)}
+  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(-1 * var(--header-h));padding-top:var(--header-h)}
+  table{width:100%;min-width:1200px;border-collapse:separate;border-spacing:0;background:var(--card)}
   thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
-  th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px}
+  th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
   tbody tr{transition:background .2s, opacity .25s, transform .25s} tbody tr.hide{opacity:.0;transform:translateX(-8px);pointer-events:none}
   tbody tr:hover{background:var(--hover)}
   .spot{font-weight:700}
@@ -69,19 +70,21 @@
   .lvl{display:inline-flex;gap:4px}
   .lvl .dot{width:8px;height:8px;border-radius:50%}
   .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
-  .gem{display:inline-flex;align-items:center;gap:6px;margin-left:6px;color:#111;background:var(--gem);border-radius:6px;padding:1px 6px;font-weight:700}
-  .pop{white-space:nowrap}
+  .gem{display:inline-block;margin-left:4px;color:var(--accent);font-size:14px}
+  .pop{white-space:normal}
   .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
   .cols-advanced{display:table-cell} .simple .cols-advanced{display:none}
   .foot{color:var(--muted);font-size:12px;margin-top:8px}
   section{scroll-margin-top:var(--header-h)}
   .card{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:16px;margin:16px 0}
-  .law{font-size:13px;color:#cfe0ff}
-  .amen{color:#cfe0ff}
+  .law{font-size:13px;color:var(--accent)}
+  .amen{color:var(--accent)}
   .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
   .muted{color:var(--muted)}
-  .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:#cfe0ff;padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
-  .hint{font-size:12px;color:#9fb3d9}
+  .pill{display:inline-block;background:var(--control-border);border:1px solid var(--badge-border);color:var(--text);padding:2px 8px;border-radius:999px;margin-right:6px;font-size:12px}
+  .hint{font-size:12px;color:var(--muted)}
+  #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
+  #toTop.show{display:block}
   @media (max-width:800px){
     thead{display:none}
     tr{display:block;margin-bottom:12px}
@@ -193,6 +196,8 @@
   <h2 style="margin-top:30px">Detailed Spot Guide</h2>
   <div id="details"></div>
 </main>
+
+<button id="toTop" aria-label="Back to top">↑</button>
 
 <script>
 /* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
@@ -391,7 +396,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, details, q, mins, minsVal, mode, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl;
+let originInfo, spotsBody, details, q, mins, minsVal, mode, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -521,28 +526,29 @@ function setOrigin(lat,lng,label){
 document.addEventListener('DOMContentLoaded', () => {
   originInfo = document.getElementById('originInfo');
   spotsBody = document.getElementById('spotsBody');
-  details = document.getElementById('details');
-  q = document.getElementById('q');
-  mins = document.getElementById('mins');
-  minsVal = document.getElementById('minsVal');
-  mode = document.getElementById('mode');
-  waterChecks = [...document.querySelectorAll('.f-water')];
-  skillChecks = [...document.querySelectorAll('.f-skill')];
-  gems = document.getElementById('gems');
-  zip = document.getElementById('zip');
-  setZip = document.getElementById('setZip');
-  useGeo = document.getElementById('useGeo');
-  filterBox = document.getElementById('filterBox');
-  headerEl = document.querySelector('header');
+    details = document.getElementById('details');
+    q = document.getElementById('q');
+    mins = document.getElementById('mins');
+    minsVal = document.getElementById('minsVal');
+    mode = document.getElementById('mode');
+    waterChecks = [...document.querySelectorAll('.f-water')];
+    skillChecks = [...document.querySelectorAll('.f-skill')];
+    gems = document.getElementById('gems');
+    zip = document.getElementById('zip');
+    setZip = document.getElementById('setZip');
+    useGeo = document.getElementById('useGeo');
+    filterBox = document.getElementById('filterBox');
+    headerEl = document.querySelector('header');
+    toTop = document.getElementById('toTop');
 
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
   filterBox.addEventListener('toggle', updateHeaderOffset);
   window.addEventListener('resize', updateHeaderOffset);
-  updateHeaderOffset();
+    updateHeaderOffset();
 
-  [q, mins, mode, gems, ...waterChecks, ...skillChecks].forEach(el => {
+    [q, mins, mode, gems, ...waterChecks, ...skillChecks].forEach(el => {
     el.addEventListener('input', () => {
       if (el === mode) {
         document.body.classList.toggle('simple', !mode.checked);
@@ -559,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
       originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
     }
   });
-  useGeo.addEventListener('click', () => {
+    useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
       originInfo.textContent = 'Geolocation not supported by this browser.';
       return;
@@ -570,9 +576,14 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  document.body.classList.add('simple');
-  render();
-});
+    document.body.classList.add('simple');
+    render();
+
+    window.addEventListener('scroll', () => {
+      toTop.classList.toggle('show', window.scrollY > 200);
+    });
+    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  });
 </script>
 
 <section class="wrap" style="margin-bottom:40px">
