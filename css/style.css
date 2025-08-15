@@ -76,6 +76,12 @@
   .b-lvle{border-left:4px solid var(--easy)}
   .b-lvlm{border-left:4px solid var(--med)}
   .b-lvlh{border-left:4px solid var(--hard)}
+  .chip.f-water.active.b-salt{background:var(--salt);border-color:var(--salt);color:#000}
+  .chip.f-water.active.b-fresh{background:var(--fresh);border-color:var(--fresh);color:#000}
+  .chip.f-water.active.b-brack{background:var(--brack);border-color:var(--brack);color:#000}
+  .chip.f-skill.active.b-lvle{background:var(--easy);border-color:var(--easy);color:#000}
+  .chip.f-skill.active.b-lvlm{background:var(--med);border-color:var(--med);color:#000}
+  .chip.f-skill.active.b-lvlh{background:var(--hard);border-color:var(--hard);color:#000}
   .lvl{display:inline-flex;gap:4px}
   .lvl .dot{width:8px;height:8px;border-radius:50%}
   .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
