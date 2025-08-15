@@ -51,16 +51,19 @@ async function loadSpots(){
 }
 
 function parseCitations(str=''){
-  const cites = [];
-  const text = str.replace(/\{\{Citation:\s*"(.*?)"\s*SourceName:\s*"(.*?)"\s*SourceURL:\s*"(.*?)"\}\}/g,(m,t,n,u)=>{cites.push({name:n,url:u});return t;});
-  const citeHTML = cites.length ? `<span class="cite-group">${cites.map(c=>`<a href="${c.url}" target="_blank">${c.name}</a>`).join('')}</span>` : '';
-  return {text, citeHTML};
+  return str.replace(/\{\{Citation:\s*"(.*?)"\s*SourceName:\s*"([^]*?)"\s*SourceURL:\s*"([^]*?)"\s*\}\}/g,
+    (_, txt, names, urls)=>{
+      const nArr = names.split(/"\s*,\s*"/).map(s=>s.trim());
+      const uArr = urls.split(/"\s*,\s*"/).map(s=>s.trim());
+      const links = nArr.map((n,i)=>`<a href="${uArr[i]||'#'}" target="_blank">${n}</a>`).join('');
+      return `${txt}<span class="cite-group">${links}</span>`;
+    });
 }
 
 function detail(label,value,spanClass='',pClass=''){
-  const {text,citeHTML} = parseCitations(value||'');
+  const text = parseCitations(value||'');
   const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
-  return `<p class="${pClass}"><strong>${label}:</strong> ${span}${citeHTML}</p>`;
+  return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
