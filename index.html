@@ -47,7 +47,7 @@
   .control{background:var(--card);border-radius:var(--radius);padding:12px;border:1px solid var(--control-border);box-shadow:0 1px 2px rgba(0,0,0,.05)}
   .control label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:999px;background:var(--chip);font-size:13px;margin:2px 6px 2px 0;border:1px solid var(--chip-border);cursor:pointer;user-select:none}
-  .chip.active{background:var(--accent);color:#fff}
+  .chip.active{background:var(--btn-alt-bg);border-color:var(--accent);color:var(--text)}
   .chip-group{display:flex;align-items:center;gap:6px}
   .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
   .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
@@ -120,52 +120,49 @@
       <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
     </div>
 
-    <details id="filterBox">
-      <summary>Filters</summary>
-      <div class="controls">
-      <div class="control">
-        <label>Search spots</label>
-        <input id="q" placeholder="name, city, notes…" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-      </div>
-      <div class="control">
-        <label>Set Origin by ZIP (or Use My Location)</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:80px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-          <button id="setZip" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use ZIP</button>
-          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px 10px;cursor:pointer">Use My Location</button>
-          <span class="split"></span>
-          <input id="dist" type="range" min="5" max="100" step="5" value="100" style="flex:1">
-          <span class="hint" id="distVal">≤ 100 mi</span>
-        </div>
-        <div class="hint" id="zipHint">Works offline with common Bay Area ZIPs. If a ZIP isn’t recognized, “Use My Location” is best.</div>
-      </div>
-      <div class="control">
-        <div class="legend-row">
-          <div class="chip-group">
-            <span class="chip-group-label">Water:</span>
-            <span class="chip f-water active" data-value="salt">🟦 Salt</span>
-            <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
-            <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="q" placeholder="Search spots" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+      <details id="filterBox">
+        <summary>Filters</summary>
+        <div class="controls">
+          <div class="control">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+              <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+              <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
+              <span class="split"></span>
+              <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+              <span class="hint" id="minsVal">≤ 180 min</span>
+            </div>
+            <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
           </div>
-          <div class="chip-group">
-            <span class="chip-group-label">Season:</span>
-            <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
-            <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
-            <span class="chip f-season active b-sum" data-value="summer">Summer</span>
-          </div>
-          <div class="chip-group">
-            <span class="chip-group-label">Skill:</span>
-            <span class="chip f-skill active" data-value="B">Beginner [B]</span>
-            <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
-            <span class="chip f-skill active" data-value="A">Advanced [A]</span>
-          </div>
-          <div class="chip-group">
-            <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
+          <div class="control">
+            <div class="legend-row">
+              <div class="chip-group">
+                <span class="chip-group-label">Water:</span>
+                <span class="chip f-water active" data-value="salt">🟦 Salt</span>
+                <span class="chip f-water active" data-value="fresh">🟩 Fresh</span>
+                <span class="chip f-water active" data-value="brackish">🟪 Brackish</span>
+              </div>
+              <div class="chip-group">
+                <span class="chip-group-label">Season:</span>
+                <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+                <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+                <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+              </div>
+              <div class="chip-group">
+                <span class="chip-group-label">Skill:</span>
+                <span class="chip f-skill active" data-value="B">Beginner [B]</span>
+                <span class="chip f-skill active" data-value="I">Intermediate [I]</span>
+                <span class="chip f-skill active" data-value="A">Advanced [A]</span>
+              </div>
+              <div class="chip-group">
+                <span id="gemFilter" class="chip" title="Shows Hidden Gem">🌟</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </details>
     </div>
-    </details>
   </div>
 </header>
 
@@ -387,7 +384,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, q, dist, distVal, waterChips, seasonChips, skillChips, gemChip, zip, setZip, useGeo, filterBox, headerEl, toTop;
+let originInfo, spotsBody, q, mins, minsVal, waterChips, seasonChips, skillChips, gemChip, zip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -433,7 +430,7 @@ function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const gem = s.gem ? `<span class="gem">🌟 hidden gem</span>` : '';
+  const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
   return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
     <td class="spot" data-label="Spot">${s.name}${gem}</td>
     <td data-label="Dist / Time">${distTxt}</td>
@@ -503,7 +500,7 @@ function applyFilters(){
   const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const gemOnly = gemChip.classList.contains('active');
-  const dmax = +dist.value;
+  const tmax = +mins.value;
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
@@ -514,8 +511,8 @@ function applyFilters(){
     if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
     if(gemOnly && !s.gem) ok=false;
     if(ORIGIN){
-      const mi = +tr.getAttribute('data-mi');
-      if(mi > dmax) ok=false;
+      const eta = +tr.getAttribute('data-eta');
+      if(eta > tmax) ok=false;
     }
     if(qv){
       const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
@@ -527,7 +524,7 @@ function applyFilters(){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
     }
   });
-  distVal.textContent = `≤ ${dist.value} mi`;
+  minsVal.textContent = `≤ ${mins.value} min`;
 }
 
 function setupDrag(chips){
@@ -560,14 +557,13 @@ function setOrigin(lat,lng,label){
     originInfo = document.getElementById('originInfo');
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
-    dist = document.getElementById('dist');
-    distVal = document.getElementById('distVal');
+    mins = document.getElementById('mins');
+    minsVal = document.getElementById('minsVal');
     waterChips = [...document.querySelectorAll('.f-water')];
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
     gemChip = document.getElementById('gemFilter');
     zip = document.getElementById('zip');
-    setZip = document.getElementById('setZip');
     useGeo = document.getElementById('useGeo');
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
@@ -580,7 +576,7 @@ function setOrigin(lat,lng,label){
     window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
-    [q, dist].forEach(el => {
+    [q, mins].forEach(el => {
       el.addEventListener('input', () => {
         applyFilters();
       });
@@ -588,12 +584,14 @@ function setOrigin(lat,lng,label){
 
     setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
 
-  setZip.addEventListener('click', () => {
+  zip.addEventListener('input', () => {
     const z = (zip.value || '').trim();
-    if (ZIP_CENTROIDS[z]) {
-      setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-    } else {
-      originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
+    if (z.length === 5) {
+      if (ZIP_CENTROIDS[z]) {
+        setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+      } else {
+        originInfo.textContent = `ZIP ${z} not in offline list — try the location icon.`;
+      }
     }
   });
     useGeo.addEventListener('click', () => {
