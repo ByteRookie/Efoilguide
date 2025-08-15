@@ -171,7 +171,7 @@
       <thead>
           <tr>
             <th>Spot</th>
-            <th>Dist / Time</th>
+            <th>Dist / Time<span id="sortArrow" style="display:none;margin-left:4px">↑</span></th>
             <th>Water</th>
             <th>Season</th>
             <th>Skill</th>
@@ -383,7 +383,8 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
+let sortCol = 'name';
+let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop, sortArrow;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -462,13 +463,18 @@ function rowHTML(s){
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN) return a.name.localeCompare(b.name);
+    if(!ORIGIN){
+      sortCol = 'name';
+      return a.name.localeCompare(b.name);
+    }
+    sortCol = 'dist';
     const da = haversine(ORIGIN,[a.lat,a.lng]);
     const db = haversine(ORIGIN,[b.lat,b.lng]);
     return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
+  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
 }
 
@@ -543,7 +549,10 @@ function setOrigin(lat,lng,label){
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
+    sortArrow = document.getElementById('sortArrow');
+
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
+
 
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
