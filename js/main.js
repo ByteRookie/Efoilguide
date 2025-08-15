@@ -67,11 +67,13 @@ function detail(label,value,spanClass='',pClass=''){
 }
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
+let originLabel = '';
 let sortCol = 'name';
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewSlider, mapEl, map;
+    viewToggle, viewSlider, mapEl, map,
+    locationControls, locationMessage;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -110,6 +112,44 @@ function badgeSeason(s){
 function chipsSkill(arr){
   const dot={'B':'lvle','I':'lvlm','A':'lvlh'};
   return `<span class="lvl">${arr.map(k=>`<span class="dot ${dot[k]}"></span>`).join('')}</span>`;
+}
+
+function updateHeaderOffset(){
+  if(headerEl) document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+}
+
+function updateOriginInfo(){
+  if(!originInfo) return;
+  if(!ORIGIN){
+    originInfo.innerHTML = 'Please set your location. <a href="#" id="editLocation">Set location</a>';
+  }else{
+    originInfo.innerHTML = `Origin set to ${originLabel}. Table sorted by nearest distance & ETA. <a href="#" id="editLocation">Edit location</a>`;
+  }
+  const link = document.getElementById('editLocation');
+  if(link){
+    link.addEventListener('click',e=>{e.preventDefault();showLocationControls();});
+  }
+}
+
+function showLocationControls(){
+  if(!locationControls) return;
+  locationMessage.textContent = ORIGIN ? 'Edit your location' : 'Please set your location';
+  locationControls.style.display = '';
+  updateHeaderOffset();
+}
+
+function hideLocationControls(){
+  if(!locationControls) return;
+  locationControls.style.display = 'none';
+  updateHeaderOffset();
+}
+
+function setOrigin(lat,lng,label){
+  ORIGIN = [lat,lng];
+  originLabel = label;
+  render();
+  updateOriginInfo();
+  hideLocationControls();
 }
 
 function rowHTML(s){
@@ -157,7 +197,7 @@ function render(){
     const db = haversine(ORIGIN,[b.lat,b.lng]);
     return da-db;
   });
-  spotsBody.innerHTML = rows.map(rowHTML).join('');
+  spotsBody.innerHTML = rows.map(rowHTML).join('') + '<tr id="noResultsRow" class="hide"><td colspan="5">No results</td></tr>';
   attachRowHandlers();
   if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
@@ -231,6 +271,9 @@ function applyFilters(){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
     }
   });
+  const visible = document.querySelectorAll('#tbl tbody tr.parent:not(.hide)').length;
+  const noResults = document.getElementById('noResultsRow');
+  if(noResults) noResults.classList.toggle('hide', visible !== 0);
   minsVal.textContent = `≤ ${mins.value} min`;
 }
 
@@ -255,11 +298,6 @@ function setupDrag(chips){
 }
 
 /* ---------- Origin controls ---------- */
-function setOrigin(lat,lng,label){
-  ORIGIN = [lat,lng];
-  originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
-  render();
-}
   document.addEventListener('DOMContentLoaded', async () => {
     originInfo = document.getElementById('originInfo');
     spotsBody = document.getElementById('spotsBody');
@@ -278,6 +316,8 @@ function setOrigin(lat,lng,label){
     viewToggle = document.getElementById('viewToggle');
     viewSlider = document.getElementById('viewSlider');
     mapEl = document.getElementById('map');
+    locationControls = document.getElementById('locationControls');
+    locationMessage = document.getElementById('locationMessage');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
@@ -304,13 +344,6 @@ function setOrigin(lat,lng,label){
       updateHeaderOffset();
     });
 
-    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
-
-
-
-  function updateHeaderOffset(){
-    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
-  }
     window.addEventListener('resize', updateHeaderOffset);
     updateHeaderOffset();
 
@@ -320,55 +353,31 @@ function setOrigin(lat,lng,label){
       });
     });
 
-setupDrag([...waterChips, ...seasonChips, ...skillChips]);
+    setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
-zip.addEventListener('input', async () => {
-  const z = (zip.value || '').trim();
-  if (z.length !== 5) return;
+    updateOriginInfo();
+    showLocationControls();
 
-  if (ZIP_CENTROIDS[z]) {
-    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-    return;
-  }
-  if (zipCache[z]) {
-    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
-    return;
-  }
+    zip.addEventListener('input', () => {
+      const z = (zip.value || '').trim();
+      if (z.length !== 5) return;
+      if (ZIP_CENTROIDS[z]) {
+        setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+      } else {
+        locationMessage.textContent = `ZIP ${z} not found`;
+      }
+    });
 
-  originInfo.textContent = `Looking up ZIP ${z}…`;
-  try {
-    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
-    if (resp.status === 404) {
-      originInfo.textContent = `ZIP ${z} not found.`;
-      return;
-    }
-    if (!resp.ok) throw new Error('Network error');
-    const data = await resp.json();
-    const place = data && data.places && data.places[0];
-    if (place) {
-      const lat = parseFloat(place.latitude);
-      const lng = parseFloat(place.longitude);
-      zipCache[z] = [lat, lng];
-      localStorage.setItem('zipCache', JSON.stringify(zipCache));
-      setOrigin(lat, lng, `ZIP ${z}`);
-    } else {
-      originInfo.textContent = `ZIP ${z} not found.`;
-    }
-  } catch {
-    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
-  }
-});
-
-  useGeo.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-      originInfo.textContent = 'Geolocation not supported by this browser.';
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
-      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
-    );
-  });
+    useGeo.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        locationMessage.textContent = 'Geolocation not supported by this browser.';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
+        () => { locationMessage.textContent = 'Location permission denied or unavailable.'; }
+      );
+    });
   SPOTS = await loadSpots();
   render();
 
