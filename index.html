@@ -64,8 +64,6 @@
   .toggle:checked:before{transform:translateX(18px)}
   .table-wrap{overflow-x:auto;overflow-y:visible;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
-    caption.table-title{caption-side:top;text-align:left;padding:12px 14px;font-weight:700;font-size:16px}
-    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
     tbody tr{transition:background .2s}
     tbody tr.hide{display:none}
@@ -105,11 +103,6 @@
     .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
 #toTop.show{display:block}
-thead th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
-thead th.sortable .sort-icon{margin-left:6px;font-size:12px;transition:transform .2s, opacity .2s;opacity:0}
-thead th.sortable.sorted-asc .sort-icon,
-thead th.sortable.sorted-desc .sort-icon{opacity:1}
-thead th.sortable.sorted-desc .sort-icon{transform:rotate(180deg)}
 </style>
 </head>
 <body>
@@ -170,19 +163,9 @@ thead th.sortable.sorted-desc .sort-icon{transform:rotate(180deg)}
 <main class="wrap" id="main">
   <div class="table-wrap">
     <table id="tbl">
-      <caption class="table-title">Spots</caption>
-      <thead>
-          <tr>
-            <th class="sortable" data-col="name" tabindex="0" role="button">Spot<span class="sort-icon">▲</span></th>
-            <th class="sortable" data-col="dist" tabindex="0" role="button">Dist / Time<span class="sort-icon">▲</span></th>
-            <th class="sortable" data-col="water" tabindex="0" role="button">Water<span class="sort-icon">▲</span></th>
-            <th class="sortable" data-col="season" tabindex="0" role="button">Season<span class="sort-icon">▲</span></th>
-            <th class="sortable" data-col="skill" tabindex="0" role="button">Skill<span class="sort-icon">▲</span></th>
-          </tr>
-      </thead>
       <tbody id="spotsBody"></tbody>
     </table>
-  </div>
+    </div>
 
     <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
@@ -492,37 +475,6 @@ function render(){
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
   applyFilters(); // in case filters active
-  updateSortIndicators();
-}
-
-function updateSortIndicators(){
-  document.querySelectorAll('th.sortable').forEach(th=>{
-    th.classList.remove('sorted-asc','sorted-desc');
-    if(th.dataset.col===currentSort.col){
-      th.classList.add(currentSort.dir==='asc'?'sorted-asc':'sorted-desc');
-    }
-  });
-}
-
-function setupSorting(){
-  document.querySelectorAll('th.sortable').forEach(th=>{
-    const col = th.dataset.col;
-    th.addEventListener('click',()=>{
-      if(currentSort.col===col){
-        currentSort.dir = currentSort.dir==='asc' ? 'desc' : 'asc';
-      }else{
-        currentSort.col = col;
-        currentSort.dir = 'asc';
-      }
-      render();
-    });
-    th.addEventListener('keydown',e=>{
-      if(e.key==='Enter' || e.key===' '){
-        e.preventDefault();
-        th.click();
-      }
-    });
-  });
 }
 
 function attachRowHandlers(){
@@ -625,8 +577,6 @@ function setOrigin(lat,lng,label){
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
-
-    setupSorting();
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
