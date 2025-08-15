@@ -170,11 +170,13 @@
     <table id="tbl">
       <thead>
           <tr>
-            <th>Spot</th>
-            <th>Dist / Time<span id="sortArrow" style="display:none;margin-left:4px">↑</span></th>
-            <th>Water</th>
-            <th>Season</th>
-            <th>Skill</th>
+
+            <th class="sortable" tabindex="0" role="button">Spot</th>
+            <th class="sortable" tabindex="0" role="button">Dist / Time</th>
+            <th class="sortable" tabindex="0" role="button">Water</th>
+            <th class="sortable" tabindex="0" role="button">Season</th>
+            <th class="sortable" tabindex="0" role="button">Skill</th>
+
           </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
@@ -549,9 +551,20 @@ function setOrigin(lat,lng,label){
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
+
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          th.click();
+        }
+      });
+    });
+
     sortArrow = document.getElementById('sortArrow');
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
+
 
 
   function updateHeaderOffset(){
