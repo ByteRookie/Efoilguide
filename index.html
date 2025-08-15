@@ -36,6 +36,7 @@
   a{color:var(--accent);text-decoration:none} a:hover{opacity:.9}
   header{position:sticky;top:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);z-index:50}
   .wrap{max-width:1200px;margin:auto;padding:clamp(16px,4vw,32px)}
+  header .wrap{padding-top:8px}
   main.wrap{padding-top:0}
   h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
   .sub{color:var(--muted);font-size:14px}
@@ -52,7 +53,7 @@
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(-1 * var(--header-h));padding-top:var(--header-h)}
+  .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(-1 * var(--header-h,0px));padding-top:var(--header-h,0px)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
     thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
@@ -87,6 +88,9 @@
     .hint{font-size:12px;color:var(--muted)}
     td.detail{padding:16px;font-size:14px}
     td.detail p{margin:6px 0}
+    .detail-grid{display:flex;flex-wrap:wrap;gap:16px}
+    .detail-grid img{max-width:300px;width:100%;height:auto;border-radius:8px;flex:1 1 250px}
+    .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
   @media (max-width:800px){
@@ -211,49 +215,49 @@ const ZIP_CENTROIDS = {
 /* ---------- Spots (with coordinates) ---------- */
 const SPOTS = [
 /* SF / Peninsula */
-{ id:"crane-cove", gem:true, name:"Crane Cove Park (Dogpatch, SF)", city:"San Francisco", lat:37.7577, lng:-122.3872,
+{ id:"crane-cove", gem:true, name:"Crane Cove Park (Dogpatch, SF)", city:"San Francisco", addr:"18th St & Illinois St, San Francisco, CA", lat:37.7577, lng:-122.3872,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Sandy beach", parking:"Street + paid lot (~1 block)", amenities:"Restrooms; no showers",
   pros:"Calm, close-in; skyline views", cons:"Crowded weekends; small area",
   pop:"Medium", best:"Warm-up laps; teach friends", gear:"Perfect as‑is; optional bigger wing if windy PM",
   tips:"Go early; avoid swimmers & SUP lesson zones; watch tug/ship wake outside Pier 50",
   law:"Harbor/cove no‑wake; CA 5 mph within 100 ft of swimmers & 200 ft of beaches/docks; wear PFD"
 },
-{ id:"crissy", gem:false, name:"Crissy Field / City Front (SF) — Advanced", city:"San Francisco", lat:37.8076, lng:-122.4649,
+{ id:"crissy", gem:false, name:"Crissy Field / City Front (SF) — Advanced", city:"San Francisco", addr:"1199 East Beach, San Francisco, CA", lat:37.8076, lng:-122.4649,
   water:"salt", season:"year", skill:["A"], launch:"Beach", parking:"Paid lots at East Beach", amenities:"Restrooms; outdoor rinse",
   pros:"Iconic GG Bridge runs; ferry wakes", cons:"Strong wind/currents; heavy traffic",
   pop:"Low (elite)", best:"Adrenaline downwinders; photo ops", gear:"Consider larger front wing + steadier stab on big days",
   tips:"Target slack or moderate flood; buddy system; bailout at Horseshoe Cove; avoid Aquatic Park swim zone",
   law:"GGNRA area: no‑wake near shore; stay clear of shipping lane; keep 100 yd from bridge piers; obey COLREGS; PFD required"
 },
-{ id:"oyster-point", gem:true, name:"Oyster Point Marina (South SF) 🌟", city:"South San Francisco", lat:37.6647, lng:-122.3777,
+{ id:"oyster-point", gem:true, name:"Oyster Point Marina (South SF) 🌟", city:"South San Francisco", addr:"95 Harbormaster Rd, South San Francisco, CA", lat:37.6647, lng:-122.3777,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Ramp & guest dock", parking:"Large free lot (<200 ft)", amenities:"Restrooms; rinse hose",
   pros:"Protected start; scenic shoreline", cons:"Windy PM; weekday ferry wake",
   pop:"Low–Medium", best:"Scenic cruising; wake play", gear:"MN 1300C great; bigger wing if choppy PM",
   tips:"Give ferry path room; avoid fishing pier lines; mornings are glassy",
   law:"Harbor no‑wake; 5 mph in fairways; CA 5 mph proximity rule"
 },
-{ id:"coyote-point", gem:false, name:"Coyote Point (San Mateo)", city:"San Mateo", lat:37.5904, lng:-122.3205,
+{ id:"coyote-point", gem:false, name:"Coyote Point (San Mateo)", city:"San Mateo", addr:"1701 Coyote Point Dr, San Mateo, CA", lat:37.5904, lng:-122.3205,
   water:"salt", season:"year", skill:["I","A"], launch:"Marina ramp or small beach", parking:"Gate/launch fees (county park)", amenities:"Restrooms; marina water",
   pros:"Harbor for flat starts; open bay outside", cons:"Strong PM wind/chop; reflected chop off point",
   pop:"Low–Medium", best:"AM speed laps; harbor practice", gear:"As‑is AM; swap to 1500C if nuking",
   tips:"Idle to breakwater; wide berth to rocks; retreat inside if rough",
   law:"Harbor no‑wake; CA 5 mph proximity rule"
 },
-{ id:"foster-lagoon", gem:true, name:"Foster City Lagoon / Canals 🌟 (Speed‑limited)", city:"Foster City", lat:37.5585, lng:-122.2710,
+{ id:"foster-lagoon", gem:true, name:"Foster City Lagoon / Canals 🌟 (Speed‑limited)", city:"Foster City", addr:"Foster City, CA", lat:37.5585, lng:-122.2710,
   water:"brackish", season:"year", skill:["B"], launch:"City boat parks & ramps", parking:"Lots by parks", amenities:"Restrooms in parks",
   pros:"Glassy, sheltered", cons:"Legal 5 mph max → no foiling at speed",
   pop:"Very Low (efoil)", best:"No‑foil taxi practice only", gear:"Keep current setup; larger wing won’t make 5 mph fly",
   tips:"Avoid swimmers; courteous near homes; bridges ~15–22 ft clearance",
   law:"Electric only; **5 mph limit**; DMV reg needed"
 },
-{ id:"redwood-slough", gem:true, name:"Redwood City – Westpoint Slough 🌟", city:"Redwood City", lat:37.5156, lng:-122.2137,
+{ id:"redwood-slough", gem:true, name:"Redwood City – Westpoint Slough 🌟", city:"Redwood City", addr:"Westpoint Harbor, 101 Westpoint Harbor Blvd, Redwood City, CA", lat:37.5156, lng:-122.2137,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Port ramp / Westpoint Harbor", parking:"Ramp ~$5; marina lots", amenities:"Restrooms; rinse",
   pros:"Flat, warmish, low traffic", cons:"Shallow mud off channel at low tide",
   pop:"Medium", best:"Technique reps; mellow long runs", gear:"MN 1300C perfect; Flow 245C for carving",
   tips:"Stay in dredged channel on low tides; debris after storms",
   law:"Harbor no‑wake; follow nav aids"
 },
-{ id:"baywinds", gem:false, name:"Baywinds Park (Foster City – 3rd Ave Bayfront)", city:"Foster City", lat:37.5629, lng:-122.2624,
+{ id:"baywinds", gem:false, name:"Baywinds Park (Foster City – 3rd Ave Bayfront)", city:"Foster City", addr:"1603 Beach Park Blvd, Foster City, CA", lat:37.5629, lng:-122.2624,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Beach/levee entry", parking:"Free turnout by levee", amenities:"None on site",
   pros:"Glass mornings; training ground", cons:"PM nuking winds; mudflats at low tide",
   pop:"High (wind sports)", best:"AM speed runs; chop practice PM", gear:"MN 1300C AM; bring 1500C if cranking",
@@ -262,28 +266,28 @@ const SPOTS = [
 },
 
 /* East Bay */
-{ id:"alameda", gem:false, name:"Alameda – Crown Beach / Encinal Ramp", city:"Alameda", lat:37.7646, lng:-122.2730,
+{ id:"alameda", gem:false, name:"Alameda – Crown Beach / Encinal Ramp", city:"Alameda", addr:"Encinal Boat Ramp, 190 Central Ave, Alameda, CA", lat:37.7646, lng:-122.2730,
   water:"salt", season:"year", skill:["B","I","A"], launch:"Beach or ramp", parking:"Street & paid lots (close)", amenities:"Restrooms; seasonal showers",
   pros:"Beginner‑friendly; protected cove", cons:"Very shallow at low tide; summer beach crowds",
   pop:"High (efoil hub)", best:"Learning; relaxed cruising; sunsets", gear:"As‑is ideal; 1500C if ultra‑slow training",
   tips:"Use breakwater lee for flat water; mind swim buoys in summer",
   law:"Keep 5 mph within swim zones/docks; marina no‑wake"
 },
-{ id:"berkeley", gem:true, name:"Berkeley Marina / Frontage 🌟", city:"Berkeley", lat:37.8656, lng:-122.3130,
+{ id:"berkeley", gem:true, name:"Berkeley Marina / Frontage 🌟", city:"Berkeley", addr:"201 University Ave, Berkeley, CA", lat:37.8656, lng:-122.3130,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Ramp or sheltered coves", parking:"Marina lots", amenities:"Restrooms; cafes nearby",
   pros:"AM windows; boat wakes outside", cons:"Afternoon wind & chop; weeds sometimes",
   pop:"Low–Medium", best:"Exploration laps; wake carving", gear:"MN 1300C fine; upsize if blown out",
   tips:"No‑wake in harbor; avoid fishing lines on pier",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"emeryville", gem:false, name:"Emeryville Marina", city:"Emeryville", lat:37.8370, lng:-122.3135,
+{ id:"emeryville", gem:false, name:"Emeryville Marina", city:"Emeryville", addr:"3310 Powell St, Emeryville, CA", lat:37.8370, lng:-122.3135,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Ramp / dock", parking:"Marina lots", amenities:"Restrooms; food nearby",
   pros:"Easy freeway access; lee behind breakwaters", cons:"Tight fairways; PM breeze",
   pop:"Low", best:"Short after‑work foils", gear:"As‑is good",
   tips:"Idle out; watch Oakland ferry route outside",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"point-isabel", gem:true, name:"Point Isabel / Richmond Marina 🌟", city:"Richmond", lat:37.9085, lng:-122.3274,
+{ id:"point-isabel", gem:true, name:"Point Isabel / Richmond Marina 🌟", city:"Richmond", addr:"1901 Isabel St, Richmond, CA", lat:37.9085, lng:-122.3274,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Small beaches / ramp", parking:"Free lots near parks", amenities:"Restrooms",
   pros:"Scenic shoreline; quieter vibe", cons:"Windy PM; mudflats at very low tide",
   pop:"Low", best:"Morning cruises", gear:"As‑is; bigger wing for chop tolerance",
@@ -292,21 +296,21 @@ const SPOTS = [
 },
 
 /* North Bay */
-{ id:"sausalito", gem:false, name:"Sausalito – Richardson Bay / Schoonmaker", city:"Sausalito", lat:37.8675, lng:-122.4830,
+{ id:"sausalito", gem:false, name:"Sausalito – Richardson Bay / Schoonmaker", city:"Sausalito", addr:"1 Schoonmaker Point Marina, Sausalito, CA", lat:37.8675, lng:-122.4830,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Beach / ramp", parking:"Free/street (arrive early)", amenities:"Restrooms; cafes",
   pros:"Gorgeous, calm inside; GG access", cons:"Anchored boats; gusts; shallow north end",
   pop:"Medium", best:"Scenic tours; Gate forays (adv)", gear:"MN 1300C efficient; take 1500C toward Gate",
   tips:"Stay west side; give ferries space; watch ebb near Gate",
   law:"Richardson Bay channels no‑wake; no‑discharge; CA 5 mph buffers"
 },
-{ id:"paradise", gem:true, name:"Paradise Cay / Tiburon 🌟", city:"Tiburon", lat:37.8960, lng:-122.4790,
+{ id:"paradise", gem:true, name:"Paradise Cay / Tiburon 🌟", city:"Tiburon", addr:"Paradise Cay, Tiburon, CA", lat:37.8960, lng:-122.4790,
   water:"salt", season:"spring-fall", skill:["I"], launch:"Small beaches / ramps", parking:"Neighborhood street / small lots", amenities:"Limited",
   pros:"Sheltered pockets; Angel Island views", cons:"Tight channels; weekend boat traffic",
   pop:"Low", best:"Protected laps; photo ops", gear:"As‑is; optional larger stab for tracking",
   tips:"Polite near homes; stay clear of marinas",
   law:"No‑wake in channels; CA 5 mph proximity"
 },
-{ id:"tomales", gem:false, name:"Tomales Bay (Miller / Nick’s Cove)", city:"Inverness/Marshall", lat:38.1020, lng:-122.8510,
+{ id:"tomales", gem:false, name:"Tomales Bay (Miller / Nick’s Cove)", city:"Inverness/Marshall", addr:"23240 CA-1, Marshall, CA", lat:38.1020, lng:-122.8510,
   water:"brackish", season:"spring-fall", skill:["B","I","A"], launch:"County ramps", parking:"Lots; day‑use rules", amenities:"Restrooms",
   pros:"Flat water, wildlife, scenery", cons:"Eelgrass; shallow margins at low tide; PM wind",
   pop:"Medium", best:"Long relaxed cruising", gear:"As‑is; Jet good vs eelgrass",
@@ -315,21 +319,21 @@ const SPOTS = [
 },
 
 /* Ocean / Coast */
-{ id:"pillar", gem:false, name:"Pillar Point Harbor (Half Moon Bay)", city:"Half Moon Bay", lat:37.5030, lng:-122.4800,
+{ id:"pillar", gem:false, name:"Pillar Point Harbor (Half Moon Bay)", city:"Half Moon Bay", addr:"1 Johnson Pier, Half Moon Bay, CA", lat:37.5030, lng:-122.4800,
   water:"salt", season:"late-spring-fall", skill:["B","I","A"], launch:"Ramp / beach (inside breakwater)", parking:"Harbor lots", amenities:"Restrooms; water",
   pros:"Ocean vibe but protected", cons:"Fog & wind; fishing fleets",
   pop:"Medium", best:"Harbor laps; small‑swell carving", gear:"As‑is; larger wing if outside gets bumpy",
   tips:"Stay inside if swell up; hail Harbor on VHF 74 if unsure",
   law:"Harbor no‑wake; 5 mph fairways; Harbor District rules"
 },
-{ id:"princeton", gem:true, name:"Princeton Harbor Beach (inside breakwater) 🌟", city:"Half Moon Bay", lat:37.5020, lng:-122.4820,
+{ id:"princeton", gem:true, name:"Princeton Harbor Beach (inside breakwater) 🌟", city:"Half Moon Bay", addr:"400 Princeton Ave, Half Moon Bay, CA", lat:37.5020, lng:-122.4820,
   water:"salt", season:"late-spring-fall", skill:["B","I"], launch:"Harbor beach", parking:"Harbor lots (close)", amenities:"Restrooms",
   pros:"Gentle rollers; easy entry", cons:"Kelp strands; fishermen lines",
   pop:"Low–Medium", best:"Beginner ocean feel", gear:"As‑is ideal",
   tips:"Keep clear of Johnson Pier & boat lanes",
   law:"Harbor no‑wake; CA 5 mph proximity"
 },
-{ id:"bodega", gem:true, name:"Bodega Harbor (Sonoma Coast) 🌟", city:"Bodega Bay", lat:38.3250, lng:-123.0400,
+{ id:"bodega", gem:true, name:"Bodega Harbor (Sonoma Coast) 🌟", city:"Bodega Bay", addr:"1410 Bay Flat Rd, Bodega Bay, CA", lat:38.3250, lng:-123.0400,
   water:"salt", season:"spring-fall", skill:["I","A"], launch:"Harbor ramp / beaches", parking:"Harbor lots", amenities:"Restrooms; food nearby",
   pros:"Protected harbor inside jetties", cons:"Wind/coastal fog; cold water",
   pop:"Low", best:"Harbor laps; wildlife viewing", gear:"As‑is; bigger wing outside in swell",
@@ -338,7 +342,7 @@ const SPOTS = [
 },
 
 /* Rivers / Estuary */
-{ id:"petaluma", gem:true, name:"Petaluma River Mouth 🌟", city:"Sonoma / San Pablo Bay", lat:38.1180, lng:-122.4850,
+{ id:"petaluma", gem:true, name:"Petaluma River Mouth 🌟", city:"Sonoma / San Pablo Bay", addr:"Lakeville Hwy & Hwy 37, Sonoma, CA", lat:38.1180, lng:-122.4850,
   water:"brackish", season:"spring-fall", skill:["I"], launch:"Shore access / small ramps inland", parking:"Park pullouts", amenities:"Limited",
   pros:"Wildlife; flat reaches on calm days", cons:"Tidal currents; muddy edges",
   pop:"Low", best:"Exploratory flatwater foils", gear:"As‑is; watch depths on low tides",
@@ -347,28 +351,28 @@ const SPOTS = [
 },
 
 /* Lakes / Reservoirs */
-{ id:"shadow", gem:false, name:"Shadow Cliffs (Pleasanton) — Freshwater", city:"Pleasanton", lat:37.6610, lng:-121.8220,
+{ id:"shadow", gem:false, name:"Shadow Cliffs (Pleasanton) — Freshwater", city:"Pleasanton", addr:"2500 Stanley Blvd, Pleasanton, CA", lat:37.6610, lng:-121.8220,
   water:"fresh", season:"summer", skill:["B"], launch:"Beach / small ramp", parking:"EBRPD lot (fee) next to water", amenities:"Restrooms; seasonal showers",
   pros:"Warm, flat, lesson‑friendly", cons:"Small size; algae risk late summer",
   pop:"Medium", best:"Intro sessions & drills", gear:"As‑is; larger wing for ultra‑slow hover if desired",
   tips:"Electric only; check algae + inspection at gate",
   law:"Electric only; quagga inspections; CA 5 mph proximity"
 },
-{ id:"delvalle", gem:false, name:"Lake Del Valle (Livermore) — Freshwater", city:"Livermore", lat:37.5890, lng:-121.6870,
+{ id:"delvalle", gem:false, name:"Lake Del Valle (Livermore) — Freshwater", city:"Livermore", addr:"7000 Del Valle Rd, Livermore, CA", lat:37.5890, lng:-121.6870,
   water:"fresh", season:"spring-fall", skill:["B","I","A"], launch:"Ramps", parking:"EBRPD lots near ramps", amenities:"Restrooms; showers; marina",
   pros:"Large warm lake; coves to explore", cons:"Busy weekends; algae blooms possible",
   pop:"Medium–High (summer)", best:"Distance cruising; teaching", gear:"As‑is; bigger stab for tracking if desired",
   tips:"Expect inspection & launch fees; wind builds PM",
   law:"EBRPD inspections; 5 mph in restricted zones; day fees posted"
 },
-{ id:"lex", gem:true, name:"Lexington Reservoir (Los Gatos) 🌟 — Freshwater", city:"Los Gatos", lat:37.2120, lng:-121.9860,
+{ id:"lex", gem:true, name:"Lexington Reservoir (Los Gatos) 🌟 — Freshwater", city:"Los Gatos", addr:"17770 Alma Bridge Rd, Los Gatos, CA", lat:37.2120, lng:-121.9860,
   water:"fresh", season:"spring-fall", skill:["B","I"], launch:"Ramp", parking:"County lot near ramp", amenities:"Porta‑potties",
   pros:"Calm; no wakeboats", cons:"Limited hours/inspections; levels vary",
   pop:"Low", best:"Quiet practice; carving drills", gear:"As‑is; bigger wing for super‑slow training",
   tips:"Verify boating hours & inspection status",
   law:"Santa Clara Co. inspection program; seasonal hours"
 },
-{ id:"berryessa", gem:false, name:"Lake Berryessa (Napa) — Freshwater", city:"Napa", lat:38.5120, lng:-122.2150,
+{ id:"berryessa", gem:false, name:"Lake Berryessa (Napa) — Freshwater", city:"Napa", addr:"5800 Knoxville Rd, Napa, CA", lat:38.5120, lng:-122.2150,
   water:"fresh", season:"spring-fall", skill:["B","I","A"], launch:"Multiple ramps (Capell, Steele, Putah)", parking:"Marina/park lots", amenities:"Restrooms; showers at marinas",
   pros:"Huge warm lake; long runs", cons:"Inspections & launch fees; busy coves",
   pop:"Medium–High (summer)", best:"Endurance; exploration", gear:"As‑is; bigger wing for slower carve with friends",
@@ -435,15 +439,22 @@ function rowHTML(s){
   </tr>
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
-      <p><strong>Launch:</strong> ${s.launch}</p>
-      <p><strong>Parking:</strong> ${s.parking}</p>
-      <p><strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
-      <p><strong>Pros:</strong> <span class="ok">${s.pros}</span></p>
-      <p><strong>Cons:</strong> <span class="warn">${s.cons}</span></p>
-      <p><strong>Best For:</strong> ${s.best}</p>
-      <p><strong>Gear Fit:</strong> ${s.gear}</p>
-      <p><strong>Hazards & Tips:</strong> ${s.tips}</p>
-      <p class="law"><strong>Laws / Regs:</strong> ${s.law}</p>
+      <div class="detail-grid">
+        <img src="https://maps.googleapis.com/maps/api/staticmap?center=${s.lat},${s.lng}&zoom=14&size=400x200&maptype=terrain&markers=color:red%7C${s.lat},${s.lng}" alt="${s.name} map">
+        <div class="info">
+          <p><strong>Address:</strong> ${s.addr}</p>
+          <p><strong>Coordinates:</strong> <a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a></p>
+          <p><strong>Launch:</strong> ${s.launch}</p>
+          <p><strong>Parking:</strong> ${s.parking}</p>
+          <p><strong>Amenities:</strong> <span class="amen">${s.amenities}</span></p>
+          <p><strong>Pros:</strong> <span class="ok">${s.pros}</span></p>
+          <p><strong>Cons:</strong> <span class="warn">${s.cons}</span></p>
+          <p><strong>Best For:</strong> ${s.best}</p>
+          <p><strong>Gear Fit:</strong> ${s.gear}</p>
+          <p><strong>Hazards & Tips:</strong> ${s.tips}</p>
+          <p class="law"><strong>Laws / Regs:</strong> ${s.law}</p>
+        </div>
+      </div>
     </td>
   </tr>`;
 }
@@ -464,10 +475,18 @@ function render(){
 function attachRowHandlers(){
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     tr.addEventListener('click',()=>{
-      tr.classList.toggle('open');
+      const wasOpen = tr.classList.contains('open');
+      document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+        if(o!==tr){
+          o.classList.remove('open');
+          const d=o.nextElementSibling;
+          if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+        }
+      });
+      tr.classList.toggle('open', !wasOpen);
       const detail = tr.nextElementSibling;
       if(detail && detail.classList.contains('detail-row')){
-        detail.classList.toggle('hide', !tr.classList.contains('open'));
+        detail.classList.toggle('hide', wasOpen);
       }
     });
   });
@@ -490,7 +509,7 @@ function applyFilters(){
       if(eta>tmax) ok=false;
     }
     if(qv){
-      const hay = (s.name+' '+s.city+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
+        const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
