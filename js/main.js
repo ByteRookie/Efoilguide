@@ -39,7 +39,6 @@ function parseCSV(text){
     });
     obj.lat = parseFloat(obj.lat);
     obj.lng = parseFloat(obj.lng);
-    obj.gem = obj.gem === 'true';
     obj.skill = obj.skill ? obj.skill.split('|') : [];
     return obj;
   });
@@ -61,13 +60,13 @@ function parseCitations(str=''){
 function detail(label,value,spanClass='',pClass=''){
   const {text,citeHTML} = parseCitations(value||'');
   const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
-  return `<p class="${pClass} ${citeHTML?'has-cites':''}"><strong>${label}:</strong> ${span}${citeHTML}</p>`;
+  return `<p class="${pClass}"><strong>${label}:</strong> ${span}${citeHTML}</p>`;
 }
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
 let originInfo, spotsBody, q, mins, minsVal,
-    waterChips, seasonChips, skillChips, gemChip,  // new chip sets
+    waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
     viewToggle, viewSlider, mapEl, map;
 
@@ -97,9 +96,8 @@ function etaMinutes(mi){
 
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
-  const icon=w==='salt'?'🟦':w==='fresh'?'🟩':'🟪';
   const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
-  return `<span class="badge ${cls}">${icon} ${label}</span>`;
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 function badgeSeason(s){
   const cls={year:'b-yr','spring-fall':'b-sprfall','late-spring-fall':'b-sprfall','summer':'b-sum','winter':'b-win'}[s]||'b-yr';
@@ -108,16 +106,15 @@ function badgeSeason(s){
 }
 function chipsSkill(arr){
   const dot={'B':'lvle','I':'lvlm','A':'lvlh'};
-  return `<span class="lvl">${arr.map(k=>`<span title="${k}" class="dot ${dot[k]}"></span>`).join('')}</span>`;
+  return `<span class="lvl">${arr.map(k=>`<span class="dot ${dot[k]}"></span>`).join('')}</span>`;
 }
 
 function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const gem = s.gem ? `<span class="gem" title="Hidden gem">🌟</span>` : '';
   return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
-    <td class="spot" data-label="Spot">${s.name}${gem}</td>
+    <td class="spot" data-label="Spot">${s.name}</td>
     <td data-label="Dist / Time">${distTxt}</td>
     <td data-label="Water">${badgeWater(s.water)}</td>
     <td data-label="Season">${badgeSeason(s.season)}</td>
@@ -206,7 +203,6 @@ function applyFilters(){
   const allowedWater = new Set(waterChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
-  const gemOnly = gemChip.classList.contains('active');
   const tmax = +mins.value;
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
@@ -217,7 +213,6 @@ function applyFilters(){
       const seasonVal = s.season==='late-spring-fall' ? 'spring-fall' : s.season;
       if(!allowedSeason.has(seasonVal)) ok=false;
       if(!s.skill.some(k=>allowedSkill.has(k))) ok=false;
-      if(gemOnly && !s.gem) ok=false;
       if(ORIGIN){
         const eta = +tr.getAttribute('data-eta');
         if(eta > tmax) ok=false;
@@ -271,7 +266,6 @@ function setOrigin(lat,lng,label){
     waterChips = [...document.querySelectorAll('.f-water')];
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
-    gemChip = document.getElementById('gemFilter');
     zip = document.getElementById('zip');
     useGeo = document.getElementById('useGeo');
     filterToggle = document.getElementById('filterToggle');
@@ -323,7 +317,7 @@ function setOrigin(lat,lng,label){
       });
     });
 
-setupDrag([...waterChips, ...seasonChips, ...skillChips, gemChip]);
+setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
 zip.addEventListener('input', async () => {
   const z = (zip.value || '').trim();

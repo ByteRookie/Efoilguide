@@ -5,7 +5,7 @@ A community‑maintained directory of eFoil spots. The site loads all location d
 ## Add a location
 1. Fork this repository.
 2. Add a new line to `data/locations.csv` using the existing headers:
-   `id,gem,name,city,addr,lat,lng,water,season,skill,launch,parking,amenities,pros,cons,pop,best,gear,tips,law`
+   `id,name,city,addr,lat,lng,water,season,skill,launch,parking,amenities,pros,cons,pop,best,gear,tips,law`
    * `skill` uses `|` to separate levels (e.g. `B|I|A`).
    * Wrap text that contains commas in double quotes.
    * Cite rules or facts with `{{Citation: "text" SourceName: "Name" SourceURL: "URL"}}`. Multiple citations can appear in any field; they will render as small source bubbles.
