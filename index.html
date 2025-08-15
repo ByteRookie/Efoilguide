@@ -646,9 +646,7 @@ zip.addEventListener('input', async () => {
   }
 });
 
-    }
-  });
-    useGeo.addEventListener('click', () => {
+  useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
       originInfo.textContent = 'Geolocation not supported by this browser.';
       return;
@@ -659,13 +657,13 @@ zip.addEventListener('input', async () => {
     );
   });
 
-    render();
+  render();
 
-    window.addEventListener('scroll', () => {
-      toTop.classList.toggle('show', window.scrollY > 200);
-    });
-    toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+  window.addEventListener('scroll', () => {
+    toTop.classList.toggle('show', window.scrollY > 200);
   });
+  toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+});
 </script>
 
 <section class="wrap" style="margin-bottom:40px">
