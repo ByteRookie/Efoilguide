@@ -126,7 +126,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img data-src="https://staticmap.openstreetmap.de/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map" loading="lazy" onerror="this.remove()">
+        <img src="https://staticmap.openstreetmap.de/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map" loading="lazy" onerror="this.remove()">
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -178,10 +178,6 @@ function attachRowHandlers(){
       const detail = tr.nextElementSibling;
       if(detail && detail.classList.contains('detail-row')){
         detail.classList.toggle('hide', wasOpen);
-        if(!wasOpen){
-          const img = detail.querySelector('img[data-src]');
-          if(img && !img.src) img.src = img.dataset.src;
-        }
       }
     });
   });
