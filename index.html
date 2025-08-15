@@ -55,9 +55,12 @@
   .toggle:checked:before{transform:translateX(18px)}
   .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
-    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2}
+    thead th{position:sticky;top:var(--header-h);background:var(--card);z-index:2;font-weight:600;border-bottom:2px solid var(--table-border)}
+    thead th.sortable{cursor:pointer}
+    thead th.sortable .sort-indicator{margin-left:4px;font-size:12px}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word}
     tbody tr{transition:background .2s}
+    #spotsBody{transition:opacity .3s}
     tbody tr.hide{display:none}
     tbody tr.parent{cursor:pointer}
     tbody tr.detail-row{background:var(--card)}
@@ -171,10 +174,10 @@
       <thead>
           <tr>
             <th>Spot</th>
-            <th>Dist / Time</th>
-            <th>Water</th>
-            <th>Season</th>
-            <th>Skill</th>
+            <th class="sortable" data-sort="dist">Dist / Time<span class="sort-indicator"></span></th>
+            <th class="sortable" data-sort="water">Water<span class="sort-indicator"></span></th>
+            <th class="sortable" data-sort="season">Season<span class="sort-indicator"></span></th>
+            <th class="sortable" data-sort="skill">Skill<span class="sort-indicator"></span></th>
           </tr>
       </thead>
       <tbody id="spotsBody"></tbody>
@@ -383,6 +386,7 @@ const SPOTS = [
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
+let sortCol = 'dist', sortDir = 1;
 let originInfo, spotsBody, q, mins, minsVal, waterChecks, skillChecks, gems, zip, setZip, useGeo, filterBox, headerEl, toTop;
 
 function haversine(a,b){
@@ -459,17 +463,48 @@ function rowHTML(s){
   </tr>`;
 }
 
+function getSortKey(s){
+  switch(sortCol){
+    case 'dist':
+      return ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : Infinity;
+    case 'water':
+      return {brackish:0,fresh:1,salt:2}[s.water] ?? 3;
+    case 'season':
+      return {year:0,'spring-fall':1,summer:2,winter:3}[s.season] ?? 4;
+    case 'skill':
+      const map={B:0,I:1,A:2};
+      return Math.min(...s.skill.map(k=>map[k]??3));
+    default:
+      return s.name.toLowerCase();
+  }
+}
+
 function render(){
-  // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN) return a.name.localeCompare(b.name);
-    const da = haversine(ORIGIN,[a.lat,a.lng]);
-    const db = haversine(ORIGIN,[b.lat,b.lng]);
-    return da-db;
+    const ka=getSortKey(a), kb=getSortKey(b);
+    if(ka<kb) return -sortDir;
+    if(ka>kb) return sortDir;
+    return a.name.localeCompare(b.name);
   });
+  spotsBody.style.opacity=0;
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
   applyFilters(); // in case filters active
+  updateSortIndicators();
+  requestAnimationFrame(()=>{spotsBody.style.opacity=1;});
+}
+
+function updateSortIndicators(){
+  document.querySelectorAll('#tbl thead th.sortable').forEach(th=>{
+    const ind=th.querySelector('.sort-indicator');
+    if(th.dataset.sort===sortCol){
+      ind.textContent = sortDir===1 ? '▲' : '▼';
+      th.setAttribute('aria-sort', sortDir===1?'ascending':'descending');
+    } else {
+      ind.textContent='';
+      th.removeAttribute('aria-sort');
+    }
+  });
 }
 
 function attachRowHandlers(){
@@ -544,6 +579,14 @@ function setOrigin(lat,lng,label){
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
 
+    document.querySelectorAll('#tbl thead th.sortable').forEach(th=>{
+      th.addEventListener('click',()=>{
+        const col=th.dataset.sort;
+        if(sortCol===col){sortDir*=-1;}else{sortCol=col;sortDir=1;}
+        render();
+      });
+    });
+
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
@@ -557,12 +600,23 @@ function setOrigin(lat,lng,label){
       });
     });
 
-  setZip.addEventListener('click', () => {
+  setZip.addEventListener('click', async () => {
     const z = (zip.value || '').trim();
+    if(!z) return;
     if (ZIP_CENTROIDS[z]) {
       setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
     } else {
-      originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
+      try {
+        const res = await fetch(`https://api.zippopotam.us/us/${z}`);
+        if(!res.ok) throw 0;
+        const data = await res.json();
+        const lat = parseFloat(data.places[0].latitude);
+        const lng = parseFloat(data.places[0].longitude);
+        ZIP_CENTROIDS[z] = [lat,lng];
+        setOrigin(lat,lng,`ZIP ${z}`);
+      } catch {
+        originInfo.textContent = `ZIP ${z} not found.`;
+      }
     }
   });
     useGeo.addEventListener('click', () => {
