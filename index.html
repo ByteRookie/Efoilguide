@@ -543,6 +543,7 @@ function setOrigin(lat,lng,label){
     filterBox = document.getElementById('filterBox');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
+    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
@@ -557,12 +558,38 @@ function setOrigin(lat,lng,label){
       });
     });
 
-  setZip.addEventListener('click', () => {
+  setZip.addEventListener('click', async () => {
     const z = (zip.value || '').trim();
+    if (!z) return;
     if (ZIP_CENTROIDS[z]) {
       setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-    } else {
-      originInfo.textContent = `ZIP ${z} not in offline list — try “Use My Location”.`;
+      return;
+    }
+    if (zipCache[z]) {
+      setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
+      return;
+    }
+    originInfo.textContent = `Looking up ZIP ${z}…`;
+    try {
+      const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
+      if (resp.status === 404) {
+        originInfo.textContent = `ZIP ${z} not found.`;
+        return;
+      }
+      if (!resp.ok) throw new Error('Network error');
+      const data = await resp.json();
+      const place = data && data.places && data.places[0];
+      if (place) {
+        const lat = parseFloat(place.latitude);
+        const lng = parseFloat(place.longitude);
+        zipCache[z] = [lat, lng];
+        localStorage.setItem('zipCache', JSON.stringify(zipCache));
+        setOrigin(lat, lng, `ZIP ${z}`);
+      } else {
+        originInfo.textContent = `ZIP ${z} not found.`;
+      }
+    } catch (e) {
+      originInfo.textContent = `Network error while looking up ZIP ${z}.`;
     }
   });
     useGeo.addEventListener('click', () => {
