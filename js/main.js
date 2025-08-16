@@ -93,7 +93,6 @@ let selectedId = null;
 let markers = {};
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
-let mapDefaultHeight;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -226,26 +225,26 @@ function showSelected(s){
   }
   selectedWrap.style.display='';
   loadImages();
-  if(showingMap){
-    if(mapDefaultHeight) mapEl.style.height = (mapDefaultHeight/2) + 'px';
-    if(map) map.invalidateSize();
-    viewWindow.style.height = mapView.offsetHeight + 'px';
-  }
+  updateMapHeights();
 }
 
 function clearSelected(){
   selectedBody.innerHTML='';
   selectedWrap.style.display='none';
-  if(showingMap){
-    if(mapDefaultHeight) mapEl.style.height = mapDefaultHeight + 'px';
-    if(map) map.invalidateSize();
-    viewWindow.style.height = mapView.offsetHeight + 'px';
-  }
+  updateMapHeights();
 }
 
 function setMarkerSelected(marker, sel){
   const el = marker && marker.getElement ? marker.getElement() : null;
   if(el) el.classList.toggle('selected', sel);
+}
+
+function updateMapHeights(){
+  if(!showingMap) return;
+  const top = viewWindow.getBoundingClientRect().top;
+  const avail = window.innerHeight - top;
+  viewWindow.style.height = avail + 'px';
+  if(map) map.invalidateSize();
 }
 
 function render(){
@@ -451,7 +450,6 @@ function setOrigin(lat,lng,label){
     viewSlider = document.getElementById('viewSlider');
     mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
-    mapDefaultHeight = mapEl.offsetHeight;
     selectedWrap = document.getElementById('selectedWrap');
     selectedBody = document.getElementById('selectedBody');
 
@@ -474,8 +472,7 @@ function setOrigin(lat,lng,label){
         initMap();
         applyFilters();
         setTimeout(()=>{
-          map.invalidateSize();
-          viewWindow.style.height = mapView.offsetHeight + 'px';
+          updateMapHeights();
         },0);
       }else{
         viewWindow.style.height = '';
@@ -489,7 +486,7 @@ function setOrigin(lat,lng,label){
         filtersEl.style.display = willOpen ? '' : 'none';
         filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
         filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        updateHeaderOffset();
+        handleResize();
       });
 
     editLocation.addEventListener('click', e => {
@@ -498,14 +495,14 @@ function setOrigin(lat,lng,label){
       locationBox.style.display = '';
       searchRow.style.marginTop = '8px';
       zip.focus();
-      updateHeaderOffset();
+      handleResize();
     });
 
     closeLocation.addEventListener('click', () => {
       locationBox.style.display = 'none';
       editLocation.style.display = '';
       searchRow.style.marginTop = '';
-      updateHeaderOffset();
+      handleResize();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
@@ -515,8 +512,12 @@ function setOrigin(lat,lng,label){
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
-    window.addEventListener('resize', updateHeaderOffset);
+  function handleResize(){
     updateHeaderOffset();
+    updateMapHeights();
+  }
+  window.addEventListener('resize', handleResize);
+  handleResize();
 
     [q, mins].forEach(el => {
       el.addEventListener('input', () => {
