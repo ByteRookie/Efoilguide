@@ -259,7 +259,6 @@ function setupDrag(chips){
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
-  if(locationBox) locationBox.style.display='none';
   render();
 }
   document.addEventListener('DOMContentLoaded', async () => {

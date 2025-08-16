@@ -56,7 +56,6 @@
   .chip.b-sprfall{border-left:4px solid var(--sprfall)}
   .chip.b-sum{border-left:4px solid var(--summer)}
   .chip.b-win{border-left:4px solid var(--winter)}
-  .split{width:1px;height:24px;background:var(--control-border)}
   .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
