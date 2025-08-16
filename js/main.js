@@ -243,6 +243,7 @@ function updateMapHeights(){
   if(!showingMap) return;
   const top = viewWindow.getBoundingClientRect().top;
   const avail = window.innerHeight - top;
+  mapView.style.height = avail + 'px';
   viewWindow.style.height = avail + 'px';
   if(map) map.invalidateSize();
 }
@@ -477,6 +478,7 @@ function setOrigin(lat,lng,label){
         requestAnimationFrame(updateMapHeights);
       }else{
         viewWindow.style.height = '';
+        mapView.style.height = '';
         clearSelected();
       }
     });

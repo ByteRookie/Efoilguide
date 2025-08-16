@@ -130,6 +130,6 @@
 
 .leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}
 
-#mapView{display:flex;flex-direction:column;height:100%;}
+#mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
 #selectedWrap{flex:1;}
