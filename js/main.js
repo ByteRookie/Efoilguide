@@ -93,7 +93,8 @@ let originMsg, spotsBody, q, mins, minsVal,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
-let shrinkTable = false;
+  let shrinkTable = false;
+  let touchStartY = 0;
 let markers = {};
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
@@ -365,19 +366,52 @@ function moveSortArrow(th){
 function updateTableScroll(){
   if(!tableWrap || !spotsBody) return;
   const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
-  const maxRows = shrinkTable ? 5 : 10;
   if(rows.length===0){
     tableWrap.classList.remove('scroll');
     spotsBody.style.maxHeight='';
     return;
   }
   const h = rows[0].getBoundingClientRect().height;
+  const top = tableWrap.getBoundingClientRect().top;
+  const avail = window.innerHeight - top;
+  const maxVisible = Math.floor(avail / h);
+  const target = shrinkTable ? 5 : 10;
+  const maxRows = Math.min(target, maxVisible);
   if(rows.length>maxRows){
     tableWrap.classList.add('scroll');
     spotsBody.style.maxHeight = h*maxRows + 'px';
   }else{
     tableWrap.classList.remove('scroll');
     spotsBody.style.maxHeight='';
+  }
+}
+
+function handleTableWheel(e){
+  if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
+    const atTop = spotsBody.scrollTop===0;
+    const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
+    const dy = e.deltaY;
+    if((dy<0 && !atTop) || (dy>0 && !atBottom)){
+      spotsBody.scrollTop += dy;
+      e.preventDefault();
+    }
+  }
+}
+
+function handleTouchStart(e){
+  if(window.scrollY===0) touchStartY = e.touches[0].clientY;
+}
+
+function handleTouchMove(e){
+  if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
+    const dy = touchStartY - e.touches[0].clientY;
+    const atTop = spotsBody.scrollTop===0;
+    const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
+    if((dy<0 && !atTop) || (dy>0 && !atBottom)){
+      spotsBody.scrollTop += dy;
+      touchStartY = e.touches[0].clientY;
+      e.preventDefault();
+    }
   }
 }
 
@@ -612,6 +646,10 @@ function setOrigin(lat,lng,label){
     selectedWrap = document.getElementById('selectedWrap');
     selectedBody = document.getElementById('selectedBody');
     tableWrap = document.querySelector('.table-wrap');
+
+    tableWrap.addEventListener('wheel', handleTableWheel, {passive:false});
+    tableWrap.addEventListener('touchstart', handleTouchStart, {passive:false});
+    tableWrap.addEventListener('touchmove', handleTouchMove, {passive:false});
 
     document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
