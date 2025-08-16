@@ -254,12 +254,11 @@ function applyFilters(){
 }
 
 function updateTableHeight(){
-  if(!tableWrap || !tblHeader) return;
+  if(!tableWrap) return;
   const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
   if(rows.length > 5 && rows[0]){
     const rowH = rows[0].offsetHeight;
-    const headerH = tblHeader.offsetHeight;
-    tableWrap.style.maxHeight = (headerH + rowH * 5) + 'px';
+    tableWrap.style.maxHeight = (rowH * 5) + 'px';
     tableWrap.classList.add('scroll');
   } else {
     tableWrap.style.maxHeight = '';
@@ -313,7 +312,7 @@ function setOrigin(lat,lng,label){
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
     tableWrap = document.querySelector('.table-wrap');
-    tblHeader = tableWrap.querySelector('.tbl-header');
+    tblHeader = document.querySelector('.tbl-header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
     viewSlider = document.getElementById('viewSlider');
