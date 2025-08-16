@@ -28,7 +28,7 @@
     <div id="searchRow" style="display:flex;gap:8px;align-items:center;width:100%">
       <input id="q" placeholder="Search all details" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
       <button id="viewToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Map</button>
-      <button id="filterToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Filters</button>
+      <button id="filterToggle" aria-expanded="false" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Show filters</button>
     </div>
     <div id="filters" class="controls" style="display:none;margin-top:8px">
       <div class="control">
@@ -54,7 +54,6 @@
           <div class="chip-group" style="flex:1;align-items:center;position:relative">
             <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
             <span class="hint" id="minsVal">≤ 180 min</span>
-            <span class="hint" id="minsHint">Drag to limit results by travel time.</span>
           </div>
         </div>
       </div>

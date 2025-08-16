@@ -278,6 +278,10 @@ function setOrigin(lat,lng,label){
     useGeo = document.getElementById('useGeo');
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
+    // ensure toggle text matches initial state
+    const filtersHidden = filtersEl.style.display === 'none';
+    filterToggle.textContent = filtersHidden ? 'Show filters' : 'Hide filters';
+    filterToggle.setAttribute('aria-expanded', filtersHidden ? 'false' : 'true');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
@@ -303,11 +307,14 @@ function setOrigin(lat,lng,label){
       if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
     });
 
-    filterToggle.addEventListener('click', () => {
-      const open = filtersEl.style.display === 'none';
-      filtersEl.style.display = open ? '' : 'none';
-      updateHeaderOffset();
-    });
+      // toggle filters visibility and button label
+      filterToggle.addEventListener('click', () => {
+        const willOpen = filtersEl.style.display === 'none';
+        filtersEl.style.display = willOpen ? '' : 'none';
+        filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
+        filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        updateHeaderOffset();
+      });
 
     editLocation.addEventListener('click', e => {
       e.preventDefault();
