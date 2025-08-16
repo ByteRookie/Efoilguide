@@ -349,13 +349,11 @@ function showSelected(s){
     </div>`;
   selectedWrap.style.display='';
   loadImages();
-  updateMapHeights();
 }
 
 function clearSelected(){
   selectedWrap.innerHTML='';
   selectedWrap.style.display='none';
-  updateMapHeights();
 }
 
 function setMarkerSelected(marker, sel){
@@ -364,11 +362,6 @@ function setMarkerSelected(marker, sel){
 }
 
 function updateMapHeights(){
-  if(!showingMap) return;
-  const top = viewWindow.getBoundingClientRect().top;
-  const avail = window.innerHeight - top;
-  mapView.style.height = avail + 'px';
-  viewWindow.style.height = avail + 'px';
   if(map) map.invalidateSize();
 }
 
