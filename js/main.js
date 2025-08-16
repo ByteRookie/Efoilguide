@@ -169,9 +169,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <div class="img-box">
-          <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
-        </div>
+        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -190,44 +188,98 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
-async function findImage(id){
+async function findImages(id){
   const exts=['jpg','jpeg','png','gif','webp'];
-  let latest=0, chosen=null;
-  await Promise.all(exts.map(async ext=>{
-    const url=`data/img/${id}.${ext}`;
-    try{
-      const resp=await fetch(url,{method:'HEAD'});
-      if(resp.ok){
-        const lm=resp.headers.get('last-modified');
-        const t=lm?new Date(lm).getTime():0;
-        if(t>=latest){latest=t; chosen=url;}
-      }
-    }catch(e){}
-  }));
-  return chosen;
+  const urls=[];
+
+  async function exists(url){
+    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch(e){ return false; }
+  }
+
+  let firstFound=false;
+  for(const ext of exts){
+    const plain=`data/img/${id}.${ext}`;
+    const numbered=`data/img/${id}_1.${ext}`;
+    if(await exists(plain)){ urls.push(plain); firstFound=true; break; }
+    if(await exists(numbered)){ urls.push(numbered); firstFound=true; break; }
+  }
+  if(!firstFound) return [];
+
+  for(let i=2;i<20;i++){ // support up to 19 additional images
+    let found=false;
+    for(const ext of exts){
+      const url=`data/img/${id}_${i}.${ext}`;
+      if(await exists(url)){ urls.push(url); found=true; break; }
+    }
+    if(!found) break;
+  }
+  return urls;
 }
 
 async function loadImages(){
-  const defaultSrc = await findImage('default');
-  const imgs=document.querySelectorAll('img[data-img-id]');
-  for(const img of imgs){
-    const id=img.getAttribute('data-img-id');
-    let src=await findImage(id);
-    if(!src && defaultSrc) src=defaultSrc;
-    if(src){
-      img.src=src;
-      img.onerror=()=>img.remove();
-      const file=src.split('/').pop();
+  const defaultSrcs = await findImages('default');
+  const boxes=document.querySelectorAll('.img-box[data-img-id]');
+  for(const box of boxes){
+    const id=box.getAttribute('data-img-id');
+    const name=box.getAttribute('data-name')||'';
+    let srcs=await findImages(id);
+    if(srcs.length===0) srcs=defaultSrcs;
+    if(!srcs || srcs.length===0){ box.remove(); continue; }
+
+    if(srcs.length===1){
+      const img=document.createElement('img');
+      img.src=srcs[0];
+      img.alt=`${name} image`;
+      img.loading='lazy';
+      img.onerror=()=>box.remove();
+      box.appendChild(img);
+      const file=srcs[0].split('/').pop();
       const credit=IMG_CREDITS[file];
       if(credit && (credit.sourceName || credit.sourceURL)){
-        const name=credit.sourceName||credit.sourceURL||'';
+        const creditName=credit.sourceName||credit.sourceURL||'';
         const url=credit.sourceURL;
-        const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
-        const wrap=img.parentElement;
-        wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+        const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
+        box.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
       }
     }else{
-      img.remove();
+      const carousel=document.createElement('div');
+      carousel.className='img-carousel';
+      srcs.forEach((src,idx)=>{
+        const slide=document.createElement('div');
+        slide.className='slide'+(idx===0?' active':'');
+        const img=document.createElement('img');
+        img.src=src;
+        img.alt=`${name} image`;
+        img.loading='lazy';
+        img.onerror=()=>slide.remove();
+        slide.appendChild(img);
+        const file=src.split('/').pop();
+        const credit=IMG_CREDITS[file];
+        if(credit && (credit.sourceName || credit.sourceURL)){
+          const creditName=credit.sourceName||credit.sourceURL||'';
+          const url=credit.sourceURL;
+          const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
+          slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+        }
+        carousel.appendChild(slide);
+      });
+      const prev=document.createElement('button');
+      prev.className='prev';
+      prev.textContent='‹';
+      const next=document.createElement('button');
+      next.className='next';
+      next.textContent='›';
+      carousel.appendChild(prev);
+      carousel.appendChild(next);
+      box.appendChild(carousel);
+      const slides=carousel.querySelectorAll('.slide');
+      let idx=0;
+      function show(n){
+        idx=(n+slides.length)%slides.length;
+        slides.forEach((sl,i)=>sl.classList.toggle('active', i===idx));
+      }
+      prev.addEventListener('click',()=>show(idx-1));
+      next.addEventListener('click',()=>show(idx+1));
     }
   }
 }
