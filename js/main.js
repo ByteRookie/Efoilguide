@@ -307,6 +307,9 @@ function setupDrag(chips){
 /* ---------- Origin controls ---------- */
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
+  // default to nearest locations whenever a new origin is set
+  sortCol = 'dist';
+  sortAsc = true;
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   setHeaderHeight();
   render();
