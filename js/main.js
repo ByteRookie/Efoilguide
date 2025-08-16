@@ -58,7 +58,7 @@ async function loadImageCredits(){
     if(resp.ok){
       IMG_CREDITS = await resp.json();
     }
-  }catch(e){
+  }catch{
     IMG_CREDITS = {};
   }
 }
@@ -89,7 +89,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -194,32 +194,15 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
-async function findImages(id){
-  const exts=['jpg','jpeg','png','gif','webp'];
-  const urls=[];
-
-  async function exists(url){
-    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch(e){ return false; }
-  }
-
-  let firstFound=false;
-  for(const ext of exts){
-    const plain=`data/img/${id}.${ext}`;
-    const numbered=`data/img/${id}_1.${ext}`;
-    if(await exists(plain)){ urls.push(plain); firstFound=true; break; }
-    if(await exists(numbered)){ urls.push(numbered); firstFound=true; break; }
-  }
-  if(!firstFound) return [];
-
-  for(let i=2;i<20;i++){ // support up to 19 additional images
-    let found=false;
-    for(const ext of exts){
-      const url=`data/img/${id}_${i}.${ext}`;
-      if(await exists(url)){ urls.push(url); found=true; break; }
-    }
-    if(!found) break;
-  }
-  return urls;
+function findImages(id){
+  const files = Object.keys(IMG_CREDITS)
+    .filter(k => k.startsWith(`${id}.`) || k.startsWith(`${id}_`))
+    .sort((a,b)=>{
+      const aNum = parseInt(a.match(/_(\d+)\./)?.[1] || '0',10);
+      const bNum = parseInt(b.match(/_(\d+)\./)?.[1] || '0',10);
+      return aNum - bNum;
+    });
+  return files.map(f => `data/img/${f}`);
 }
 
 async function loadImages(){
@@ -229,7 +212,7 @@ async function loadImages(){
     const name=box.getAttribute('data-name')||'';
     const lat=parseFloat(box.getAttribute('data-lat'));
     const lng=parseFloat(box.getAttribute('data-lng'));
-    const srcs=await findImages(id);
+    const srcs=findImages(id);
 
     box.innerHTML='';
 
@@ -636,7 +619,7 @@ function createMiniMap(el, lat, lng){
   const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
   applyTileScheme(m);
   L.marker([lat, lng]).addTo(m);
-  setTimeout(()=>m.invalidateSize(),0);
+  window.setTimeout(()=>m.invalidateSize(),0);
 }
 
 /* ---------- Filters ---------- */
@@ -742,7 +725,6 @@ function setOrigin(lat,lng,label){
     viewWindow = document.getElementById('viewWindow');
     viewSlider = document.getElementById('viewSlider');
     mapView = document.getElementById('mapView');
-    mapEl = document.getElementById('map');
     selectedWrap = document.getElementById('selectedWrap');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
@@ -785,7 +767,7 @@ function setOrigin(lat,lng,label){
         applyFilters();
         updateMapView();
         // run again once visible so Leaflet recalculates dimensions
-        requestAnimationFrame(updateMapHeights);
+        window.requestAnimationFrame(updateMapHeights);
         if(selectedId){
           const spot = SPOTS.find(s=>s.id===selectedId);
           if(spot){
@@ -800,7 +782,7 @@ function setOrigin(lat,lng,label){
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
-        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'start'));
+        if(selectedId) window.requestAnimationFrame(()=>openTableRow(selectedId,'start'));
       }
     });
 
