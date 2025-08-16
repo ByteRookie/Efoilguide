@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Online Efoil Guide</title>
+<title>Online eFoil Guide</title>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -11,7 +11,7 @@
 <body>
 <header>
   <div class="wrap">
-    <h1>Online Efoil Guide</h1>
+    <h1>Online eFoil Guide</h1>
     <div class="sub">
       Rig: <strong>Fliteboard Pro + Jet2</strong> • Wings: <strong>MN 1300 C</strong> (front) + <strong>Flow 245 C</strong> (stab) • Battery: <strong>Sport</strong>
       <br><span id="originInfo" class="hint">
@@ -62,12 +62,27 @@
 </header>
 
 <main class="wrap" id="main">
-  <div id="viewWindow" style="overflow:hidden">
+  <div id="viewWindow" style="overflow-x:hidden;margin-top:16px">
     <div id="viewSlider" style="display:flex;transition:transform .3s">
-      <div class="table-wrap" id="tableView" style="min-width:100%">
-        <table id="tbl">
-          <tbody id="spotsBody"></tbody>
-        </table>
+      <div id="tableView" style="min-width:100%">
+        <div class="tbl-header">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">Spot</th>
+                <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
+                <th class="sortable" data-sort="water">Water</th>
+                <th class="sortable" data-sort="season">Season</th>
+                <th class="sortable" data-sort="skill">Skill</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="table-wrap">
+          <table id="tbl">
+            <tbody id="spotsBody"></tbody>
+          </table>
+        </div>
       </div>
       <div id="mapView" style="min-width:100%;padding-top:16px">
         <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
@@ -92,6 +107,7 @@
     <li><strong>COLREGS (“Rules of the Road”):</strong> Applies everywhere—give way to vessels constrained by draft (ships/ferries), cross channels at right angles, show lights if dusk/night (avoid night on eFoil).</li>
     <li><strong>Sanctuaries/Wildlife:</strong> Keep clear of marine mammals; never chase. Heed local eelgrass/sanctuary zones (e.g., parts of Richardson & Tomales bays).</li>
     <li><strong>Inland lakes:</strong> Expect <em>quagga mussel inspections</em> (arrive clean & dry), day‑use hours, and occasional algae advisories.</li>
+    <li><strong>Night lights:</strong> Pass on the right-hand (white stern) side of other boats; red/green bow lights mean stay clear ahead.</li>
   </ul>
   <p class="hint">This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</p>
 </section>

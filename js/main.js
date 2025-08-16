@@ -85,14 +85,15 @@ function detail(label,value,spanClass='',pClass=''){
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let sortCol = 'name';
+let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
-    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
+    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedBody, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
+let shrinkTable = false;
 let markers = {};
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
@@ -355,21 +356,57 @@ function updateMapHeights(){
   if(map) map.invalidateSize();
 }
 
+function moveSortArrow(th){
+  if(sortArrow) th.appendChild(sortArrow);
+  document.querySelectorAll('.tbl-header th').forEach(cell=>cell.removeAttribute('aria-sort'));
+  th.setAttribute('aria-sort','ascending');
+}
+
+function updateTableScroll(){
+  if(!tableWrap || !spotsBody) return;
+  const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
+  const maxRows = shrinkTable ? 5 : 10;
+  if(rows.length===0){
+    tableWrap.classList.remove('scroll');
+    tableWrap.style.maxHeight='';
+    return;
+  }
+  const h = rows[0].getBoundingClientRect().height;
+  if(rows.length>maxRows){
+    tableWrap.classList.add('scroll');
+    tableWrap.style.maxHeight = h*maxRows + 'px';
+  }else{
+    tableWrap.classList.remove('scroll');
+    tableWrap.style.maxHeight='';
+  }
+}
+
+function checkShrink(){
+  shrinkTable = window.scrollY>0 || window.innerHeight<700;
+  updateTableScroll();
+}
+
 function render(){
-  // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN){
-      sortCol = 'name';
-      return a.name.localeCompare(b.name);
+    switch(sortCol){
+      case 'dist':{
+        if(!ORIGIN) return a.name.localeCompare(b.name);
+        const da = haversine(ORIGIN,[a.lat,a.lng]);
+        const db = haversine(ORIGIN,[b.lat,b.lng]);
+        return da-db;
+      }
+      case 'water':
+        return a.water.localeCompare(b.water);
+      case 'season':
+        return a.season.localeCompare(b.season);
+      case 'skill':
+        return (a.skill[0]||'').localeCompare(b.skill[0]||'');
+      default:
+        return a.name.localeCompare(b.name);
     }
-    sortCol = 'dist';
-    const da = haversine(ORIGIN,[a.lat,a.lng]);
-    const db = haversine(ORIGIN,[b.lat,b.lng]);
-    return da-db;
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
-  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
   loadImages();
 }
@@ -514,6 +551,7 @@ function applyFilters(){
   });
   minsVal.textContent = `≤ ${mins.value} min`;
   updateMapView();
+  updateTableScroll();
 }
 
 function setupDrag(chips){
@@ -573,13 +611,19 @@ function setOrigin(lat,lng,label){
     mapEl = document.getElementById('map');
     selectedWrap = document.getElementById('selectedWrap');
     selectedBody = document.getElementById('selectedBody');
+    tableWrap = document.querySelector('.table-wrap');
 
-    document.querySelectorAll('th.sortable').forEach(th => {
+    document.querySelectorAll('.tbl-header th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           th.click();
         }
+      });
+      th.addEventListener('click', () => {
+        sortCol = th.dataset.sort;
+        moveSortArrow(th);
+        render();
       });
     });
 
@@ -639,6 +683,7 @@ function setOrigin(lat,lng,label){
   function handleResize(){
     updateHeaderOffset();
     updateMapHeights();
+    checkShrink();
   }
   window.addEventListener('resize', handleResize);
   handleResize();
@@ -708,6 +753,7 @@ zip.addEventListener('input', async () => {
 
   window.addEventListener('scroll', () => {
     toTop.classList.toggle('show', window.scrollY > 200);
+    checkShrink();
   });
   toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 });
