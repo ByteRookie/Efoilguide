@@ -79,6 +79,12 @@ function detail(label,value,spanClass='',pClass=''){
   const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
   return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
+
+function popupRow(label,value,spanClass='',tdClass=''){
+  const text = parseCitations(value||'');
+  const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
+  return `<tr><th>${label}</th><td class="${tdClass}">${span}</td></tr>`;
+}
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
@@ -251,7 +257,23 @@ function initMap(){
     attribution:'&copy; OpenStreetMap contributors'
   }).addTo(map);
   SPOTS.forEach(s=>{
-    L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
+    const html = `<div class="popup-info"><h3>${s.name}</h3><table class="popup-table">
+      ${popupRow('Address', s.addr)}
+      ${popupRow('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
+      ${popupRow('Water', badgeWater(s.water))}
+      ${popupRow('Season', badgeSeason(s.season))}
+      ${popupRow('Skill', chipsSkill(s.skill))}
+      ${popupRow('Launch', s.launch)}
+      ${popupRow('Parking', s.parking)}
+      ${popupRow('Amenities', s.amenities, 'amen')}
+      ${popupRow('Pros', s.pros, 'ok')}
+      ${popupRow('Cons', s.cons, 'warn')}
+      ${popupRow('Best For', s.best)}
+      ${popupRow('Gear Fit', s.gear)}
+      ${popupRow('Hazards & Tips', s.tips)}
+      ${popupRow('Laws / Regs', s.law, '', 'law')}
+    </table></div>`;
+    L.marker([s.lat,s.lng]).addTo(map).bindPopup(html);
   });
 }
 
