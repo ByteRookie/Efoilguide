@@ -1,7 +1,7 @@
 # Online Efoil Guide
 
 A community‑maintained directory of eFoil spots. The site loads all location data from [`data/locations.csv`](data/locations.csv) and renders it in a filterable table and map.
-If you’re just looking for spot information, head to https://efoil.guide; the sections below are for contributors.
+If you’re just looking for spot information, head to https://byterookie.github.io/Efoilguide/; the sections below are for contributors.
 
 ## Preview
 
@@ -95,7 +95,7 @@ No build step is required. Serve the folder with a static file server—opening 
 
 ### Quick Start
 
-If you only want to browse the live site, visit [efoil.guide](https://efoil.guide). The steps below run the site locally.
+If you only want to browse the live site, visit [the live site](https://byterookie.github.io/Efoilguide/). The steps below run the site locally.
 
 Prerequisite: Node.js not required—this is a static site. You just need Python for a simple server.
 
