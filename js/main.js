@@ -169,7 +169,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
+        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -217,49 +217,50 @@ async function findImages(id){
 }
 
 async function loadImages(){
-  const defaultSrcs = await findImages('default');
   const boxes=document.querySelectorAll('.img-box[data-img-id]');
   for(const box of boxes){
     const id=box.getAttribute('data-img-id');
     const name=box.getAttribute('data-name')||'';
-    let srcs=await findImages(id);
-    if(srcs.length===0) srcs=defaultSrcs;
-    if(!srcs || srcs.length===0){ box.remove(); continue; }
+    const lat=parseFloat(box.getAttribute('data-lat'));
+    const lng=parseFloat(box.getAttribute('data-lng'));
+    const srcs=await findImages(id);
+    const slides=[];
+    const mapUrl=`https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=14&size=400x300&markers=${lat},${lng},red-pushpin`;
+    slides.push({type:'map',src:mapUrl});
+    srcs.forEach(src=>slides.push({type:'img',src}));
+    if(slides.length===0){ box.remove(); continue; }
 
-    if(srcs.length===1){
+    if(slides.length===1){
       const img=document.createElement('img');
-      img.src=srcs[0];
-      img.alt=`${name} image`;
+      img.src=slides[0].src;
+      img.alt=`${name} map`;
       img.loading='lazy';
       img.onerror=()=>box.remove();
       box.appendChild(img);
-      const file=srcs[0].split('/').pop();
-      const credit=IMG_CREDITS[file];
-      if(credit && (credit.sourceName || credit.sourceURL)){
-        const creditName=credit.sourceName||credit.sourceURL||'';
-        const url=credit.sourceURL;
-        const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
-        box.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
-      }
+      box.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
     }else{
       const carousel=document.createElement('div');
       carousel.className='img-carousel';
-      srcs.forEach((src,idx)=>{
+      slides.forEach((info,idx)=>{
         const slide=document.createElement('div');
         slide.className='slide'+(idx===0?' active':'');
         const img=document.createElement('img');
-        img.src=src;
-        img.alt=`${name} image`;
+        img.src=info.src;
+        img.alt=`${name} ${info.type==='map'?'map':'image'}`;
         img.loading='lazy';
         img.onerror=()=>slide.remove();
         slide.appendChild(img);
-        const file=src.split('/').pop();
-        const credit=IMG_CREDITS[file];
-        if(credit && (credit.sourceName || credit.sourceURL)){
-          const creditName=credit.sourceName||credit.sourceURL||'';
-          const url=credit.sourceURL;
-          const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
-          slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+        if(info.type==='map'){
+          slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
+        }else{
+          const file=info.src.split('/').pop();
+          const credit=IMG_CREDITS[file];
+          if(credit && (credit.sourceName || credit.sourceURL)){
+            const creditName=credit.sourceName||credit.sourceURL||'';
+            const url=credit.sourceURL;
+            const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
+            slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+          }
         }
         carousel.appendChild(slide);
       });
@@ -272,11 +273,11 @@ async function loadImages(){
       carousel.appendChild(prev);
       carousel.appendChild(next);
       box.appendChild(carousel);
-      const slides=carousel.querySelectorAll('.slide');
+      const slidesEls=carousel.querySelectorAll('.slide');
       let idx=0;
       function show(n){
-        idx=(n+slides.length)%slides.length;
-        slides.forEach((sl,i)=>sl.classList.toggle('active', i===idx));
+        idx=(n+slidesEls.length)%slidesEls.length;
+        slidesEls.forEach((sl,i)=>sl.classList.toggle('active', i===idx));
       }
       prev.addEventListener('click',()=>show(idx-1));
       next.addEventListener('click',()=>show(idx+1));
