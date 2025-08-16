@@ -323,19 +323,19 @@ async function loadImages(){
 function showSelected(s){
   const temp = document.createElement('tbody');
   temp.innerHTML = rowHTML(s);
+  const topRow = temp.querySelector('tr.parent');
   const detail = temp.querySelector('tr.detail-row');
+  if(topRow){
+    topRow.classList.remove('parent');
+    topRow.removeAttribute('data-id');
+    topRow.querySelectorAll('td').forEach(td=>{
+      const lbl = td.getAttribute('data-label');
+      if(lbl) td.innerHTML = `<span class="cell-label">${lbl}:</span> ` + td.innerHTML;
+    });
+  }
   if(detail) detail.classList.remove('hide');
-  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
-  const eta = distMi!=null ? etaMinutes(distMi) : null;
-  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  const cells = [
-    `<span class="cell-label">Spot:</span> ${s.name}`,
-    `<span class="cell-label">Dist / Time:</span> ${distTxt}`,
-    `<span class="cell-label">Water:</span> ${badgeWater(s.water)}`,
-    `<span class="cell-label">Season:</span> ${badgeSeason(s.season)}`,
-    `<span class="cell-label">Skill:</span> ${chipsSkill(s.skill)}`
-  ];
-  selectedTopBody.innerHTML = `<tr><td>${cells.map(c=>`<span class="meta">${c}</span>`).join('')}</td></tr>`;
+  selectedTopBody.innerHTML = '';
+  if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
@@ -383,8 +383,6 @@ function updateTableScroll(){
   if(rows.length===0){
     tableWrap.classList.remove('scroll');
     tableWrap.style.maxHeight='';
-    const headerTable = document.querySelector('.tbl-header table');
-    if(headerTable) headerTable.style.width = tableWrap.clientWidth + 'px';
     return;
   }
   const h = rows[0].getBoundingClientRect().height;
@@ -400,17 +398,13 @@ function updateTableScroll(){
     tableWrap.classList.remove('scroll');
     tableWrap.style.maxHeight='';
   }
-  const headerTable = document.querySelector('.tbl-header table');
-  if(headerTable) headerTable.style.width = tableWrap.clientWidth + 'px';
 }
 
 function tableInView(){
   if(!tableWrap) return false;
   const rect = tableWrap.getBoundingClientRect();
   const headerH = headerEl ? headerEl.offsetHeight : 0;
-  const topHeader = document.querySelector('.tbl-header');
-  const topH = topHeader ? topHeader.offsetHeight : 0;
-  return rect.top <= headerH + topH && rect.bottom > headerH;
+  return rect.top <= headerH + 5 && rect.bottom > headerH;
 }
 
 function consumeTableScroll(dy){
