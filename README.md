@@ -2,6 +2,11 @@
 
 A community‑maintained directory of eFoil spots. The site loads all location data from [`data/locations.csv`](data/locations.csv) and renders it in a filterable table and map.
 
+## Preview
+
+![Map view](assets/preview-map.png)
+![Table view](assets/preview-table.png)
+
 ## Add a location
 1. Fork this repository.
 2. Add a new line to `data/locations.csv` using the existing headers:
