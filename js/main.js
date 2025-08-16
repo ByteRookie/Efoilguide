@@ -358,7 +358,7 @@ function updateMapHeights(){
 
 function moveSortArrow(th){
   if(sortArrow) th.appendChild(sortArrow);
-  document.querySelectorAll('.tbl-header th').forEach(cell=>cell.removeAttribute('aria-sort'));
+  document.querySelectorAll('#tbl thead th').forEach(cell=>cell.removeAttribute('aria-sort'));
   th.setAttribute('aria-sort','ascending');
 }
 
@@ -368,16 +368,16 @@ function updateTableScroll(){
   const maxRows = shrinkTable ? 5 : 10;
   if(rows.length===0){
     tableWrap.classList.remove('scroll');
-    tableWrap.style.maxHeight='';
+    spotsBody.style.maxHeight='';
     return;
   }
   const h = rows[0].getBoundingClientRect().height;
   if(rows.length>maxRows){
     tableWrap.classList.add('scroll');
-    tableWrap.style.maxHeight = h*maxRows + 'px';
+    spotsBody.style.maxHeight = h*maxRows + 'px';
   }else{
     tableWrap.classList.remove('scroll');
-    tableWrap.style.maxHeight='';
+    spotsBody.style.maxHeight='';
   }
 }
 
@@ -613,7 +613,7 @@ function setOrigin(lat,lng,label){
     selectedBody = document.getElementById('selectedBody');
     tableWrap = document.querySelector('.table-wrap');
 
-    document.querySelectorAll('.tbl-header th.sortable').forEach(th => {
+    document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
