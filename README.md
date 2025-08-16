@@ -44,7 +44,7 @@ A community‑maintained directory of eFoil spots. The site loads all location d
 - Verify latitude and longitude against a map service.
 - Check for balanced quotes and consistent comma counts.
 - Ensure citations in `tips` and `law` follow the format below.
-- Preview the site locally by opening `index.html` to make sure the row renders.
+- Preview the site locally by serving the repository via `python -m http.server` and opening `http://localhost:8000` to make sure the row renders (see [Quick Start](#quick-start) for details).
 
 ### Citation format
 
