@@ -327,13 +327,7 @@ function showSelected(s){
   const detail = temp.querySelector('tr.detail-row');
   if(detail) detail.classList.remove('hide');
   selectedTopBody.innerHTML = '';
-  if(topRow){
-    for(const td of topRow.querySelectorAll('td[data-label]')){
-      const label = td.getAttribute('data-label');
-      td.innerHTML = `<strong>${label}:</strong> ${td.innerHTML}`;
-    }
-    selectedTopBody.appendChild(topRow);
-  }
+  if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
@@ -457,8 +451,15 @@ function handleTouchMove(e){
 }
 
 function checkShrink(){
-  shrinkTable = window.scrollY>0 || window.innerHeight<700;
-  updateTableScroll();
+  const shouldShrink = window.scrollY>0 || window.innerHeight<700;
+  if(shouldShrink !== shrinkTable){
+    shrinkTable = shouldShrink;
+    if(shrinkTable && spotsBody){
+      spotsBody.scrollTop = 0;
+      lockPageScroll(true);
+    }
+    updateTableScroll();
+  }
 }
 
 function render(){
@@ -490,6 +491,7 @@ function attachRowHandlers(){
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     tr.addEventListener('click',()=>{
       const wasOpen = tr.classList.contains('open');
+      const id = tr.getAttribute('data-id');
       document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
         if(o!==tr){
           o.classList.remove('open');
@@ -502,8 +504,43 @@ function attachRowHandlers(){
       if(detail && detail.classList.contains('detail-row')){
         detail.classList.toggle('hide', wasOpen);
       }
+      if(!wasOpen){
+        if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+        selectedId = id;
+        if(showingMap && markers[id]){
+          setMarkerSelected(markers[id], true);
+          const spot = SPOTS.find(s=>s.id===id);
+          if(spot) showSelected(spot);
+        }
+      }else if(selectedId===id){
+        if(markers[id]) setMarkerSelected(markers[id], false);
+        selectedId = null;
+        if(showingMap) clearSelected();
+      }
     });
   });
+}
+
+function openTableRow(id){
+  const tr = document.querySelector(`#tbl tbody tr.parent[data-id="${id}"]`);
+  if(!tr) return;
+  const wasOpen = tr.classList.contains('open');
+  document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+    if(o!==tr){
+      o.classList.remove('open');
+      const d=o.nextElementSibling;
+      if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+    }
+  });
+  tr.classList.add('open');
+  const detail = tr.nextElementSibling;
+  if(detail && detail.classList.contains('detail-row')) detail.classList.remove('hide');
+  if(!wasOpen) {
+    if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+    selectedId = id;
+  }
+  tr.scrollIntoView({block:'start'});
+  loadImages();
 }
 
 function applyTileScheme(m){
@@ -727,10 +764,21 @@ function setOrigin(lat,lng,label){
         updateMapView();
         // run again once visible so Leaflet recalculates dimensions
         requestAnimationFrame(updateMapHeights);
+        if(selectedId){
+          const spot = SPOTS.find(s=>s.id===selectedId);
+          if(spot){
+            if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
+            showSelected(spot);
+            map.flyTo([spot.lat, spot.lng], 13);
+          }
+        }else{
+          clearSelected();
+        }
       }else{
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
+        if(selectedId) openTableRow(selectedId);
       }
     });
 
