@@ -174,7 +174,7 @@ function render(){
   attachRowHandlers();
   if(sortArrow){
     sortArrow.textContent = sortAsc ? '▲' : '▼';
-    const th = document.querySelector(`th[data-sort='${sortCol}']`);
+    const th = document.querySelector(`.tbl-header [data-sort='${sortCol}']`);
     if(th) th.appendChild(sortArrow);
     sortArrow.style.display = sortCol==='dist' && !ORIGIN ? 'none' : '';
   }
@@ -297,7 +297,7 @@ function setOrigin(lat,lng,label){
     viewSlider = document.getElementById('viewSlider');
     mapEl = document.getElementById('map');
 
-    document.querySelectorAll('th.sortable').forEach(th => {
+    document.querySelectorAll('.tbl-header .sortable').forEach(th => {
       th.addEventListener('click', () => {
         const col = th.dataset.sort;
         if(sortCol === col){
