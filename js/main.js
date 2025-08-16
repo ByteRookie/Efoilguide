@@ -194,32 +194,15 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
-async function findImages(id){
-  const exts=['jpg','jpeg','png','gif','webp'];
-  const urls=[];
-
-  async function exists(url){
-    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch{ return false; }
-  }
-
-  let firstFound=false;
-  for(const ext of exts){
-    const plain=`data/img/${id}.${ext}`;
-    const numbered=`data/img/${id}_1.${ext}`;
-    if(await exists(plain)){ urls.push(plain); firstFound=true; break; }
-    if(await exists(numbered)){ urls.push(numbered); firstFound=true; break; }
-  }
-  if(!firstFound) return [];
-
-  for(let i=2;i<20;i++){ // support up to 19 additional images
-    let found=false;
-    for(const ext of exts){
-      const url=`data/img/${id}_${i}.${ext}`;
-      if(await exists(url)){ urls.push(url); found=true; break; }
-    }
-    if(!found) break;
-  }
-  return urls;
+function findImages(id){
+  const files = Object.keys(IMG_CREDITS)
+    .filter(k => k.startsWith(`${id}.`) || k.startsWith(`${id}_`))
+    .sort((a,b)=>{
+      const aNum = parseInt(a.match(/_(\d+)\./)?.[1] || '0',10);
+      const bNum = parseInt(b.match(/_(\d+)\./)?.[1] || '0',10);
+      return aNum - bNum;
+    });
+  return files.map(f => `data/img/${f}`);
 }
 
 async function loadImages(){
@@ -229,7 +212,7 @@ async function loadImages(){
     const name=box.getAttribute('data-name')||'';
     const lat=parseFloat(box.getAttribute('data-lat'));
     const lng=parseFloat(box.getAttribute('data-lng'));
-    const srcs=await findImages(id);
+    const srcs=findImages(id);
 
     box.innerHTML='';
 
