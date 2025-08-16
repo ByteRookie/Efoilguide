@@ -69,7 +69,7 @@ function detail(label,value,spanClass='',pClass=''){
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let sortAsc = true;
-let originInfo, spotsBody, q, mins, minsVal,
+let originInfo, spotsBody, tableWrap, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, tblHeader, toTop, sortArrow,
     viewToggle, viewSlider, mapEl, map;
@@ -250,6 +250,23 @@ function applyFilters(){
     }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
+  updateTableHeight();
+}
+
+function updateTableHeight(){
+  if(!tableWrap || !tblHeader) return;
+  const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
+  if(rows.length > 5 && rows[0]){
+    const rowH = rows[0].offsetHeight;
+    const headerH = tblHeader.offsetHeight;
+    tableWrap.style.maxHeight = (headerH + rowH * 5) + 'px';
+    tableWrap.classList.add('scroll');
+    tblHeader.classList.add('sticky');
+  } else {
+    tableWrap.style.maxHeight = '';
+    tableWrap.classList.remove('scroll');
+    tblHeader.classList.remove('sticky');
+  }
 }
 
 function setupDrag(chips){
@@ -291,7 +308,8 @@ function setOrigin(lat,lng,label){
     useGeo = document.getElementById('useGeo');
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
-    tblHeader = document.querySelector('.tbl-header');
+    tableWrap = document.querySelector('.table-wrap');
+    tblHeader = tableWrap.querySelector('.tbl-header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
     viewSlider = document.getElementById('viewSlider');
@@ -317,6 +335,7 @@ function setOrigin(lat,lng,label){
     });
 
     sortArrow = document.getElementById('sortArrow');
+    window.addEventListener('resize', updateTableHeight);
 
     let showingMap = false;
     viewToggle.addEventListener('click', () => {
@@ -325,7 +344,7 @@ function setOrigin(lat,lng,label){
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       tblHeader.style.display = showingMap ? 'none' : '';
-      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); } else { updateTableHeight(); }
     });
 
     filterToggle.addEventListener('click', () => {
