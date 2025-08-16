@@ -46,3 +46,20 @@ The guide is published via GitHub Pages. After your pull request is merged, the 
 
 ## Local development
 No build step is required. Open `index.html` in a browser or serve the folder with any static file server.
+
+### Quick Start
+
+Prerequisite: Node.js not required—this is a static site.
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/<your_username>/Efoilguide.git
+   cd Efoilguide
+   ```
+2. Open `index.html` in your browser.
+3. (Optional) Start a simple static server and visit `http://localhost:8000`:
+
+   ```bash
+   python -m http.server
+   ```
