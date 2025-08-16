@@ -121,13 +121,10 @@
   #toTop.show{display:block}
   @media (max-width:800px){
     .table-wrap tbody tr,
-    #selectedTop tbody tr,
     #selectedDetail tbody tr{display:block;margin-bottom:12px}
     .table-wrap tbody td,
-    #selectedTop tbody td,
     #selectedDetail tbody td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
     .table-wrap tbody td:before,
-    #selectedTop tbody td:before,
     #selectedDetail tbody td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
     .table-wrap tbody td.detail,
     #selectedDetail tbody td.detail{display:block}
@@ -153,9 +150,10 @@
 
 #mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
-#selectedWrap{display:flex;flex-direction:column;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
+#selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
 #selectedTop{background:var(--card);}
 #selectedTop table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;}
-#selectedTop th,#selectedTop td{border-bottom:1px solid var(--table-border);}
+#selectedTop td{border-bottom:1px solid var(--table-border);padding:8px 12px;display:flex;align-items:center;gap:4px;}
+#selectedTop .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
 #selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}

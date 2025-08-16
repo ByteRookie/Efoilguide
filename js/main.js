@@ -328,6 +328,10 @@ function showSelected(s){
   if(topRow){
     topRow.classList.remove('parent');
     topRow.removeAttribute('data-id');
+    topRow.querySelectorAll('td').forEach(td=>{
+      const lbl = td.getAttribute('data-label');
+      if(lbl) td.innerHTML = `<span class="cell-label">${lbl}:</span> ` + td.innerHTML;
+    });
   }
   if(detail) detail.classList.remove('hide');
   selectedTopBody.innerHTML = '';
@@ -364,10 +368,6 @@ function updateMapHeights(){
   const avail = window.innerHeight - top;
   mapView.style.height = avail + 'px';
   viewWindow.style.height = avail + 'px';
-  if(selectedDetail){
-    const dTop = selectedDetail.getBoundingClientRect().top;
-    selectedDetail.style.maxHeight = (window.innerHeight - dTop) + 'px';
-  }
   if(map) map.invalidateSize();
 }
 
