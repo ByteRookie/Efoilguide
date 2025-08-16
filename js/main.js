@@ -126,7 +126,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img src="https://staticmap.openstreetmap.de/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map" loading="lazy" onerror="this.remove()">
+        <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -145,6 +145,37 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
+async function findImage(id){
+  const exts=['jpg','jpeg','png','gif','webp'];
+  let latest=0, chosen=null;
+  await Promise.all(exts.map(async ext=>{
+    const url=`data/img/${id}.${ext}`;
+    try{
+      const resp=await fetch(url,{method:'HEAD'});
+      if(resp.ok){
+        const lm=resp.headers.get('last-modified');
+        const t=lm?new Date(lm).getTime():0;
+        if(t>=latest){latest=t; chosen=url;}
+      }
+    }catch(e){}
+  }));
+  return chosen;
+}
+
+async function loadImages(){
+  const imgs=document.querySelectorAll('img[data-img-id]');
+  for(const img of imgs){
+    const id=img.getAttribute('data-img-id');
+    const src=await findImage(id);
+    if(src){
+      img.src=src;
+      img.onerror=()=>img.remove();
+    }else{
+      img.remove();
+    }
+  }
+}
+
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
@@ -161,6 +192,7 @@ function render(){
   attachRowHandlers();
   if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
+  loadImages();
 }
 
 function attachRowHandlers(){
