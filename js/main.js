@@ -68,10 +68,11 @@ function detail(label,value,spanClass='',pClass=''){
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
-let originInfo, spotsBody, q, mins, minsVal,
+let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewSlider, mapEl, map;
+    viewToggle, viewSlider, mapEl, map,
+    editLocation, locationBox, closeLocation;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -257,11 +258,15 @@ function setupDrag(chips){
 /* ---------- Origin controls ---------- */
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
-  originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  if(locationBox) locationBox.style.display='none';
   render();
 }
   document.addEventListener('DOMContentLoaded', async () => {
-    originInfo = document.getElementById('originInfo');
+    originMsg = document.getElementById('originMsg');
+    editLocation = document.getElementById('editLocation');
+    locationBox = document.getElementById('locationBox');
+    closeLocation = document.getElementById('closeLocation');
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
     mins = document.getElementById('mins');
@@ -304,6 +309,15 @@ function setOrigin(lat,lng,label){
       updateHeaderOffset();
     });
 
+    editLocation.addEventListener('click', e => {
+      e.preventDefault();
+      locationBox.style.display = '';
+    });
+
+    closeLocation.addEventListener('click', () => {
+      locationBox.style.display = 'none';
+    });
+
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
 
@@ -335,11 +349,11 @@ zip.addEventListener('input', async () => {
     return;
   }
 
-  originInfo.textContent = `Looking up ZIP ${z}…`;
+  originMsg.textContent = `Looking up ZIP ${z}…`;
   try {
     const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
     if (resp.status === 404) {
-      originInfo.textContent = `ZIP ${z} not found.`;
+      originMsg.textContent = `ZIP ${z} not found.`;
       return;
     }
     if (!resp.ok) throw new Error('Network error');
@@ -352,21 +366,21 @@ zip.addEventListener('input', async () => {
       localStorage.setItem('zipCache', JSON.stringify(zipCache));
       setOrigin(lat, lng, `ZIP ${z}`);
     } else {
-      originInfo.textContent = `ZIP ${z} not found.`;
+      originMsg.textContent = `ZIP ${z} not found.`;
     }
   } catch {
-    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+    originMsg.textContent = `Network error while looking up ZIP ${z}.`;
   }
 });
 
   useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      originInfo.textContent = 'Geolocation not supported by this browser.';
+      originMsg.textContent = 'Geolocation not supported by this browser.';
       return;
     }
     navigator.geolocation.getCurrentPosition(
       pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
-      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
+      () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
   });
   SPOTS = await loadSpots();

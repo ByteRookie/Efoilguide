@@ -14,7 +14,7 @@
     <h1>Online Efoil Guide</h1>
     <div class="sub">
       Rig: <strong>Fliteboard Pro + Jet2</strong> • Wings: <strong>MN 1300 C</strong> (front) + <strong>Flow 245 C</strong> (stab) • Battery: <strong>Sport</strong>
-      <br><span id="originInfo" class="hint">Set your origin below to sort by distance & ETA. Your address is never stored.</span>
+      <br><span id="originInfo" class="hint"><span id="originMsg">Set your origin to sort by distance & ETA. Your address is never stored.</span> <a href="#" id="editLocation">Edit location</a></span>
     </div>
 
     <div style="display:flex;gap:8px;align-items:center;width:100%">
@@ -23,16 +23,6 @@
       <button id="filterToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Filters</button>
     </div>
     <div id="filters" class="controls" style="display:none;margin-top:8px">
-      <div class="control">
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
-          <span class="split"></span>
-          <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
-          <span class="hint" id="minsVal">≤ 180 min</span>
-        </div>
-        <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
-      </div>
       <div class="control">
         <div class="legend-row">
           <div class="chip-group">
@@ -58,6 +48,18 @@
     </div>
   </div>
 </header>
+
+<div id="locationBox" class="control" style="display:none">
+  <button id="closeLocation" aria-label="Close">✕</button>
+  <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+    <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
+    <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
+    <span class="split"></span>
+    <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+    <span class="hint" id="minsVal">≤ 180 min</span>
+  </div>
+  <div class="hint" id="zipHint">ZIP applies automatically when filled. Unrecognized ZIP? Try the location icon.</div>
+</div>
 
 <main class="wrap" id="main">
   <div id="viewWindow" style="overflow:hidden">
