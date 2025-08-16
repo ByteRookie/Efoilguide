@@ -321,6 +321,7 @@ function setOrigin(lat,lng,label){
     let showingMap = false;
     viewToggle.addEventListener('click', () => {
       showingMap = !showingMap;
+      mapEl.style.display = showingMap ? 'block' : 'none';
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       tblHeader.style.display = showingMap ? 'none' : '';
