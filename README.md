@@ -5,8 +5,10 @@ If you’re just looking for spot information, head to https://efoil.guide; the 
 
 ## Preview
 
-![Map view](readme_imgs/preview-map.png)
-![Table view](readme_imgs/preview-table.png)
+<p align="center">
+  <img src="readme_imgs/preview-map.png" alt="Map view" width="45%" />
+  <img src="readme_imgs/preview-table.png" alt="Table view" width="45%" />
+</p>
 
 ## Add a location
 1. Fork this repository.
