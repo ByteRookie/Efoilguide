@@ -400,7 +400,7 @@ function tableInView(){
   if(!tableWrap) return false;
   const rect = tableWrap.getBoundingClientRect();
   const headerH = headerEl ? headerEl.offsetHeight : 0;
-  return rect.top <= headerH && rect.bottom > headerH;
+  return rect.top <= headerH + 5 && rect.bottom > headerH;
 }
 
 function consumeTableScroll(dy){

@@ -62,7 +62,7 @@
 </header>
 
 <main class="wrap" id="main">
-  <div id="viewWindow" style="overflow-x:hidden;margin-top:16px">
+  <div id="viewWindow" style="overflow-x:hidden">
     <div id="viewSlider" style="display:flex;transition:transform .3s">
       <div id="tableView" style="min-width:100%">
         <div class="table-wrap">
@@ -82,8 +82,8 @@
       </div>
       <div id="mapView" style="min-width:100%;padding-top:16px">
         <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
-        <div id="selectedWrap" style="display:none;border-radius:var(--radius);border:1px solid var(--table-border)">
-          <table id="selectedTop"><tbody id="selectedTopBody"></tbody></table>
+        <div id="selectedWrap" style="display:none;border-radius:var(--radius);border:1px solid var(--table-border);overflow:hidden">
+          <div id="selectedTop"><table><tbody id="selectedTopBody"></tbody></table></div>
           <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
         </div>
       </div>
