@@ -170,7 +170,7 @@ ${detail('Address', s.addr)}
 
 function render(){
   if(!ORIGIN){
-    spotsBody.innerHTML = '<tr id="noResultsRow"><td colspan="5">No results</td></tr>';
+    spotsBody.innerHTML = '<tr id="noResultsRow"><td colspan="5">No results — select location</td></tr>';
     if(sortArrow) sortArrow.style.display = 'none';
     return;
   }
@@ -338,7 +338,8 @@ function setupDrag(chips){
 
     setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
-    ZIP_CENTROIDS = await loadZipCentroids();
+    // load ZIP centroids in the background so the UI can render immediately
+    loadZipCentroids().then(data => { ZIP_CENTROIDS = data; });
 
     updateOriginInfo();
     hideLocationControls();
@@ -348,6 +349,8 @@ function setupDrag(chips){
       if (z.length !== 5) return;
       if (ZIP_CENTROIDS[z]) {
         setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+      } else if (Object.keys(ZIP_CENTROIDS).length === 0) {
+        locationMessage.textContent = 'Loading ZIP data…';
       } else {
         locationMessage.textContent = `ZIP ${z} not found`;
       }
