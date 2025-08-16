@@ -85,15 +85,18 @@ function detail(label,value,spanClass='',pClass=''){
 
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
-let sortCol = 'name';
+let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
-    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedBody, map,
+    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
+    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
+  let shrinkTable = false;
+  let touchStartY = 0;
 let markers = {};
+let pageLocked = false;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
@@ -318,26 +321,39 @@ async function loadImages(){
 }
 
 function showSelected(s){
-  selectedBody.innerHTML = rowHTML(s);
-  const tr = selectedBody.querySelector('tr.parent');
-  if(tr){
-    // prepend column labels so the summary row is self‑describing
-    for(const td of tr.querySelectorAll('td[data-label]')){
-      const label = td.getAttribute('data-label');
-      td.innerHTML = `<strong>${label}:</strong> ${td.innerHTML}`;
-    }
-    tr.classList.add('open');
-    const detail = tr.nextElementSibling;
-    if(detail) detail.classList.remove('hide');
+  const temp = document.createElement('tbody');
+  temp.innerHTML = rowHTML(s);
+  const topRow = temp.querySelector('tr.parent');
+  const detail = temp.querySelector('tr.detail-row');
+  if(topRow){
+    topRow.classList.remove('parent');
+    topRow.removeAttribute('data-id');
+    topRow.querySelectorAll('td').forEach(td=>{
+      const lbl = td.getAttribute('data-label');
+      if(lbl) td.innerHTML = `<span class="cell-label">${lbl}:</span> ` + td.innerHTML;
+    });
   }
+  if(detail) detail.classList.remove('hide');
+  selectedTopBody.innerHTML = '';
+  if(topRow) selectedTopBody.appendChild(topRow);
+  selectedBody.innerHTML = '';
+  if(detail) selectedBody.appendChild(detail);
+  selectedDetail.scrollTop = 0;
   selectedWrap.style.display='';
   loadImages();
   updateMapHeights();
 }
 
 function clearSelected(){
+  if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+  selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
   selectedWrap.style.display='none';
+  document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+    o.classList.remove('open');
+    const d=o.nextElementSibling;
+    if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+  });
   updateMapHeights();
 }
 
@@ -355,21 +371,128 @@ function updateMapHeights(){
   if(map) map.invalidateSize();
 }
 
-function render(){
-  // sort by distance if origin set; otherwise by name
-  const rows = SPOTS.slice().sort((a,b)=>{
-    if(!ORIGIN){
-      sortCol = 'name';
-      return a.name.localeCompare(b.name);
+function moveSortArrow(th){
+  if(sortArrow) th.appendChild(sortArrow);
+  document.querySelectorAll('#tbl thead th').forEach(cell=>cell.removeAttribute('aria-sort'));
+  th.setAttribute('aria-sort','ascending');
+}
+
+function updateTableScroll(){
+  if(!tableWrap || !spotsBody) return;
+  const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
+  if(rows.length===0){
+    tableWrap.classList.remove('scroll');
+    spotsBody.style.maxHeight='';
+    return;
+  }
+  const h = rows[0].getBoundingClientRect().height;
+  const top = tableWrap.getBoundingClientRect().top;
+  const avail = window.innerHeight - top;
+  const maxVisible = Math.floor(avail / h);
+  const target = shrinkTable ? 5 : 10;
+  const maxRows = Math.min(target, maxVisible);
+  if(rows.length>maxRows){
+    tableWrap.classList.add('scroll');
+    spotsBody.style.maxHeight = h*maxRows + 'px';
+  }else{
+    tableWrap.classList.remove('scroll');
+    spotsBody.style.maxHeight='';
+  }
+}
+
+function tableInView(){
+  if(!tableWrap) return false;
+  const rect = tableWrap.getBoundingClientRect();
+  const headerH = headerEl ? headerEl.offsetHeight : 0;
+  return rect.top <= headerH + 5 && rect.bottom > headerH;
+}
+
+function consumeTableScroll(dy){
+  if(showingMap || !tableWrap || !tableWrap.classList.contains('scroll')) return false;
+  if(!tableInView()) return false;
+  const atTop = spotsBody.scrollTop === 0;
+  const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
+  if((dy < 0 && !atTop) || (dy > 0 && !atBottom)){
+    spotsBody.scrollTop += dy;
+    lockPageScroll(true);
+    return true;
+  }
+  lockPageScroll(false);
+  return false;
+}
+
+function consumeDetailScroll(dy){
+  if(!showingMap || !selectedDetail || selectedDetail.scrollHeight <= selectedDetail.clientHeight) return false;
+  const atTop = selectedDetail.scrollTop === 0;
+  const atBottom = selectedDetail.scrollTop + selectedDetail.clientHeight >= selectedDetail.scrollHeight;
+  if((dy < 0 && !atTop) || (dy > 0 && !atBottom)){
+    selectedDetail.scrollTop += dy;
+    lockPageScroll(true);
+    return true;
+  }
+  lockPageScroll(false);
+  return false;
+}
+
+function lockPageScroll(lock){
+  if(lock && !pageLocked){
+    document.documentElement.style.overflow = 'hidden';
+    pageLocked = true;
+  }else if(!lock && pageLocked){
+    document.documentElement.style.overflow = '';
+    pageLocked = false;
+  }
+}
+
+function handleWheel(e){
+  if(consumeTableScroll(e.deltaY) || consumeDetailScroll(e.deltaY)) e.preventDefault();
+}
+
+function handleTouchStart(e){
+  touchStartY = e.touches[0].clientY;
+}
+
+function handleTouchMove(e){
+  const dy = touchStartY - e.touches[0].clientY;
+  if(consumeTableScroll(dy) || consumeDetailScroll(dy)){
+    touchStartY = e.touches[0].clientY;
+    e.preventDefault();
+  }
+}
+
+function checkShrink(){
+  const shouldShrink = window.scrollY>0 || window.innerHeight<700;
+  if(shouldShrink !== shrinkTable){
+    shrinkTable = shouldShrink;
+    if(shrinkTable && spotsBody){
+      spotsBody.scrollTop = 0;
+      lockPageScroll(true);
     }
-    sortCol = 'dist';
-    const da = haversine(ORIGIN,[a.lat,a.lng]);
-    const db = haversine(ORIGIN,[b.lat,b.lng]);
-    return da-db;
+    updateTableScroll();
+  }
+}
+
+function render(){
+  const rows = SPOTS.slice().sort((a,b)=>{
+    switch(sortCol){
+      case 'dist':{
+        if(!ORIGIN) return a.name.localeCompare(b.name);
+        const da = haversine(ORIGIN,[a.lat,a.lng]);
+        const db = haversine(ORIGIN,[b.lat,b.lng]);
+        return da-db;
+      }
+      case 'water':
+        return a.water.localeCompare(b.water);
+      case 'season':
+        return a.season.localeCompare(b.season);
+      case 'skill':
+        return (a.skill[0]||'').localeCompare(b.skill[0]||'');
+      default:
+        return a.name.localeCompare(b.name);
+    }
   });
   spotsBody.innerHTML = rows.map(rowHTML).join('');
   attachRowHandlers();
-  if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
   loadImages();
 }
@@ -378,6 +501,7 @@ function attachRowHandlers(){
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     tr.addEventListener('click',()=>{
       const wasOpen = tr.classList.contains('open');
+      const id = tr.getAttribute('data-id');
       document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
         if(o!==tr){
           o.classList.remove('open');
@@ -390,8 +514,55 @@ function attachRowHandlers(){
       if(detail && detail.classList.contains('detail-row')){
         detail.classList.toggle('hide', wasOpen);
       }
+      if(!wasOpen){
+        if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+        selectedId = id;
+        if(showingMap && markers[id]){
+          setMarkerSelected(markers[id], true);
+          const spot = SPOTS.find(s=>s.id===id);
+          if(spot) showSelected(spot);
+        }
+      }else if(selectedId===id){
+        if(markers[id]) setMarkerSelected(markers[id], false);
+        selectedId = null;
+        if(showingMap) clearSelected();
+      }
     });
   });
+}
+
+function openTableRow(id, block='start'){
+  const tr = document.querySelector(`#tbl tbody tr.parent[data-id="${id}"]`);
+  if(!tr) return;
+  const wasOpen = tr.classList.contains('open');
+  document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+    if(o!==tr){
+      o.classList.remove('open');
+      const d=o.nextElementSibling;
+      if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+    }
+  });
+  tr.classList.add('open');
+  const detail = tr.nextElementSibling;
+  if(detail && detail.classList.contains('detail-row')) detail.classList.remove('hide');
+  if(!wasOpen) {
+    if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+    selectedId = id;
+  }
+  if(spotsBody && tableWrap && tableWrap.classList.contains('scroll')){
+    const trRect = tr.getBoundingClientRect();
+    const bodyRect = spotsBody.getBoundingClientRect();
+    const offset = trRect.top - bodyRect.top + spotsBody.scrollTop;
+    if(block==='center'){
+      spotsBody.scrollTop = offset - spotsBody.clientHeight/2 + trRect.height/2;
+    }else{
+      const max = spotsBody.scrollHeight - spotsBody.clientHeight;
+      spotsBody.scrollTop = Math.min(offset, max);
+    }
+  }else{
+    tr.scrollIntoView({block});
+  }
+  loadImages();
 }
 
 function applyTileScheme(m){
@@ -514,6 +685,7 @@ function applyFilters(){
   });
   minsVal.textContent = `≤ ${mins.value} min`;
   updateMapView();
+  updateTableScroll();
 }
 
 function setupDrag(chips){
@@ -572,14 +744,26 @@ function setOrigin(lat,lng,label){
     mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
     selectedWrap = document.getElementById('selectedWrap');
+    selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
+    selectedDetail = document.getElementById('selectedDetail');
+    tableWrap = document.querySelector('.table-wrap');
 
-    document.querySelectorAll('th.sortable').forEach(th => {
+    window.addEventListener('wheel', handleWheel, {passive:false});
+    window.addEventListener('touchstart', handleTouchStart, {passive:false});
+    window.addEventListener('touchmove', handleTouchMove, {passive:false});
+
+    document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           th.click();
         }
+      });
+      th.addEventListener('click', () => {
+        sortCol = th.dataset.sort;
+        moveSortArrow(th);
+        render();
       });
     });
 
@@ -589,6 +773,11 @@ function setOrigin(lat,lng,label){
       showingMap = !showingMap;
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      window.scrollTo(0,0);
+      if(spotsBody) spotsBody.scrollTop = 0;
+      if(mapView) mapView.scrollTop = 0;
+      lockPageScroll(false);
+      checkShrink();
       if(showingMap){
         // size the container before Leaflet initializes to avoid a zero-height map
         updateMapHeights();
@@ -597,10 +786,21 @@ function setOrigin(lat,lng,label){
         updateMapView();
         // run again once visible so Leaflet recalculates dimensions
         requestAnimationFrame(updateMapHeights);
+        if(selectedId){
+          const spot = SPOTS.find(s=>s.id===selectedId);
+          if(spot){
+            if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
+            showSelected(spot);
+            map.flyTo([spot.lat, spot.lng], 13);
+          }
+        }else{
+          clearSelected();
+        }
       }else{
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
+        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'start'));
       }
     });
 
@@ -639,6 +839,7 @@ function setOrigin(lat,lng,label){
   function handleResize(){
     updateHeaderOffset();
     updateMapHeights();
+    checkShrink();
   }
   window.addEventListener('resize', handleResize);
   handleResize();
@@ -708,6 +909,7 @@ zip.addEventListener('input', async () => {
 
   window.addEventListener('scroll', () => {
     toTop.classList.toggle('show', window.scrollY > 200);
+    checkShrink();
   });
   toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 });
