@@ -79,14 +79,20 @@ function detail(label,value,spanClass='',pClass=''){
   const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
   return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
+
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewSlider, mapEl, map,
+    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedBody, map,
     editLocation, locationBox, closeLocation, searchRow;
+let showingMap = false;
+let selectedId = null;
+let markers = {};
+const MAP_START = [37.7749,-122.4194];
+const MAP_ZOOM = 10;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -110,6 +116,28 @@ function etaMinutes(mi){
   // add a signal/parking fudge (5 min) for short trips, 10 min for >30mi
   mins += mi>30?10:5;
   return Math.round(mins);
+}
+
+function milesFromMinutes(min){
+  let lo=0, hi=500;
+  for(let i=0;i<20;i++){
+    const mid=(lo+hi)/2;
+    if(etaMinutes(mid)>min) hi=mid; else lo=mid;
+  }
+  return lo;
+}
+
+function updateMapView(){
+  if(!map) return;
+  if(ORIGIN){
+    const radius = milesFromMinutes(+mins.value);
+    const circle = L.circle(ORIGIN,{radius:radius*1609.34});
+    const bounds = circle.getBounds();
+    const zoom = map.getBoundsZoom(bounds);
+    map.flyTo(ORIGIN, zoom);
+  }else{
+    map.flyTo(MAP_START, MAP_ZOOM);
+  }
 }
 
 function badgeWater(w){
@@ -204,6 +232,44 @@ async function loadImages(){
   }
 }
 
+function showSelected(s){
+  selectedBody.innerHTML = rowHTML(s);
+  const tr = selectedBody.querySelector('tr.parent');
+  if(tr){
+    // prepend column labels so the summary row is self‑describing
+    for(const td of tr.querySelectorAll('td[data-label]')){
+      const label = td.getAttribute('data-label');
+      td.innerHTML = `<strong>${label}:</strong> ${td.innerHTML}`;
+    }
+    tr.classList.add('open');
+    const detail = tr.nextElementSibling;
+    if(detail) detail.classList.remove('hide');
+  }
+  selectedWrap.style.display='';
+  loadImages();
+  updateMapHeights();
+}
+
+function clearSelected(){
+  selectedBody.innerHTML='';
+  selectedWrap.style.display='none';
+  updateMapHeights();
+}
+
+function setMarkerSelected(marker, sel){
+  const el = marker && marker.getElement ? marker.getElement() : null;
+  if(el) el.classList.toggle('selected', sel);
+}
+
+function updateMapHeights(){
+  if(!showingMap) return;
+  const top = viewWindow.getBoundingClientRect().top;
+  const avail = window.innerHeight - top;
+  mapView.style.height = avail + 'px';
+  viewWindow.style.height = avail + 'px';
+  if(map) map.invalidateSize();
+}
+
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
@@ -245,14 +311,65 @@ function attachRowHandlers(){
 
 function initMap(){
   if(map) return;
-  map = L.map('map').setView([37.7749,-122.4194],10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  map = L.map('map').setView(MAP_START, MAP_ZOOM);
+
+  const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
     attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
-  SPOTS.forEach(s=>{
-    L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
   });
+  const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors &copy; CARTO'
+  });
+  let baseLayer;
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyScheme(){
+    const next = mq.matches ? dark : light;
+    if(baseLayer) map.removeLayer(baseLayer);
+    baseLayer = next.addTo(map);
+  }
+  mq.addEventListener('change', applyScheme);
+  applyScheme();
+
+  SPOTS.forEach(s=>{
+    const marker = L.marker([s.lat, s.lng]).addTo(map);
+    markers[s.id] = marker;
+    marker.on('click', () => {
+      map.flyTo([s.lat, s.lng], 13);
+      if(selectedId === s.id){
+        setMarkerSelected(marker,false);
+        selectedId = null;
+        clearSelected();
+      }else{
+        if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+        selectedId = s.id;
+        setMarkerSelected(marker,true);
+        showSelected(s);
+      }
+    });
+  });
+  map.on('click', () => {
+    if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+    selectedId = null;
+    clearSelected();
+  });
+
+  const reset = L.control({position:'topleft'});
+  reset.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href = '#';
+    a.innerHTML = '↺';
+    a.title = 'Reset view';
+    L.DomEvent.on(a,'click',e=>{
+      L.DomEvent.preventDefault(e);
+      map.setView(MAP_START, MAP_ZOOM);
+    });
+    return div;
+  };
+  reset.addTo(map);
+
+  applyFilters();
 }
 
 /* ---------- Filters ---------- */
@@ -286,8 +403,21 @@ function applyFilters(){
     if(detail && detail.classList.contains('detail-row')){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
     }
+    if(map && markers[id]){
+      if(ok){
+        if(!map.hasLayer(markers[id])) markers[id].addTo(map);
+      }else{
+        if(map.hasLayer(markers[id])) markers[id].remove();
+        if(selectedId === id){
+          setMarkerSelected(markers[id], false);
+          selectedId = null;
+          clearSelected();
+        }
+      }
+    }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
+  updateMapView();
 }
 
 function setupDrag(chips){
@@ -315,6 +445,7 @@ function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
+  updateMapView();
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
@@ -340,8 +471,12 @@ function setOrigin(lat,lng,label){
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
+    viewWindow = document.getElementById('viewWindow');
     viewSlider = document.getElementById('viewSlider');
+    mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
+    selectedWrap = document.getElementById('selectedWrap');
+    selectedBody = document.getElementById('selectedBody');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
@@ -354,12 +489,23 @@ function setOrigin(lat,lng,label){
 
     sortArrow = document.getElementById('sortArrow');
 
-    let showingMap = false;
     viewToggle.addEventListener('click', () => {
       showingMap = !showingMap;
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
-      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+      if(showingMap){
+        // size the container before Leaflet initializes to avoid a zero-height map
+        updateMapHeights();
+        initMap();
+        applyFilters();
+        updateMapView();
+        // run again once visible so Leaflet recalculates dimensions
+        requestAnimationFrame(updateMapHeights);
+      }else{
+        viewWindow.style.height = '';
+        mapView.style.height = '';
+        clearSelected();
+      }
     });
 
       // toggle filters visibility and button label
@@ -368,7 +514,7 @@ function setOrigin(lat,lng,label){
         filtersEl.style.display = willOpen ? '' : 'none';
         filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
         filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        updateHeaderOffset();
+        handleResize();
       });
 
     editLocation.addEventListener('click', e => {
@@ -377,14 +523,14 @@ function setOrigin(lat,lng,label){
       locationBox.style.display = '';
       searchRow.style.marginTop = '8px';
       zip.focus();
-      updateHeaderOffset();
+      handleResize();
     });
 
     closeLocation.addEventListener('click', () => {
       locationBox.style.display = 'none';
       editLocation.style.display = '';
       searchRow.style.marginTop = '';
-      updateHeaderOffset();
+      handleResize();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
@@ -394,13 +540,21 @@ function setOrigin(lat,lng,label){
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
-    window.addEventListener('resize', updateHeaderOffset);
+  function handleResize(){
     updateHeaderOffset();
+    updateMapHeights();
+  }
+  window.addEventListener('resize', handleResize);
+  handleResize();
 
-    [q, mins].forEach(el => {
-      el.addEventListener('input', () => {
-        applyFilters();
-      });
+    q.addEventListener('input', () => {
+      applyFilters();
+    });
+    mins.addEventListener('input', () => {
+      applyFilters();
+    });
+    mins.addEventListener('change', () => {
+      applyFilters();
     });
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
