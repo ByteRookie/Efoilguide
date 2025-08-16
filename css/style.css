@@ -140,7 +140,7 @@
 
 .leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}
 
-#mapView{display:block;}
-#map{height:60vh;}
-#selectedWrap{display:none;margin-top:16px;border-radius:var(--radius);border:1px solid var(--table-border);background:var(--card);padding:16px;font-size:14px;}
+#mapView{display:flex;flex-direction:column;}
+#map{flex:1;}
+#selectedWrap{flex:1;display:none;margin-top:16px;overflow:auto;border-radius:var(--radius);border:1px solid var(--table-border);background:var(--card);padding:16px;font-size:14px;}
 #selectedWrap p{margin:6px 0;}
