@@ -45,11 +45,13 @@ Fields can contain more than one citation by placing them sequentially:
 The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://github.com/). (Replace with the repository's GitHub Pages URL.)
 
 ## Local development
-No build step is required. Open `index.html` in a browser or serve the folder with any static file server.
+No build step is required. Serve the folder with a static file server—opening `index.html` directly may not load data.
 
 ### Quick Start
 
-Prerequisite: Node.js not required—this is a static site.
+If you only want to browse the live site, visit [efoil.guide](https://efoil.guide). The steps below run the site locally.
+
+Prerequisite: Node.js not required—this is a static site. You just need Python for a simple server.
 
 1. Clone the repository:
 
@@ -57,9 +59,9 @@ Prerequisite: Node.js not required—this is a static site.
    git clone https://github.com/<your_username>/Efoilguide.git
    cd Efoilguide
    ```
-2. Open `index.html` in your browser.
-3. (Optional) Start a simple static server and visit `http://localhost:8000`:
+2. Start a simple static server:
 
    ```bash
    python -m http.server
    ```
+3. Open `http://localhost:8000` in your browser.
