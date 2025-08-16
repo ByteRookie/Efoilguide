@@ -69,6 +69,7 @@ function detail(label,value,spanClass='',pClass=''){
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let sortAsc = true;
+let shrinkTable = false;
 let originInfo, spotsBody, tableWrap, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, tblHeader, toTop, sortArrow,
@@ -250,20 +251,32 @@ function applyFilters(){
     }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
-  updateTableHeight();
+  handleScrollResize();
 }
 
 function updateTableHeight(){
   if(!tableWrap) return;
   const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
-  if(rows.length > 5 && rows[0]){
-    const rowH = rows[0].offsetHeight;
-    tableWrap.style.maxHeight = (rowH * 5) + 'px';
-    tableWrap.classList.add('scroll');
+  if(!rows.length) return;
+  const rowH = rows[0].offsetHeight;
+  const rowLimit = shrinkTable ? 5 : 10;
+  if(rows.length > rowLimit){
+    tableWrap.style.maxHeight = (rowH * rowLimit) + 'px';
+    tableWrap.classList.toggle('scroll', shrinkTable);
   } else {
     tableWrap.style.maxHeight = '';
     tableWrap.classList.remove('scroll');
   }
+}
+
+function handleScrollResize(){
+  if(!tableWrap) return;
+  const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
+  if(!rows.length) return;
+  const rowH = rows[0].offsetHeight;
+  const headerSpace = headerEl.offsetHeight + tblHeader.offsetHeight;
+  shrinkTable = window.scrollY > 0 || window.innerHeight < (rowH * 10 + headerSpace);
+  updateTableHeight();
 }
 
 function setHeaderHeight(){
@@ -342,7 +355,7 @@ function setOrigin(lat,lng,label){
     setHeaderHeight();
     window.addEventListener('resize', () => {
       setHeaderHeight();
-      updateTableHeight();
+      handleScrollResize();
     });
 
     let showingMap = false;
@@ -352,13 +365,14 @@ function setOrigin(lat,lng,label){
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       tblHeader.style.display = showingMap ? 'none' : '';
-      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); } else { updateTableHeight(); }
+      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); } else { handleScrollResize(); }
     });
 
     filterToggle.addEventListener('click', () => {
       const open = filtersEl.style.display === 'none';
       filtersEl.style.display = open ? '' : 'none';
       setHeaderHeight();
+      handleScrollResize();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
@@ -428,6 +442,7 @@ zip.addEventListener('input', async () => {
 
   window.addEventListener('scroll', () => {
     toTop.classList.toggle('show', window.scrollY > 200);
+    handleScrollResize();
   });
   toTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 });
