@@ -261,11 +261,9 @@ function updateTableHeight(){
     const headerH = tblHeader.offsetHeight;
     tableWrap.style.maxHeight = (headerH + rowH * 5) + 'px';
     tableWrap.classList.add('scroll');
-    tblHeader.classList.add('sticky');
   } else {
     tableWrap.style.maxHeight = '';
     tableWrap.classList.remove('scroll');
-    tblHeader.classList.remove('sticky');
   }
 }
 
