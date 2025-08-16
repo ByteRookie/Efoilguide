@@ -69,8 +69,11 @@ function parseCitations(str=''){
     (_, txt, names, urls)=>{
       const nArr = names.split(/"\s*,\s*"/).map(s=>s.trim());
       const uArr = urls.split(/"\s*,\s*"/).map(s=>s.trim());
-      const links = nArr.map((n,i)=>`<a href="${uArr[i]||'#'}" target="_blank">${n}</a>`).join('');
-      return `${txt}<span class="cite-group">${links}</span>`;
+      const groups = nArr.map((n,i)=>{
+        const url = uArr[i] || '#';
+        return `<span class="cite-group"><a href="${url}" target="_blank">${n}</a></span>`;
+      }).join('');
+      return `${txt}${groups}`;
     });
 }
 
@@ -169,9 +172,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <div class="img-box">
-          <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
-        </div>
+        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -190,45 +191,129 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
-async function findImage(id){
+async function findImages(id){
   const exts=['jpg','jpeg','png','gif','webp'];
-  let latest=0, chosen=null;
-  await Promise.all(exts.map(async ext=>{
-    const url=`data/img/${id}.${ext}`;
-    try{
-      const resp=await fetch(url,{method:'HEAD'});
-      if(resp.ok){
-        const lm=resp.headers.get('last-modified');
-        const t=lm?new Date(lm).getTime():0;
-        if(t>=latest){latest=t; chosen=url;}
-      }
-    }catch(e){}
-  }));
-  return chosen;
+  const urls=[];
+
+  async function exists(url){
+    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch(e){ return false; }
+  }
+
+  let firstFound=false;
+  for(const ext of exts){
+    const plain=`data/img/${id}.${ext}`;
+    const numbered=`data/img/${id}_1.${ext}`;
+    if(await exists(plain)){ urls.push(plain); firstFound=true; break; }
+    if(await exists(numbered)){ urls.push(numbered); firstFound=true; break; }
+  }
+  if(!firstFound) return [];
+
+  for(let i=2;i<20;i++){ // support up to 19 additional images
+    let found=false;
+    for(const ext of exts){
+      const url=`data/img/${id}_${i}.${ext}`;
+      if(await exists(url)){ urls.push(url); found=true; break; }
+    }
+    if(!found) break;
+  }
+  return urls;
 }
 
 async function loadImages(){
-  const defaultSrc = await findImage('default');
-  const imgs=document.querySelectorAll('img[data-img-id]');
-  for(const img of imgs){
-    const id=img.getAttribute('data-img-id');
-    let src=await findImage(id);
-    if(!src && defaultSrc) src=defaultSrc;
-    if(src){
+  const boxes=document.querySelectorAll('.img-box[data-img-id]');
+  for(const box of boxes){
+    const id=box.getAttribute('data-img-id');
+    const name=box.getAttribute('data-name')||'';
+    const lat=parseFloat(box.getAttribute('data-lat'));
+    const lng=parseFloat(box.getAttribute('data-lng'));
+    const srcs=await findImages(id);
+
+    box.innerHTML='';
+
+    if(srcs.length===0){
+      const mapDiv=document.createElement('div');
+      mapDiv.className='mini-map';
+      box.appendChild(mapDiv);
+      createMiniMap(mapDiv, lat, lng);
+      box.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
+      continue;
+    }
+
+    const toggle=document.createElement('div');
+    toggle.className='media-toggle';
+    const imgBtn=document.createElement('button');
+    imgBtn.textContent='Images';
+    imgBtn.className='active';
+    const mapBtn=document.createElement('button');
+    mapBtn.textContent='Map';
+    toggle.appendChild(imgBtn);
+    toggle.appendChild(mapBtn);
+    box.appendChild(toggle);
+
+    const carousel=document.createElement('div');
+    carousel.className='img-carousel';
+    srcs.forEach((src,idx)=>{
+      const slide=document.createElement('div');
+      slide.className='slide'+(idx===0?' active':'');
+      const img=document.createElement('img');
       img.src=src;
-      img.onerror=()=>img.remove();
+      img.alt=`${name} image`;
+      img.loading='lazy';
+      img.onerror=()=>slide.remove();
+      slide.appendChild(img);
       const file=src.split('/').pop();
       const credit=IMG_CREDITS[file];
       if(credit && (credit.sourceName || credit.sourceURL)){
-        const name=credit.sourceName||credit.sourceURL||'';
+        const creditName=credit.sourceName||credit.sourceURL||'';
         const url=credit.sourceURL;
-        const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
-        const wrap=img.parentElement;
-        wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+        const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
+        slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
       }
-    }else{
-      img.remove();
+      carousel.appendChild(slide);
+    });
+    if(srcs.length>1){
+      const prev=document.createElement('button');
+      prev.className='prev';
+      prev.textContent='‹';
+      const next=document.createElement('button');
+      next.className='next';
+      next.textContent='›';
+      carousel.appendChild(prev);
+      carousel.appendChild(next);
+      const slidesEls=carousel.querySelectorAll('.slide');
+      let idx=0;
+      function show(n){
+        idx=(n+slidesEls.length)%slidesEls.length;
+        slidesEls.forEach((sl,i)=>sl.classList.toggle('active', i===idx));
+      }
+      prev.addEventListener('click',()=>show(idx-1));
+      next.addEventListener('click',()=>show(idx+1));
     }
+    box.appendChild(carousel);
+
+    const mapHolder=document.createElement('div');
+    mapHolder.className='map-holder';
+    const mapDiv=document.createElement('div');
+    mapDiv.className='mini-map';
+    mapHolder.appendChild(mapDiv);
+    mapHolder.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
+    mapHolder.style.display='none';
+    box.appendChild(mapHolder);
+
+    let mapInit=false;
+    imgBtn.addEventListener('click',()=>{
+      imgBtn.classList.add('active');
+      mapBtn.classList.remove('active');
+      carousel.style.display='';
+      mapHolder.style.display='none';
+    });
+    mapBtn.addEventListener('click',()=>{
+      mapBtn.classList.add('active');
+      imgBtn.classList.remove('active');
+      carousel.style.display='none';
+      mapHolder.style.display='';
+      if(!mapInit){ createMiniMap(mapDiv, lat, lng); mapInit=true; }
+    });
   }
 }
 
@@ -309,10 +394,7 @@ function attachRowHandlers(){
   });
 }
 
-function initMap(){
-  if(map) return;
-  map = L.map('map').setView(MAP_START, MAP_ZOOM);
-
+function applyTileScheme(m){
   const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
     attribution:'&copy; OpenStreetMap contributors'
@@ -323,13 +405,20 @@ function initMap(){
   });
   let baseLayer;
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
-  function applyScheme(){
+  function apply(){
     const next = mq.matches ? dark : light;
-    if(baseLayer) map.removeLayer(baseLayer);
-    baseLayer = next.addTo(map);
+    if(baseLayer) m.removeLayer(baseLayer);
+    baseLayer = next.addTo(m);
   }
-  mq.addEventListener('change', applyScheme);
-  applyScheme();
+  mq.addEventListener('change', apply);
+  apply();
+}
+
+function initMap(){
+  if(map) return;
+  map = L.map('map').setView(MAP_START, MAP_ZOOM);
+
+  applyTileScheme(map);
 
   SPOTS.forEach(s=>{
     const marker = L.marker([s.lat, s.lng]).addTo(map);
@@ -370,6 +459,13 @@ function initMap(){
   reset.addTo(map);
 
   applyFilters();
+}
+
+function createMiniMap(el, lat, lng){
+  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
+  applyTileScheme(m);
+  L.marker([lat, lng]).addTo(m);
+  setTimeout(()=>m.invalidateSize(),0);
 }
 
 /* ---------- Filters ---------- */
