@@ -386,35 +386,39 @@ function updateTableScroll(){
   }
 }
 
-function handleTableWheel(e){
-  if(showingMap) return;
-  if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
-    const atTop = spotsBody.scrollTop===0;
-    const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
-    const dy = e.deltaY;
-    if((dy<0 && !atTop) || (dy>0 && !atBottom)){
-      spotsBody.scrollTop += dy;
-      e.preventDefault();
-    }
+function tableInView(){
+  if(!tableWrap) return false;
+  const rect = tableWrap.getBoundingClientRect();
+  const headerH = headerEl ? headerEl.offsetHeight : 0;
+  return rect.top <= headerH && rect.bottom > headerH;
+}
+
+function consumeTableScroll(dy){
+  if(showingMap || !tableWrap || !tableWrap.classList.contains('scroll')) return false;
+  if(!tableInView()) return false;
+  const atTop = spotsBody.scrollTop === 0;
+  const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
+  if((dy < 0 && !atTop) || (dy > 0 && !atBottom)){
+    spotsBody.scrollTop += dy;
+    return true;
   }
+  return false;
+}
+
+function handleTableWheel(e){
+  if(consumeTableScroll(e.deltaY)) e.preventDefault();
 }
 
 function handleTouchStart(e){
   if(showingMap) return;
-  if(window.scrollY===0) touchStartY = e.touches[0].clientY;
+  touchStartY = e.touches[0].clientY;
 }
 
 function handleTouchMove(e){
-  if(showingMap) return;
-  if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
-    const dy = touchStartY - e.touches[0].clientY;
-    const atTop = spotsBody.scrollTop===0;
-    const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
-    if((dy<0 && !atTop) || (dy>0 && !atBottom)){
-      spotsBody.scrollTop += dy;
-      touchStartY = e.touches[0].clientY;
-      e.preventDefault();
-    }
+  const dy = touchStartY - e.touches[0].clientY;
+  if(consumeTableScroll(dy)){
+    touchStartY = e.touches[0].clientY;
+    e.preventDefault();
   }
 }
 
@@ -674,6 +678,10 @@ function setOrigin(lat,lng,label){
       showingMap = !showingMap;
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      window.scrollTo(0,0);
+      if(spotsBody) spotsBody.scrollTop = 0;
+      if(mapView) mapView.scrollTop = 0;
+      checkShrink();
       if(showingMap){
         // size the container before Leaflet initializes to avoid a zero-height map
         updateMapHeights();
