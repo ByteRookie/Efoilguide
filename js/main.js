@@ -138,7 +138,9 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
+        <div class="img-box">
+          <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
+        </div>
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -188,7 +190,8 @@ async function loadImages(){
         const name=credit.sourceName||credit.sourceURL||'';
         const url=credit.sourceURL;
         const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
-        img.insertAdjacentHTML('afterend', `<div class="img-credit">Source: ${html}</div>`);
+        const wrap = img.parentElement;
+        wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
       }
     }else{
       img.remove();

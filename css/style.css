@@ -99,8 +99,9 @@
     td.detail{padding:16px;font-size:14px}
     td.detail p{margin:6px 0}
     .detail-grid{display:flex;flex-wrap:wrap;gap:16px}
-    .detail-grid img{max-width:300px;width:100%;height:auto;border-radius:8px;flex:1 1 250px}
-    .detail-grid .img-credit{font-size:12px;color:var(--muted);margin-top:4px}
+    .detail-grid .img-box{flex:1 1 250px;max-width:300px}
+    .detail-grid .img-box img{width:100%;height:auto;border-radius:8px;display:block}
+    .detail-grid .img-box .img-credit{font-size:12px;color:var(--muted);margin-top:4px}
     .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
