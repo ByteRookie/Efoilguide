@@ -224,35 +224,34 @@ async function loadImages(){
     const lat=parseFloat(box.getAttribute('data-lat'));
     const lng=parseFloat(box.getAttribute('data-lng'));
     const srcs=await findImages(id);
-    const slides=[];
-    const mapUrl=`https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=14&size=400x300&markers=${lat},${lng},red-pushpin`;
-    slides.push({type:'map',src:mapUrl});
+    const slides=[{type:'map'}];
     srcs.forEach(src=>slides.push({type:'img',src}));
-    if(slides.length===0){ box.remove(); continue; }
 
     if(slides.length===1){
-      const img=document.createElement('img');
-      img.src=slides[0].src;
-      img.alt=`${name} map`;
-      img.loading='lazy';
-      img.onerror=()=>box.remove();
-      box.appendChild(img);
+      const mapDiv=document.createElement('div');
+      mapDiv.className='mini-map';
+      box.appendChild(mapDiv);
+      createMiniMap(mapDiv, lat, lng);
       box.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
     }else{
       const carousel=document.createElement('div');
       carousel.className='img-carousel';
+      let mapDiv=null;
       slides.forEach((info,idx)=>{
         const slide=document.createElement('div');
         slide.className='slide'+(idx===0?' active':'');
-        const img=document.createElement('img');
-        img.src=info.src;
-        img.alt=`${name} ${info.type==='map'?'map':'image'}`;
-        img.loading='lazy';
-        img.onerror=()=>slide.remove();
-        slide.appendChild(img);
         if(info.type==='map'){
+          mapDiv=document.createElement('div');
+          mapDiv.className='mini-map';
+          slide.appendChild(mapDiv);
           slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
         }else{
+          const img=document.createElement('img');
+          img.src=info.src;
+          img.alt=`${name} image`;
+          img.loading='lazy';
+          img.onerror=()=>slide.remove();
+          slide.appendChild(img);
           const file=info.src.split('/').pop();
           const credit=IMG_CREDITS[file];
           if(credit && (credit.sourceName || credit.sourceURL)){
@@ -273,6 +272,7 @@ async function loadImages(){
       carousel.appendChild(prev);
       carousel.appendChild(next);
       box.appendChild(carousel);
+      if(mapDiv) createMiniMap(mapDiv, lat, lng);
       const slidesEls=carousel.querySelectorAll('.slide');
       let idx=0;
       function show(n){
@@ -362,10 +362,7 @@ function attachRowHandlers(){
   });
 }
 
-function initMap(){
-  if(map) return;
-  map = L.map('map').setView(MAP_START, MAP_ZOOM);
-
+function applyTileScheme(m){
   const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
     attribution:'&copy; OpenStreetMap contributors'
@@ -376,13 +373,20 @@ function initMap(){
   });
   let baseLayer;
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
-  function applyScheme(){
+  function apply(){
     const next = mq.matches ? dark : light;
-    if(baseLayer) map.removeLayer(baseLayer);
-    baseLayer = next.addTo(map);
+    if(baseLayer) m.removeLayer(baseLayer);
+    baseLayer = next.addTo(m);
   }
-  mq.addEventListener('change', applyScheme);
-  applyScheme();
+  mq.addEventListener('change', apply);
+  apply();
+}
+
+function initMap(){
+  if(map) return;
+  map = L.map('map').setView(MAP_START, MAP_ZOOM);
+
+  applyTileScheme(map);
 
   SPOTS.forEach(s=>{
     const marker = L.marker([s.lat, s.lng]).addTo(map);
@@ -423,6 +427,13 @@ function initMap(){
   reset.addTo(map);
 
   applyFilters();
+}
+
+function createMiniMap(el, lat, lng){
+  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
+  applyTileScheme(m);
+  L.marker([lat, lng]).addTo(m);
+  setTimeout(()=>m.invalidateSize(),0);
 }
 
 /* ---------- Filters ---------- */
