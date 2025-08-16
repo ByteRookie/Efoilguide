@@ -310,11 +310,14 @@ function setOrigin(lat,lng,label){
 
     editLocation.addEventListener('click', e => {
       e.preventDefault();
+      editLocation.style.display = 'none';
       locationBox.style.display = '';
+      zip.focus();
     });
 
     closeLocation.addEventListener('click', () => {
       locationBox.style.display = 'none';
+      editLocation.style.display = '';
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');

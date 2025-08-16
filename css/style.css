@@ -112,6 +112,6 @@
 .cite-group{display:inline-flex;gap:4px;margin-left:4px;font-size:0.75em;}
 .cite-group a{color:var(--muted);background:var(--badge);border:1px solid var(--badge-border);border-radius:4px;padding:0 4px;text-decoration:none;}
 
-#originInfo a{margin-left:8px}
-#locationBox{position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:100;max-width:300px;width:90%}
-#closeLocation{position:absolute;top:4px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted)}
+#originInfo a,#locationBox{margin-left:8px}
+#locationBox{display:inline-flex;align-items:center;gap:8px}
+#closeLocation{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);margin-left:4px;padding:4px}
