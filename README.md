@@ -42,7 +42,7 @@ Fields can contain more than one citation by placing them sequentially:
 
 3. Commit your changes and open a pull request describing the new spot.
 
-The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://github.com/). (Replace with the repository's GitHub Pages URL.)
+The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://byterookie.github.io/Efoilguide/).
 
 ## Local development
 No build step is required. Open `index.html` in a browser or serve the folder with any static file server.
