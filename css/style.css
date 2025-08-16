@@ -115,3 +115,5 @@
 #originInfo a,#locationBox{margin-left:8px}
 #locationBox{display:inline-flex;align-items:center;gap:8px}
 #closeLocation{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);margin-left:4px;padding:4px}
+#minsHint{position:absolute;right:0;top:100%;font-size:10px;white-space:nowrap}
+
