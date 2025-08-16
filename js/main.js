@@ -72,7 +72,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
     viewToggle, viewSlider, mapEl, map,
-    editLocation, locationBox, closeLocation;
+    editLocation, locationBox, closeLocation, searchRow;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -270,6 +270,7 @@ function setOrigin(lat,lng,label){
     q = document.getElementById('q');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
+    searchRow = document.getElementById('searchRow');
     waterChips = [...document.querySelectorAll('.f-water')];
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
@@ -312,12 +313,16 @@ function setOrigin(lat,lng,label){
       e.preventDefault();
       editLocation.style.display = 'none';
       locationBox.style.display = '';
+      searchRow.style.marginTop = '8px';
       zip.focus();
+      updateHeaderOffset();
     });
 
     closeLocation.addEventListener('click', () => {
       locationBox.style.display = 'none';
       editLocation.style.display = '';
+      searchRow.style.marginTop = '';
+      updateHeaderOffset();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
