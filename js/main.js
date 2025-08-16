@@ -549,7 +549,18 @@ function openTableRow(id, block='start'){
     if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = id;
   }
-  tr.scrollIntoView({block});
+  if(spotsBody && tableWrap && tableWrap.classList.contains('scroll')){
+    const trRect = tr.getBoundingClientRect();
+    const bodyRect = spotsBody.getBoundingClientRect();
+    const offset = trRect.top - bodyRect.top + spotsBody.scrollTop;
+    if(block==='center'){
+      spotsBody.scrollTop = offset - spotsBody.clientHeight/2 + trRect.height/2;
+    }else{
+      spotsBody.scrollTop = offset;
+    }
+  }else{
+    tr.scrollIntoView({block});
+  }
   loadImages();
 }
 
@@ -788,7 +799,7 @@ function setOrigin(lat,lng,label){
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
-        if(selectedId) openTableRow(selectedId,'center');
+        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'center'));
       }
     });
 
