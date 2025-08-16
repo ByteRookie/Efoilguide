@@ -415,6 +415,7 @@ function applyFilters(){
     }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
+  updateMapView();
 }
 
 function setupDrag(chips){
@@ -549,7 +550,9 @@ function setOrigin(lat,lng,label){
     });
     mins.addEventListener('input', () => {
       applyFilters();
-      updateMapView();
+    });
+    mins.addEventListener('change', () => {
+      applyFilters();
     });
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
