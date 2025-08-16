@@ -71,7 +71,7 @@ let sortCol = 'dist';
 let sortAsc = true;
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
-    zip, useGeo, filterToggle, filtersEl, headerEl, tblHeader, toTop, sortArrow,
+    zip, useGeo, filterToggle, filtersEl, tblHeader, toTop, sortArrow,
     viewToggle, viewSlider, mapEl, map;
 
 function haversine(a,b){
@@ -291,7 +291,6 @@ function setOrigin(lat,lng,label){
     useGeo = document.getElementById('useGeo');
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
-    headerEl = document.querySelector('header');
     tblHeader = document.querySelector('.tbl-header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
@@ -331,18 +330,9 @@ function setOrigin(lat,lng,label){
     filterToggle.addEventListener('click', () => {
       const open = filtersEl.style.display === 'none';
       filtersEl.style.display = open ? '' : 'none';
-      updateHeaderOffset();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
-
-
-
-  function updateHeaderOffset(){
-    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
-  }
-    window.addEventListener('resize', updateHeaderOffset);
-    updateHeaderOffset();
 
     [q, mins].forEach(el => {
       el.addEventListener('input', () => {
