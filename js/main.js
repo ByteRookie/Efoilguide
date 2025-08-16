@@ -24,6 +24,7 @@ const ZIP_CENTROIDS = {
 };
 
 let SPOTS = [];// loaded from CSV
+let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
 
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/);
@@ -48,6 +49,17 @@ async function loadSpots(){
   const resp = await fetch('data/locations.csv');
   const text = await resp.text();
   return parseCSV(text);
+}
+
+async function loadImageCredits(){
+  try{
+    const resp = await fetch('data/img/sources.json');
+    if(resp.ok){
+      IMG_CREDITS = await resp.json();
+    }
+  }catch(e){
+    IMG_CREDITS = {};
+  }
 }
 
 function parseCitations(str=''){
@@ -126,7 +138,9 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <img data-src="https://staticmap.openstreetmap.org/staticmap.php?center=${s.lat},${s.lng}&zoom=14&size=400x200&markers=${s.lat},${s.lng},red-pushpin" alt="${s.name} map" loading="lazy" onerror="this.remove()">
+        <div class="img-box">
+          <img data-img-id="${s.id}" alt="${s.name} image" loading="lazy">
+        </div>
         <div class="info">
 ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
@@ -145,6 +159,46 @@ ${detail('Address', s.addr)}
   </tr>`;
 }
 
+async function findImage(id){
+  const exts=['jpg','jpeg','png','gif','webp'];
+  let latest=0, chosen=null;
+  await Promise.all(exts.map(async ext=>{
+    const url=`data/img/${id}.${ext}`;
+    try{
+      const resp=await fetch(url,{method:'HEAD'});
+      if(resp.ok){
+        const lm=resp.headers.get('last-modified');
+        const t=lm?new Date(lm).getTime():0;
+        if(t>=latest){latest=t; chosen=url;}
+      }
+    }catch(e){}
+  }));
+  return chosen;
+}
+
+async function loadImages(){
+  const imgs=document.querySelectorAll('img[data-img-id]');
+  for(const img of imgs){
+    const id=img.getAttribute('data-img-id');
+    const src=await findImage(id);
+    if(src){
+      img.src=src;
+      img.onerror=()=>img.remove();
+      const file=src.split('/').pop();
+      const credit=IMG_CREDITS[file];
+      if(credit && (credit.sourceName || credit.sourceURL)){
+        const name=credit.sourceName||credit.sourceURL||'';
+        const url=credit.sourceURL;
+        const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
+        const wrap = img.parentElement;
+        wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+      }
+    }else{
+      img.remove();
+    }
+  }
+}
+
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
@@ -161,6 +215,7 @@ function render(){
   attachRowHandlers();
   if(sortArrow) sortArrow.style.display = ORIGIN ? '' : 'none';
   applyFilters(); // in case filters active
+  loadImages();
 }
 
 function attachRowHandlers(){
@@ -178,10 +233,6 @@ function attachRowHandlers(){
       const detail = tr.nextElementSibling;
       if(detail && detail.classList.contains('detail-row')){
         detail.classList.toggle('hide', wasOpen);
-        if(!wasOpen){
-          const img = detail.querySelector('img[data-src]');
-          if(img && !img.src) img.src = img.dataset.src;
-        }
       }
     });
   });
@@ -370,6 +421,7 @@ zip.addEventListener('input', async () => {
     );
   });
   SPOTS = await loadSpots();
+  await loadImageCredits();
   render();
 
   window.addEventListener('scroll', () => {
