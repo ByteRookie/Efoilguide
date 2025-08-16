@@ -175,8 +175,12 @@ function render(){
   attachRowHandlers();
   if(sortArrow){
     sortArrow.textContent = sortAsc ? '▲' : '▼';
+    document.querySelectorAll('.tbl-header th').forEach(h => h.removeAttribute('aria-sort'));
     const th = document.querySelector(`.tbl-header [data-sort='${sortCol}']`);
-    if(th) th.appendChild(sortArrow);
+    if(th){
+      th.appendChild(sortArrow);
+      th.setAttribute('aria-sort', sortAsc ? 'ascending' : 'descending');
+    }
     sortArrow.style.display = sortCol==='dist' && !ORIGIN ? 'none' : '';
   }
   applyFilters(); // in case filters active
