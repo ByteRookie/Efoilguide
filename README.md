@@ -4,8 +4,8 @@ A community‑maintained directory of eFoil spots. The site loads all location d
 
 ## Preview
 
-![Map view](assets/preview-map.png)
-![Table view](assets/preview-table.png)
+![Map view](readme_imgs/preview-map.png)
+![Table view](readme_imgs/preview-table.png)
 
 ## Add a location
 1. Fork this repository.
