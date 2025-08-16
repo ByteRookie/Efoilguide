@@ -46,3 +46,7 @@ The guide is published via GitHub Pages. After your pull request is merged, the 
 
 ## Local development
 No build step is required. Open `index.html` in a browser or serve the folder with any static file server.
+
+## License
+
+This project is released under an all rights reserved license; see the [LICENSE](LICENSE) for details.
