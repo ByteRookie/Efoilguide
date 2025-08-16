@@ -252,10 +252,25 @@ function attachRowHandlers(){
 function initMap(){
   if(map) return;
   map = L.map('map').setView([37.7749,-122.4194],10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
     attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
+  });
+  const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom:18,
+    attribution:'&copy; OpenStreetMap contributors &copy; CARTO'
+  });
+  let baseLayer;
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyScheme(){
+    const next = mq.matches ? dark : light;
+    if(baseLayer) map.removeLayer(baseLayer);
+    baseLayer = next.addTo(map);
+  }
+  mq.addEventListener('change', applyScheme);
+  applyScheme();
+
   SPOTS.forEach(s=>{
     const html = `<div class="popup-info"><h3>${s.name}</h3><table class="popup-table">
       ${popupRow('Address', s.addr)}
@@ -273,7 +288,7 @@ function initMap(){
       ${popupRow('Hazards & Tips', s.tips)}
       ${popupRow('Laws / Regs', s.law, '', 'law')}
     </table></div>`;
-    L.marker([s.lat,s.lng]).addTo(map).bindPopup(html);
+    L.marker([s.lat,s.lng]).addTo(map).bindPopup(html,{maxWidth:260});
   });
 }
 
