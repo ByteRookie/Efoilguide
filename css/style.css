@@ -64,7 +64,7 @@
   .table-wrap table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
   .table-wrap thead,.table-wrap tbody tr{display:table;width:100%;table-layout:fixed}
   .table-wrap tbody{display:block;transition:max-height .3s}
-  .table-wrap.scroll tbody{overflow:auto}
+  .table-wrap.scroll tbody{overflow:auto;overscroll-behavior:contain}
   .table-wrap thead th{position:sticky;top:var(--header-h);z-index:2;background:var(--card)}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
     tbody tr{transition:background .2s}
@@ -146,6 +146,8 @@
 
 #mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
-#selectedWrap{flex:1;overflow:auto;margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h);}
-#selectedWrap table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
-#selectedWrap tr.parent{position:sticky;top:var(--header-h);background:var(--card);z-index:1;}
+#selectedWrap{display:flex;flex-direction:column;margin-top:16px;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
+#selectedTop table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
+#selectedTop td{border-bottom:1px solid var(--table-border);}
+#selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
+#selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
