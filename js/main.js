@@ -24,7 +24,6 @@ const ZIP_CENTROIDS = {
 };
 
 let SPOTS = [];// loaded from CSV
-let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
 
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/);
@@ -51,16 +50,6 @@ async function loadSpots(){
   return parseCSV(text);
 }
 
-async function loadImageCredits(){
-  try{
-    const resp = await fetch('data/img/sources.json');
-    if(resp.ok){
-      IMG_CREDITS = await resp.json();
-    }
-  }catch(e){
-    IMG_CREDITS = {};
-  }
-}
 
 function parseCitations(str=''){
   return str.replace(/\{\{Citation:\s*"(.*?)"\s*SourceName:\s*"([^]*?)"\s*SourceURL:\s*"([^]*?)"\s*\}\}/g,
@@ -187,15 +176,6 @@ async function loadImages(){
     if(src){
       img.src=src;
       img.onerror=()=>img.remove();
-      const file=src.split('/').pop();
-      const credit=IMG_CREDITS[file];
-      if(credit && (credit.sourceName || credit.sourceURL)){
-        const name=credit.sourceName||credit.sourceURL||'';
-        const url=credit.sourceURL;
-        const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
-        const wrap = img.parentElement;
-        wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
-      }
     }else{
       img.remove();
     }
@@ -451,7 +431,6 @@ zip.addEventListener('input', async () => {
     );
   });
   SPOTS = await loadSpots();
-  await loadImageCredits();
   render();
 
   window.addEventListener('scroll', () => {
