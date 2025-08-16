@@ -325,6 +325,10 @@ function showSelected(s){
   temp.innerHTML = rowHTML(s);
   const topRow = temp.querySelector('tr.parent');
   const detail = temp.querySelector('tr.detail-row');
+  if(topRow){
+    topRow.classList.remove('parent');
+    topRow.removeAttribute('data-id');
+  }
   if(detail) detail.classList.remove('hide');
   selectedTopBody.innerHTML = '';
   if(topRow) selectedTopBody.appendChild(topRow);
@@ -337,9 +341,15 @@ function showSelected(s){
 }
 
 function clearSelected(){
+  if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
   selectedWrap.style.display='none';
+  document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
+    o.classList.remove('open');
+    const d=o.nextElementSibling;
+    if(d && d.classList.contains('detail-row')) d.classList.add('hide');
+  });
   updateMapHeights();
 }
 
@@ -521,7 +531,7 @@ function attachRowHandlers(){
   });
 }
 
-function openTableRow(id){
+function openTableRow(id, block='start'){
   const tr = document.querySelector(`#tbl tbody tr.parent[data-id="${id}"]`);
   if(!tr) return;
   const wasOpen = tr.classList.contains('open');
@@ -539,7 +549,7 @@ function openTableRow(id){
     if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = id;
   }
-  tr.scrollIntoView({block:'start'});
+  tr.scrollIntoView({block});
   loadImages();
 }
 
@@ -778,7 +788,7 @@ function setOrigin(lat,lng,label){
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
-        if(selectedId) openTableRow(selectedId);
+        if(selectedId) openTableRow(selectedId,'center');
       }
     });
 

@@ -148,7 +148,7 @@
 #map{flex:1;}
 #selectedWrap{display:flex;flex-direction:column;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
 #selectedTop{position:sticky;top:var(--header-h);z-index:2;background:var(--card);}
-#selectedTop table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;}
+#selectedTop table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;}
 #selectedTop td{border-bottom:1px solid var(--table-border);}
 #selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
