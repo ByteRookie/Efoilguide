@@ -132,4 +132,6 @@
 
 #mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
-#selectedWrap{flex:1;}
+#selectedWrap{flex:1;overflow:auto;}
+#selectedWrap table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
+#selectedWrap tr.parent{position:sticky;top:0;background:var(--card);z-index:1;}

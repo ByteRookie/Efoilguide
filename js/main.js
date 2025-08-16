@@ -118,6 +118,26 @@ function etaMinutes(mi){
   return Math.round(mins);
 }
 
+function milesFromMinutes(min){
+  let lo=0, hi=500;
+  for(let i=0;i<20;i++){
+    const mid=(lo+hi)/2;
+    if(etaMinutes(mid)>min) hi=mid; else lo=mid;
+  }
+  return lo;
+}
+
+function updateMapView(){
+  if(!map) return;
+  if(ORIGIN){
+    const radius = milesFromMinutes(+mins.value);
+    const circle = L.circle(ORIGIN,{radius:radius*1609.34});
+    map.fitBounds(circle.getBounds());
+  }else{
+    map.setView(MAP_START, MAP_ZOOM);
+  }
+}
+
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
   const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
@@ -422,6 +442,7 @@ function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
+  updateMapView();
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
@@ -474,6 +495,7 @@ function setOrigin(lat,lng,label){
         updateMapHeights();
         initMap();
         applyFilters();
+        updateMapView();
         // run again once visible so Leaflet recalculates dimensions
         requestAnimationFrame(updateMapHeights);
       }else{
@@ -522,10 +544,12 @@ function setOrigin(lat,lng,label){
   window.addEventListener('resize', handleResize);
   handleResize();
 
-    [q, mins].forEach(el => {
-      el.addEventListener('input', () => {
-        applyFilters();
-      });
+    q.addEventListener('input', () => {
+      applyFilters();
+    });
+    mins.addEventListener('input', () => {
+      applyFilters();
+      updateMapView();
     });
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
