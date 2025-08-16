@@ -72,7 +72,7 @@ let sortAsc = true;
 let originInfo, spotsBody, tableWrap, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, tblHeader, toTop, sortArrow,
-    viewToggle, viewSlider, mapEl, map;
+    viewToggle, viewSlider, mapEl, map, headerEl;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -269,6 +269,11 @@ function updateTableHeight(){
   }
 }
 
+function setHeaderHeight(){
+  if(!headerEl) return;
+  document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+}
+
 function setupDrag(chips){
   let dragging=false, dragVal=false;
   chips.forEach(chip=>{
@@ -293,6 +298,7 @@ function setupDrag(chips){
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  setHeaderHeight();
   render();
 }
   document.addEventListener('DOMContentLoaded', async () => {
@@ -314,6 +320,7 @@ function setOrigin(lat,lng,label){
     viewToggle = document.getElementById('viewToggle');
     viewSlider = document.getElementById('viewSlider');
     mapEl = document.getElementById('map');
+    headerEl = document.querySelector('header');
 
     document.querySelectorAll('.tbl-header .sortable').forEach(th => {
       th.addEventListener('click', () => {
@@ -335,7 +342,11 @@ function setOrigin(lat,lng,label){
     });
 
     sortArrow = document.getElementById('sortArrow');
-    window.addEventListener('resize', updateTableHeight);
+    setHeaderHeight();
+    window.addEventListener('resize', () => {
+      setHeaderHeight();
+      updateTableHeight();
+    });
 
     let showingMap = false;
     viewToggle.addEventListener('click', () => {
@@ -350,6 +361,7 @@ function setOrigin(lat,lng,label){
     filterToggle.addEventListener('click', () => {
       const open = filtersEl.style.display === 'none';
       filtersEl.style.display = open ? '' : 'none';
+      setHeaderHeight();
     });
 
     const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
@@ -376,10 +388,12 @@ zip.addEventListener('input', async () => {
   }
 
   originInfo.textContent = `Looking up ZIP ${z}…`;
+  setHeaderHeight();
   try {
     const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
     if (resp.status === 404) {
       originInfo.textContent = `ZIP ${z} not found.`;
+      setHeaderHeight();
       return;
     }
     if (!resp.ok) throw new Error('Network error');
@@ -393,20 +407,23 @@ zip.addEventListener('input', async () => {
       setOrigin(lat, lng, `ZIP ${z}`);
     } else {
       originInfo.textContent = `ZIP ${z} not found.`;
+      setHeaderHeight();
     }
   } catch {
     originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+    setHeaderHeight();
   }
 });
 
   useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
       originInfo.textContent = 'Geolocation not supported by this browser.';
+      setHeaderHeight();
       return;
     }
     navigator.geolocation.getCurrentPosition(
       pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
-      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
+      () => { originInfo.textContent = 'Location permission denied or unavailable.'; setHeaderHeight(); }
     );
   });
   SPOTS = await loadSpots();
