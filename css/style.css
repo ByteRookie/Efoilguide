@@ -142,7 +142,6 @@
 
 #mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
-#selectedWrap{flex:1;overflow:auto;margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h);border-radius:var(--radius);border:1px solid var(--table-border);background:var(--card);display:flex;flex-direction:column;}
-#selectedWrap .sel-top{position:sticky;top:var(--header-h);background:var(--card);padding:16px;z-index:1;}
-#selectedWrap .sel-top .img-box{margin-top:8px;}
-#selectedWrap .sel-details{padding:16px;}
+#selectedWrap{flex:1;overflow:auto;margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h);}
+#selectedWrap table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
+#selectedWrap tr.parent{position:sticky;top:var(--header-h);background:var(--card);z-index:1;}

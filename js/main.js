@@ -89,7 +89,7 @@ let sortCol = 'name';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, map,
+    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedBody, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -184,8 +184,6 @@ ${detail('Address', s.addr)}
           ${detail('Best For', s.best)}
           ${detail('Gear Fit', s.gear)}
           ${detail('Hazards & Tips', s.tips)}
-          ${detail('Routes (Beginner)', s.routes_beginner)}
-          ${detail('Routes (Pro)', s.routes_pro)}
           ${detail('Laws / Regs', s.law, '', 'law')}
         </div>
       </div>
@@ -320,41 +318,25 @@ async function loadImages(){
 }
 
 function showSelected(s){
-  const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
-  const eta = distMi!=null ? etaMinutes(distMi) : null;
-  const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
-  selectedWrap.innerHTML = `
-    <div class="sel-top">
-      <div><strong>Spot:</strong> ${s.name}</div>
-      <div><strong>Dist / Time:</strong> ${distTxt}</div>
-      <div><strong>Water:</strong> ${badgeWater(s.water)}</div>
-      <div><strong>Season:</strong> ${badgeSeason(s.season)}</div>
-      <div><strong>Skill:</strong> ${chipsSkill(s.skill)}</div>
-      <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
-    </div>
-    <div class="sel-details info">
-      ${detail('Address', s.addr)}
-      ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
-      ${detail('Launch', s.launch)}
-      ${detail('Parking', s.parking)}
-      ${detail('Amenities', s.amenities, 'amen')}
-      ${detail('Pros', s.pros, 'ok')}
-      ${detail('Cons', s.cons, 'warn')}
-      ${detail('Best For', s.best)}
-      ${detail('Gear Fit', s.gear)}
-      ${detail('Hazards & Tips', s.tips)}
-      ${detail('Routes (Beginner)', s.routes_beginner)}
-      ${detail('Routes (Pro)', s.routes_pro)}
-      ${detail('Laws / Regs', s.law, '', 'law')}
-    </div>`;
+  selectedBody.innerHTML = rowHTML(s);
+  const tr = selectedBody.querySelector('tr.parent');
+  if(tr){
+    // prepend column labels so the summary row is self‑describing
+    for(const td of tr.querySelectorAll('td[data-label]')){
+      const label = td.getAttribute('data-label');
+      td.innerHTML = `<strong>${label}:</strong> ${td.innerHTML}`;
+    }
+    tr.classList.add('open');
+    const detail = tr.nextElementSibling;
+    if(detail) detail.classList.remove('hide');
+  }
   selectedWrap.style.display='';
   loadImages();
   updateMapHeights();
-  selectedWrap.scrollTop = 0;
 }
 
 function clearSelected(){
-  selectedWrap.innerHTML='';
+  selectedBody.innerHTML='';
   selectedWrap.style.display='none';
   updateMapHeights();
 }
@@ -480,7 +462,7 @@ function initMap(){
 }
 
 function createMiniMap(el, lat, lng){
-  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 15);
+  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
   applyTileScheme(m);
   L.marker([lat, lng]).addTo(m);
   setTimeout(()=>m.invalidateSize(),0);
@@ -509,7 +491,7 @@ function applyFilters(){
       }
     }
     if(qv){
-      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.routes_beginner+' '+s.routes_pro+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
+      const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
@@ -590,6 +572,7 @@ function setOrigin(lat,lng,label){
     mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
     selectedWrap = document.getElementById('selectedWrap');
+    selectedBody = document.getElementById('selectedBody');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
