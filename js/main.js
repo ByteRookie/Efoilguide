@@ -387,6 +387,7 @@ function updateTableScroll(){
 }
 
 function handleTableWheel(e){
+  if(showingMap) return;
   if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
     const atTop = spotsBody.scrollTop===0;
     const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
@@ -399,10 +400,12 @@ function handleTableWheel(e){
 }
 
 function handleTouchStart(e){
+  if(showingMap) return;
   if(window.scrollY===0) touchStartY = e.touches[0].clientY;
 }
 
 function handleTouchMove(e){
+  if(showingMap) return;
   if(window.scrollY===0 && tableWrap && tableWrap.classList.contains('scroll')){
     const dy = touchStartY - e.touches[0].clientY;
     const atTop = spotsBody.scrollTop===0;
@@ -647,9 +650,9 @@ function setOrigin(lat,lng,label){
     selectedBody = document.getElementById('selectedBody');
     tableWrap = document.querySelector('.table-wrap');
 
-    tableWrap.addEventListener('wheel', handleTableWheel, {passive:false});
-    tableWrap.addEventListener('touchstart', handleTouchStart, {passive:false});
-    tableWrap.addEventListener('touchmove', handleTouchMove, {passive:false});
+    window.addEventListener('wheel', handleTableWheel, {passive:false});
+    window.addEventListener('touchstart', handleTouchStart, {passive:false});
+    window.addEventListener('touchmove', handleTouchMove, {passive:false});
 
     document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
