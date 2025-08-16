@@ -1,1 +1,120 @@
-{}
+{
+  "alameda.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Crown_Beach.JPG?width=1800"
+  },
+  "baywinds.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Foster_City_and_San_Mateo_Bridge.jpg?width=1800"
+  },
+  "baywinds_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/San_Mateo_Hayward_bridge_from_Foster_City.jpg?width=1800"
+  },
+  "berkeley.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/2021_Berkeley_Marina.jpg?width=1800"
+  },
+  "berryessa.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Lake_Berryessa,_California,_looking_northeast_from_Oak_Shore.jpg?width=1800"
+  },
+  "bodega.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/DoranBeach3189.jpg?width=1800"
+  },
+  "crane-cove.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Crane_cove_park_san_francisco.jpg?width=1800"
+  },
+  "delvalle.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Lake_Del_Valle_aerial.jpg?width=1800"
+  },
+  "delvalle_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Lake_Del_Valle_in_Livermore.jpg?width=1800"
+  },
+  "emeryville.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Emeryville_Marina_Park_1.jpg?width=1800"
+  },
+  "emeryville_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Emeryville_banner_Emeryville_Marina_Park.jpg?width=1800"
+  },
+  "foster-lagoon.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Foster_City_Aerial.jpg?width=1800"
+  },
+  "foster-lagoon_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Foster_City_aerial_view,_February_2018.JPG?width=1800"
+  },
+  "lex.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Aerial_photograph_of_Lexington_Reservoir_(July_2022).jpg?width=1800"
+  },
+
+    "Paradise.jpg": {
+    "sourceName": "californiabeaches.com",
+    "sourceURL": "https://www.californiabeaches.com/beach/paradise-beach-park/"
+  },
+  
+  "petaluma.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Petaluma_California_aerial_view.jpg?width=1800"
+  },
+  "petaluma_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Petaluma_aerial.jpg?width=1800"
+  },
+  "pillar.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Pillar_Point_Harbor.jpg?width=1800"
+  },
+  "pillar_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Pillar_Point_Harbor_aerial_view.jpg?width=1800"
+  },
+  "princeton.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Pillar_Point_Harbor_1.jpg?width=1800"
+  },
+  "princeton_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Pillar_point_Harbor..._(49206988112).jpg?width=1800"
+  },
+  "point-isabel.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Point_Isabel_CA_(53434622922).jpg?width=1800"
+  },
+  "point-isabel_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Point_Isabel_California.JPG?width=1800"
+  },
+  "sanpablo.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/San_pablo_bay_panorama.jpg?width=1800"
+  },
+  "sausalito.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Richardson_Bay_Panorama.jpg?width=1800"
+  },
+  "sausalito_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Richardson_Bay_4.jpg?width=1800"
+  },
+  "shadow.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Shadow_Cliffs_Regional_Recreation_Area_2_(cropped).jpg?width=1800"
+  },
+  "tomales.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Tomales_Bay_as_viewed_from_Tomales_Point_Trail.JPG?width=1800"
+  },
+  "tomales_2.jpg": {
+    "sourceName": "commons.wikimedia.org",
+    "sourceURL": "https://commons.wikimedia.org/wiki/Special:FilePath/Tomalesbay02.jpg?width=1800"
+  }
+}
