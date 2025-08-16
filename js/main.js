@@ -58,7 +58,7 @@ async function loadImageCredits(){
     if(resp.ok){
       IMG_CREDITS = await resp.json();
     }
-  }catch(e){
+  }catch{
     IMG_CREDITS = {};
   }
 }
@@ -89,7 +89,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -199,7 +199,7 @@ async function findImages(id){
   const urls=[];
 
   async function exists(url){
-    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch(e){ return false; }
+    try{ const resp=await fetch(url,{method:'HEAD'}); return resp.ok; }catch{ return false; }
   }
 
   let firstFound=false;
@@ -636,7 +636,7 @@ function createMiniMap(el, lat, lng){
   const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
   applyTileScheme(m);
   L.marker([lat, lng]).addTo(m);
-  setTimeout(()=>m.invalidateSize(),0);
+  window.setTimeout(()=>m.invalidateSize(),0);
 }
 
 /* ---------- Filters ---------- */
@@ -742,7 +742,6 @@ function setOrigin(lat,lng,label){
     viewWindow = document.getElementById('viewWindow');
     viewSlider = document.getElementById('viewSlider');
     mapView = document.getElementById('mapView');
-    mapEl = document.getElementById('map');
     selectedWrap = document.getElementById('selectedWrap');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
@@ -785,7 +784,7 @@ function setOrigin(lat,lng,label){
         applyFilters();
         updateMapView();
         // run again once visible so Leaflet recalculates dimensions
-        requestAnimationFrame(updateMapHeights);
+        window.requestAnimationFrame(updateMapHeights);
         if(selectedId){
           const spot = SPOTS.find(s=>s.id===selectedId);
           if(spot){
@@ -800,7 +799,7 @@ function setOrigin(lat,lng,label){
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
-        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'start'));
+        if(selectedId) window.requestAnimationFrame(()=>openTableRow(selectedId,'start'));
       }
     });
 
