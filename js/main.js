@@ -51,6 +51,7 @@ async function loadSpots(){
   return parseCSV(text);
 }
 
+
 async function loadImageCredits(){
   try{
     const resp = await fetch('data/img/sources.json');
@@ -61,6 +62,7 @@ async function loadImageCredits(){
     IMG_CREDITS = {};
   }
 }
+
 
 function parseCitations(str=''){
   return str.replace(/\{\{Citation:\s*"(.*?)"\s*SourceName:\s*"([^]*?)"\s*SourceURL:\s*"([^]*?)"\s*\}\}/g,
@@ -178,10 +180,12 @@ async function findImage(id){
 }
 
 async function loadImages(){
+  const defaultSrc = await findImage('default');
   const imgs=document.querySelectorAll('img[data-img-id]');
   for(const img of imgs){
     const id=img.getAttribute('data-img-id');
-    const src=await findImage(id);
+    let src=await findImage(id);
+    if(!src && defaultSrc) src=defaultSrc;
     if(src){
       img.src=src;
       img.onerror=()=>img.remove();
@@ -191,7 +195,7 @@ async function loadImages(){
         const name=credit.sourceName||credit.sourceURL||'';
         const url=credit.sourceURL;
         const html=url?`<a href="${url}" target="_blank">${name}</a>`:name;
-        const wrap = img.parentElement;
+        const wrap=img.parentElement;
         wrap.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
       }
     }else{
