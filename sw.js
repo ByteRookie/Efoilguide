@@ -10,9 +10,35 @@ const CORE_ASSETS = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 ];
 
+function tileXY(lat,lng,z){
+  const x = Math.floor((lng + 180) / 360 * Math.pow(2, z));
+  const latRad = lat * Math.PI / 180;
+  const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1/Math.cos(latRad)) / Math.PI) / 2 * Math.pow(2, z));
+  return {x,y};
+}
+
+const PRECACHE_TILES = (()=>{
+  const center = [37.7749,-122.4194];
+  const urls = [];
+  for(let z=9; z<=12; z++){
+    const {x,y} = tileXY(center[0], center[1], z);
+    for(let dx=-1; dx<=1; dx++){
+      for(let dy=-1; dy<=1; dy++){
+        ['a','b','c'].forEach(s=>{
+          urls.push(`https://${s}.tile.openstreetmap.org/${z}/${x+dx}/${y+dy}.png`);
+        });
+      }
+    }
+  }
+  return urls;
+})();
+
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CORE_CACHE).then(cache => cache.addAll(CORE_ASSETS))
+    Promise.all([
+      caches.open(CORE_CACHE).then(cache => cache.addAll(CORE_ASSETS)),
+      caches.open(TILE_CACHE).then(cache => cache.addAll(PRECACHE_TILES))
+    ])
   );
 });
 

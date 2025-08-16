@@ -190,11 +190,18 @@ function attachRowHandlers(){
 function initMap(){
   if(map) return;
   map = L.map('map').setView([37.7749,-122.4194],10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
     attribution:'&copy; OpenStreetMap contributors',
     crossOrigin:true
   }).addTo(map);
+
+  const msg = document.createElement('div');
+  msg.textContent = 'Map tiles need to be viewed online once before they\'re available offline.';
+  Object.assign(msg.style,{position:'absolute',top:'0',left:'0',right:'0',background:'rgba(255,255,255,0.9)',textAlign:'center',padding:'4px',display:'none'});
+  mapEl.appendChild(msg);
+  tiles.on('tileerror',()=>{msg.style.display='block';});
+  tiles.on('tileload',()=>{msg.style.display='none';});
   SPOTS.forEach(s=>{
     L.marker([s.lat,s.lng]).addTo(map).bindPopup(`<strong>${s.name}</strong><br>${s.city}`);
   });
