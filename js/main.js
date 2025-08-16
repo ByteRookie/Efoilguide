@@ -89,7 +89,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -729,7 +729,15 @@ function setOrigin(lat,lng,label){
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
+    closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
+
+    if(closeSelected){
+      closeSelected.addEventListener('click', ()=>{
+        clearSelected();
+        selectedId = null;
+      });
+    }
 
     window.addEventListener('wheel', handleWheel, {passive:false});
     window.addEventListener('touchstart', handleTouchStart, {passive:false});
