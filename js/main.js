@@ -180,9 +180,6 @@ function rowHTML(s){
           ${detail('City', s.city)}
           ${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
-          ${detail('Water', badgeWater(s.water))}
-          ${detail('Season', badgeSeason(s.season))}
-          ${detail('Skill', chipsSkill(s.skill))}
           ${detail('Launch', s.launch)}
           ${detail('Parking', s.parking)}
           ${detail('Amenities', s.amenities, 'amen')}
@@ -205,8 +202,6 @@ function rowHTML(s){
           ${s.best_conditions ? detail('Best Conditions', s.best_conditions) : ''}
           ${s.setup_fit ? detail('Setup Fit', s.setup_fit) : ''}
           ${s.popularity ? detail('Popularity', s.popularity) : ''}
-          ${s.edited ? detail('Edited', s.edited) : ''}
-          ${s.merged_from ? detail('Merged From', s.merged_from) : ''}
         </div>
       </div>
     </td>
