@@ -71,7 +71,7 @@ let sortCol = 'dist';
 let sortAsc = true;
 let originInfo, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
-    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
+    zip, useGeo, filterToggle, filtersEl, headerEl, tblHeader, toTop, sortArrow,
     viewToggle, viewSlider, mapEl, map;
 
 function haversine(a,b){
@@ -292,6 +292,7 @@ function setOrigin(lat,lng,label){
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
     headerEl = document.querySelector('header');
+    tblHeader = document.querySelector('.tbl-header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
     viewSlider = document.getElementById('viewSlider');
@@ -323,6 +324,7 @@ function setOrigin(lat,lng,label){
       showingMap = !showingMap;
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      tblHeader.style.display = showingMap ? 'none' : '';
       if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
     });
 

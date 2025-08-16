@@ -61,7 +61,7 @@
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .tbl-header{display:grid;grid-template-columns:repeat(5,1fr);position:sticky;top:var(--header-h);background:var(--card);z-index:2;border:1px solid var(--table-border);border-bottom:none;border-top-left-radius:var(--radius);border-top-right-radius:var(--radius);margin-top:16px}
+  .tbl-header{display:grid;grid-template-columns:repeat(5,1fr);position:sticky;top:var(--header-h);background:var(--card);z-index:2;border:1px solid var(--table-border);border-bottom:none;border-top-left-radius:var(--radius);border-top-right-radius:var(--radius)}
   .tbl-header div{padding:12px 14px;font-weight:700;font-size:14px;text-align:left}
   .table-wrap{overflow-x:auto;border:1px solid var(--table-border);border-top:none;border-bottom-left-radius:var(--radius);border-bottom-right-radius:var(--radius)}
     table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
