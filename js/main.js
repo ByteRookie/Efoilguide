@@ -324,39 +324,36 @@ function showSelected(s){
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
   selectedWrap.innerHTML = `
-    <div class="sel-top">
-      <div><strong>Spot:</strong> ${s.name}</div>
-      <div><strong>Dist / Time:</strong> ${distTxt}</div>
-      <div><strong>Water:</strong> ${badgeWater(s.water)}</div>
-      <div><strong>Season:</strong> ${badgeSeason(s.season)}</div>
-      <div><strong>Skill:</strong> ${chipsSkill(s.skill)}</div>
+    <div class="detail-grid">
       <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
-    </div>
-    <div class="sel-details info">
-      ${detail('Address', s.addr)}
-      ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
-      ${detail('Launch', s.launch)}
-      ${detail('Parking', s.parking)}
-      ${detail('Amenities', s.amenities, 'amen')}
-      ${detail('Pros', s.pros, 'ok')}
-      ${detail('Cons', s.cons, 'warn')}
-      ${detail('Best For', s.best)}
-      ${detail('Gear Fit', s.gear)}
-      ${detail('Hazards & Tips', s.tips)}
-      ${detail('Routes (Beginner)', s.routes_beginner)}
-      ${detail('Routes (Pro)', s.routes_pro)}
-      ${detail('Laws / Regs', s.law, '', 'law')}
+      <div class="info">
+        <h3>${s.name}</h3>
+        ${detail('Dist / Time', distTxt)}
+        ${detail('Water', badgeWater(s.water))}
+        ${detail('Season', badgeSeason(s.season))}
+        ${detail('Skill', chipsSkill(s.skill))}
+        ${detail('Address', s.addr)}
+        ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
+        ${detail('Launch', s.launch)}
+        ${detail('Parking', s.parking)}
+        ${detail('Amenities', s.amenities, 'amen')}
+        ${detail('Pros', s.pros, 'ok')}
+        ${detail('Cons', s.cons, 'warn')}
+        ${detail('Best For', s.best)}
+        ${detail('Gear Fit', s.gear)}
+        ${detail('Hazards & Tips', s.tips)}
+        ${detail('Routes (Beginner)', s.routes_beginner)}
+        ${detail('Routes (Pro)', s.routes_pro)}
+        ${detail('Laws / Regs', s.law, '', 'law')}
+      </div>
     </div>`;
   selectedWrap.style.display='';
   loadImages();
-  updateMapHeights();
-  selectedWrap.scrollTop = 0;
 }
 
 function clearSelected(){
   selectedWrap.innerHTML='';
   selectedWrap.style.display='none';
-  updateMapHeights();
 }
 
 function setMarkerSelected(marker, sel){
@@ -365,11 +362,6 @@ function setMarkerSelected(marker, sel){
 }
 
 function updateMapHeights(){
-  if(!showingMap) return;
-  const top = viewWindow.getBoundingClientRect().top;
-  const avail = window.innerHeight - top;
-  mapView.style.height = avail + 'px';
-  viewWindow.style.height = avail + 'px';
   if(map) map.invalidateSize();
 }
 
@@ -607,16 +599,11 @@ function setOrigin(lat,lng,label){
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       if(showingMap){
-        // size the container before Leaflet initializes to avoid a zero-height map
-        updateMapHeights();
         initMap();
         applyFilters();
         updateMapView();
-        // run again once visible so Leaflet recalculates dimensions
         requestAnimationFrame(updateMapHeights);
       }else{
-        viewWindow.style.height = '';
-        mapView.style.height = '';
         clearSelected();
       }
     });
