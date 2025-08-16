@@ -80,19 +80,16 @@ function detail(label,value,spanClass='',pClass=''){
   return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
 
-function popupRow(label,value,spanClass='',tdClass=''){
-  const text = parseCitations(value||'');
-  const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
-  return `<tr><th>${label}</th><td class="${tdClass}">${span}</td></tr>`;
-}
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewWindow, viewSlider, mapEl, map,
+    viewToggle, viewWindow, viewSlider, mapView, mapEl, selectedWrap, selectedBody, map,
     editLocation, locationBox, closeLocation, searchRow;
+let showingMap = false;
+let selectedId = null;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -210,6 +207,25 @@ async function loadImages(){
   }
 }
 
+function showSelected(s){
+  selectedBody.innerHTML = rowHTML(s);
+  const tr = selectedBody.querySelector('tr.parent');
+  if(tr){
+    tr.classList.add('open');
+    const detail = tr.nextElementSibling;
+    if(detail) detail.classList.remove('hide');
+  }
+  selectedWrap.style.display='';
+  loadImages();
+  if(showingMap) viewWindow.style.height = mapView.offsetHeight + 'px';
+}
+
+function clearSelected(){
+  selectedBody.innerHTML='';
+  selectedWrap.style.display='none';
+  if(showingMap) viewWindow.style.height = mapView.offsetHeight + 'px';
+}
+
 function render(){
   // sort by distance if origin set; otherwise by name
   const rows = SPOTS.slice().sort((a,b)=>{
@@ -272,23 +288,20 @@ function initMap(){
   applyScheme();
 
   SPOTS.forEach(s=>{
-    const html = `<div class="popup-info"><h3>${s.name}</h3><table class="popup-table">
-      ${popupRow('Address', s.addr)}
-      ${popupRow('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
-      ${popupRow('Water', badgeWater(s.water))}
-      ${popupRow('Season', badgeSeason(s.season))}
-      ${popupRow('Skill', chipsSkill(s.skill))}
-      ${popupRow('Launch', s.launch)}
-      ${popupRow('Parking', s.parking)}
-      ${popupRow('Amenities', s.amenities, 'amen')}
-      ${popupRow('Pros', s.pros, 'ok')}
-      ${popupRow('Cons', s.cons, 'warn')}
-      ${popupRow('Best For', s.best)}
-      ${popupRow('Gear Fit', s.gear)}
-      ${popupRow('Hazards & Tips', s.tips)}
-      ${popupRow('Laws / Regs', s.law, '', 'law')}
-    </table></div>`;
-    L.marker([s.lat,s.lng]).addTo(map).bindPopup(html,{maxWidth:260});
+    const marker = L.marker([s.lat, s.lng]).addTo(map);
+    marker.on('click', () => {
+      if(selectedId === s.id){
+        selectedId = null;
+        clearSelected();
+      }else{
+        selectedId = s.id;
+        showSelected(s);
+      }
+    });
+  });
+  map.on('click', () => {
+    selectedId = null;
+    clearSelected();
   });
 }
 
@@ -379,7 +392,10 @@ function setOrigin(lat,lng,label){
     viewToggle = document.getElementById('viewToggle');
     viewWindow = document.getElementById('viewWindow');
     viewSlider = document.getElementById('viewSlider');
+    mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
+    selectedWrap = document.getElementById('selectedWrap');
+    selectedBody = document.getElementById('selectedBody');
 
     document.querySelectorAll('th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
@@ -392,13 +408,20 @@ function setOrigin(lat,lng,label){
 
     sortArrow = document.getElementById('sortArrow');
 
-    let showingMap = false;
     viewToggle.addEventListener('click', () => {
       showingMap = !showingMap;
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
-      viewWindow.style.height = showingMap ? (mapEl.offsetHeight + mapEl.offsetTop) + 'px' : '';
-      if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
+      if(showingMap){
+        initMap();
+        setTimeout(()=>{
+          map.invalidateSize();
+          viewWindow.style.height = mapView.offsetHeight + 'px';
+        },0);
+      }else{
+        viewWindow.style.height = '';
+        clearSelected();
+      }
     });
 
       // toggle filters visibility and button label
