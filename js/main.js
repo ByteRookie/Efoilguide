@@ -80,10 +80,11 @@ function detail(label,value,spanClass='',pClass=''){
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'name';
-let originInfo, spotsBody, q, mins, minsVal,
+let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow,
-    viewToggle, viewSlider, mapEl, map;
+    viewToggle, viewSlider, mapEl, map,
+    editLocation, locationBox, closeLocation, searchRow;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -308,15 +309,19 @@ function setupDrag(chips){
 /* ---------- Origin controls ---------- */
 function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
-  originInfo.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
+  originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
 }
   document.addEventListener('DOMContentLoaded', async () => {
-    originInfo = document.getElementById('originInfo');
+    originMsg = document.getElementById('originMsg');
+    editLocation = document.getElementById('editLocation');
+    locationBox = document.getElementById('locationBox');
+    closeLocation = document.getElementById('closeLocation');
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
+    searchRow = document.getElementById('searchRow');
     waterChips = [...document.querySelectorAll('.f-water')];
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
@@ -324,6 +329,10 @@ function setOrigin(lat,lng,label){
     useGeo = document.getElementById('useGeo');
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
+    // ensure toggle text matches initial state
+    const filtersHidden = filtersEl.style.display === 'none';
+    filterToggle.textContent = filtersHidden ? 'Show filters' : 'Hide filters';
+    filterToggle.setAttribute('aria-expanded', filtersHidden ? 'false' : 'true');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
     viewToggle = document.getElementById('viewToggle');
@@ -349,9 +358,28 @@ function setOrigin(lat,lng,label){
       if(showingMap){ initMap(); setTimeout(()=>map.invalidateSize(),0); }
     });
 
-    filterToggle.addEventListener('click', () => {
-      const open = filtersEl.style.display === 'none';
-      filtersEl.style.display = open ? '' : 'none';
+      // toggle filters visibility and button label
+      filterToggle.addEventListener('click', () => {
+        const willOpen = filtersEl.style.display === 'none';
+        filtersEl.style.display = willOpen ? '' : 'none';
+        filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
+        filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        updateHeaderOffset();
+      });
+
+    editLocation.addEventListener('click', e => {
+      e.preventDefault();
+      editLocation.style.display = 'none';
+      locationBox.style.display = '';
+      searchRow.style.marginTop = '8px';
+      zip.focus();
+      updateHeaderOffset();
+    });
+
+    closeLocation.addEventListener('click', () => {
+      locationBox.style.display = 'none';
+      editLocation.style.display = '';
+      searchRow.style.marginTop = '';
       updateHeaderOffset();
     });
 
@@ -386,11 +414,11 @@ zip.addEventListener('input', async () => {
     return;
   }
 
-  originInfo.textContent = `Looking up ZIP ${z}…`;
+  originMsg.textContent = `Looking up ZIP ${z}…`;
   try {
     const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
     if (resp.status === 404) {
-      originInfo.textContent = `ZIP ${z} not found.`;
+      originMsg.textContent = `ZIP ${z} not found.`;
       return;
     }
     if (!resp.ok) throw new Error('Network error');
@@ -403,21 +431,21 @@ zip.addEventListener('input', async () => {
       localStorage.setItem('zipCache', JSON.stringify(zipCache));
       setOrigin(lat, lng, `ZIP ${z}`);
     } else {
-      originInfo.textContent = `ZIP ${z} not found.`;
+      originMsg.textContent = `ZIP ${z} not found.`;
     }
   } catch {
-    originInfo.textContent = `Network error while looking up ZIP ${z}.`;
+    originMsg.textContent = `Network error while looking up ZIP ${z}.`;
   }
 });
 
   useGeo.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      originInfo.textContent = 'Geolocation not supported by this browser.';
+      originMsg.textContent = 'Geolocation not supported by this browser.';
       return;
     }
     navigator.geolocation.getCurrentPosition(
       pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
-      () => { originInfo.textContent = 'Location permission denied or unavailable.'; }
+      () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
   });
   SPOTS = await loadSpots();

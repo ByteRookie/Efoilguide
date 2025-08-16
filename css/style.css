@@ -48,7 +48,7 @@
 .chip.b-lvlm.active{border-left:4px solid var(--med)}
 .chip.b-lvlh.active{border-left:4px solid var(--hard)}
   .chip-group{display:flex;align-items:center;gap:6px}
-  .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
+.chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
   .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
   .legend-row::-webkit-scrollbar{height:6px}
   .legend-row::-webkit-scrollbar-thumb{background:var(--control-border);border-radius:3px}
@@ -56,7 +56,6 @@
   .chip.b-sprfall{border-left:4px solid var(--sprfall)}
   .chip.b-sum{border-left:4px solid var(--summer)}
   .chip.b-win{border-left:4px solid var(--winter)}
-  .split{width:1px;height:24px;background:var(--control-border)}
   .toggle{appearance:none;width:42px;height:24px;border-radius:999px;background:var(--toggle-off);position:relative;outline:none;cursor:pointer;vertical-align:middle}
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
@@ -114,3 +113,8 @@
   }
 .cite-group{display:inline-flex;gap:4px;margin-left:4px;font-size:0.75em;}
 .cite-group a{color:var(--muted);background:var(--badge);border:1px solid var(--badge-border);border-radius:4px;padding:0 4px;text-decoration:none;}
+
+  #originInfo a,#locationBox{margin-left:8px}
+  #locationBox{display:inline-flex;align-items:center;gap:8px}
+  #closeLocation{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);margin-left:4px;padding:4px}
+
