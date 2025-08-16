@@ -132,9 +132,11 @@ function updateMapView(){
   if(ORIGIN){
     const radius = milesFromMinutes(+mins.value);
     const circle = L.circle(ORIGIN,{radius:radius*1609.34});
-    map.fitBounds(circle.getBounds());
+    const bounds = circle.getBounds();
+    const zoom = map.getBoundsZoom(bounds);
+    map.flyTo(ORIGIN, zoom);
   }else{
-    map.setView(MAP_START, MAP_ZOOM);
+    map.flyTo(MAP_START, MAP_ZOOM);
   }
 }
 
