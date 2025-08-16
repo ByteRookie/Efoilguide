@@ -437,9 +437,11 @@ function consumeDetailScroll(dy){
 function lockPageScroll(lock){
   if(lock && !pageLocked){
     document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
     pageLocked = true;
   }else if(!lock && pageLocked){
     document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
     pageLocked = false;
   }
 }
