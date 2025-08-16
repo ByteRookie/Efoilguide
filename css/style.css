@@ -116,12 +116,10 @@
     .detail-grid .img-box .media-toggle{display:flex;gap:8px;margin-bottom:8px}
     .detail-grid .img-box .media-toggle button{flex:1;background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:4px;cursor:pointer;padding:4px}
     .detail-grid .img-box .media-toggle button.active{background:var(--btn-alt-bg);border-color:var(--accent)}
-    .detail-grid .info{flex:2 1 260px;overflow:auto;max-height:60vh}
+    .detail-grid .info{flex:2 1 260px}
     @media (max-width:700px){
       .detail-grid{flex-direction:column}
       .detail-grid .img-box{max-width:100%;position:static}
-      .detail-grid .info{max-height:none}
-      #selectedDetail{overflow:auto}
     }
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
@@ -161,5 +159,5 @@
 #selectedTop table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;}
 #selectedTop td{border-bottom:1px solid var(--table-border);padding:8px 12px;display:flex;align-items:center;gap:4px;}
 #selectedTop .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
-#selectedDetail{flex:1;overflow:hidden;}
+#selectedDetail{flex:1;overflow:auto;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
