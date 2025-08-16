@@ -83,7 +83,20 @@
       <div id="mapView" style="min-width:100%;padding-top:16px">
         <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
         <div id="selectedWrap" style="display:none;border-radius:var(--radius);border:1px solid var(--table-border);overflow:hidden">
-          <div id="selectedTop"><table><tbody id="selectedTopBody"></tbody></table></div>
+          <div id="selectedTop">
+            <table>
+              <thead>
+                <tr>
+                  <th>Spot</th>
+                  <th>Dist / Time</th>
+                  <th>Water</th>
+                  <th>Season</th>
+                  <th>Skill</th>
+                </tr>
+              </thead>
+              <tbody id="selectedTopBody"></tbody>
+            </table>
+          </div>
           <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
         </div>
       </div>

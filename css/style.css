@@ -120,10 +120,17 @@
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
   @media (max-width:800px){
-    .table-wrap tbody tr{display:block;margin-bottom:12px}
-    .table-wrap tbody td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
-    .table-wrap tbody td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
-    .table-wrap tbody td.detail{display:block}
+    .table-wrap tbody tr,
+    #selectedTop tbody tr,
+    #selectedDetail tbody tr{display:block;margin-bottom:12px}
+    .table-wrap tbody td,
+    #selectedTop tbody td,
+    #selectedDetail tbody td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
+    .table-wrap tbody td:before,
+    #selectedTop tbody td:before,
+    #selectedDetail tbody td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
+    .table-wrap tbody td.detail,
+    #selectedDetail tbody td.detail{display:block}
   }
 .cite-group{display:inline-block;margin-left:4px;font-size:0.75em;}
 .cite-group a{display:block;color:var(--muted);background:var(--badge);border:1px solid var(--badge-border);border-radius:4px;padding:0 4px;text-decoration:none;}
@@ -149,6 +156,6 @@
 #selectedWrap{display:flex;flex-direction:column;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
 #selectedTop{background:var(--card);}
 #selectedTop table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;}
-#selectedTop td{border-bottom:1px solid var(--table-border);}
+#selectedTop th,#selectedTop td{border-bottom:1px solid var(--table-border);}
 #selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}

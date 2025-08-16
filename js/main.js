@@ -556,7 +556,8 @@ function openTableRow(id, block='start'){
     if(block==='center'){
       spotsBody.scrollTop = offset - spotsBody.clientHeight/2 + trRect.height/2;
     }else{
-      spotsBody.scrollTop = offset;
+      const max = spotsBody.scrollHeight - spotsBody.clientHeight;
+      spotsBody.scrollTop = Math.min(offset, max);
     }
   }else{
     tr.scrollIntoView({block});
@@ -799,7 +800,7 @@ function setOrigin(lat,lng,label){
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();
-        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'center'));
+        if(selectedId) requestAnimationFrame(()=>openTableRow(selectedId,'start'));
       }
     });
 
