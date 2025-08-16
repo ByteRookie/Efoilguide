@@ -126,5 +126,6 @@
   .popup-info h3{margin:0 0 4px;font-size:16px}
   .popup-table{border-collapse:collapse;font-size:13px;width:100%;table-layout:fixed}
   .popup-table th{padding:2px 6px;text-align:right;vertical-align:top;white-space:nowrap;font-weight:600;width:1px}
-  .popup-table td{padding:2px 6px;word-break:break-word;overflow-wrap:anywhere}
+.popup-table td{padding:2px 6px;word-break:break-word;overflow-wrap:anywhere}
 
+.leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}

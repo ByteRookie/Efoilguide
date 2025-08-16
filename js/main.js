@@ -90,6 +90,10 @@ let originMsg, spotsBody, q, mins, minsVal,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
+let markers = {};
+const MAP_START = [37.7749,-122.4194];
+const MAP_ZOOM = 10;
+let mapDefaultHeight;
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -222,13 +226,26 @@ function showSelected(s){
   }
   selectedWrap.style.display='';
   loadImages();
-  if(showingMap) viewWindow.style.height = mapView.offsetHeight + 'px';
+  if(showingMap){
+    if(mapDefaultHeight) mapEl.style.height = (mapDefaultHeight/2) + 'px';
+    if(map) map.invalidateSize();
+    viewWindow.style.height = mapView.offsetHeight + 'px';
+  }
 }
 
 function clearSelected(){
   selectedBody.innerHTML='';
   selectedWrap.style.display='none';
-  if(showingMap) viewWindow.style.height = mapView.offsetHeight + 'px';
+  if(showingMap){
+    if(mapDefaultHeight) mapEl.style.height = mapDefaultHeight + 'px';
+    if(map) map.invalidateSize();
+    viewWindow.style.height = mapView.offsetHeight + 'px';
+  }
+}
+
+function setMarkerSelected(marker, sel){
+  const el = marker && marker.getElement ? marker.getElement() : null;
+  if(el) el.classList.toggle('selected', sel);
 }
 
 function render(){
@@ -272,7 +289,7 @@ function attachRowHandlers(){
 
 function initMap(){
   if(map) return;
-  map = L.map('map').setView([37.7749,-122.4194],10);
+  map = L.map('map').setView(MAP_START, MAP_ZOOM);
 
   const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom:18,
@@ -294,21 +311,43 @@ function initMap(){
 
   SPOTS.forEach(s=>{
     const marker = L.marker([s.lat, s.lng]).addTo(map);
+    markers[s.id] = marker;
     marker.on('click', () => {
       map.flyTo([s.lat, s.lng], 13);
       if(selectedId === s.id){
+        setMarkerSelected(marker,false);
         selectedId = null;
         clearSelected();
       }else{
+        if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
         selectedId = s.id;
+        setMarkerSelected(marker,true);
         showSelected(s);
       }
     });
   });
   map.on('click', () => {
+    if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = null;
     clearSelected();
   });
+
+  const reset = L.control({position:'topleft'});
+  reset.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href = '#';
+    a.innerHTML = '↺';
+    a.title = 'Reset view';
+    L.DomEvent.on(a,'click',e=>{
+      L.DomEvent.preventDefault(e);
+      map.setView(MAP_START, MAP_ZOOM);
+    });
+    return div;
+  };
+  reset.addTo(map);
+
+  applyFilters();
 }
 
 /* ---------- Filters ---------- */
@@ -341,6 +380,18 @@ function applyFilters(){
     const detail = tr.nextElementSibling;
     if(detail && detail.classList.contains('detail-row')){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
+    }
+    if(map && markers[id]){
+      if(ok){
+        if(!map.hasLayer(markers[id])) markers[id].addTo(map);
+      }else{
+        if(map.hasLayer(markers[id])) markers[id].remove();
+        if(selectedId === id){
+          setMarkerSelected(markers[id], false);
+          selectedId = null;
+          clearSelected();
+        }
+      }
     }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
@@ -400,6 +451,7 @@ function setOrigin(lat,lng,label){
     viewSlider = document.getElementById('viewSlider');
     mapView = document.getElementById('mapView');
     mapEl = document.getElementById('map');
+    mapDefaultHeight = mapEl.offsetHeight;
     selectedWrap = document.getElementById('selectedWrap');
     selectedBody = document.getElementById('selectedBody');
 
@@ -420,6 +472,7 @@ function setOrigin(lat,lng,label){
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       if(showingMap){
         initMap();
+        applyFilters();
         setTimeout(()=>{
           map.invalidateSize();
           viewWindow.style.height = mapView.offsetHeight + 'px';
