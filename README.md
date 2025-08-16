@@ -83,8 +83,29 @@ Fields can contain more than one citation by placing them sequentially:
 The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://byterookie.github.io/Efoilguide/).
 
 ## Local development
-No build step is required. Open `index.html` in a browser or serve the folder with any static file server.
+No build step is required. Serve the folder with a static file server—opening `index.html` directly may not load data.
+
+### Quick Start
+
+If you only want to browse the live site, visit [efoil.guide](https://efoil.guide). The steps below run the site locally.
+
+Prerequisite: Node.js not required—this is a static site. You just need Python for a simple server.
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/<your_username>/Efoilguide.git
+   cd Efoilguide
+   ```
+2. Start a simple static server:
+
+   ```bash
+   python -m http.server
+   ```
+3. Open `http://localhost:8000` in your browser.
+
 
 ## License
 
 This project is released under an all rights reserved license; see the [LICENSE](LICENSE) for details.
+
