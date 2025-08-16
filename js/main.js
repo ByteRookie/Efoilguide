@@ -469,11 +469,12 @@ function setOrigin(lat,lng,label){
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       if(showingMap){
+        // size the container before Leaflet initializes to avoid a zero-height map
+        updateMapHeights();
         initMap();
         applyFilters();
-        setTimeout(()=>{
-          updateMapHeights();
-        },0);
+        // run again once visible so Leaflet recalculates dimensions
+        requestAnimationFrame(updateMapHeights);
       }else{
         viewWindow.style.height = '';
         clearSelected();
