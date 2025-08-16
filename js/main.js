@@ -211,6 +211,11 @@ function showSelected(s){
   selectedBody.innerHTML = rowHTML(s);
   const tr = selectedBody.querySelector('tr.parent');
   if(tr){
+    // prepend column labels so the summary row is self‑describing
+    for(const td of tr.querySelectorAll('td[data-label]')){
+      const label = td.getAttribute('data-label');
+      td.innerHTML = `<strong>${label}:</strong> ${td.innerHTML}`;
+    }
     tr.classList.add('open');
     const detail = tr.nextElementSibling;
     if(detail) detail.classList.remove('hide');
@@ -290,6 +295,7 @@ function initMap(){
   SPOTS.forEach(s=>{
     const marker = L.marker([s.lat, s.lng]).addTo(map);
     marker.on('click', () => {
+      map.flyTo([s.lat, s.lng], 13);
       if(selectedId === s.id){
         selectedId = null;
         clearSelected();
