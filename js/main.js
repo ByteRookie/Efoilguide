@@ -373,7 +373,7 @@ function updateMapHeights(){
 
 function moveSortArrow(th){
   if(sortArrow) th.appendChild(sortArrow);
-  document.querySelectorAll('#tbl thead th').forEach(cell=>cell.removeAttribute('aria-sort'));
+  document.querySelectorAll('.tbl-header th').forEach(cell=>cell.removeAttribute('aria-sort'));
   th.setAttribute('aria-sort','ascending');
 }
 
@@ -382,7 +382,7 @@ function updateTableScroll(){
   const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
   if(rows.length===0){
     tableWrap.classList.remove('scroll');
-    spotsBody.style.maxHeight='';
+    tableWrap.style.maxHeight='';
     return;
   }
   const h = rows[0].getBoundingClientRect().height;
@@ -393,10 +393,10 @@ function updateTableScroll(){
   const maxRows = Math.min(target, maxVisible);
   if(rows.length>maxRows){
     tableWrap.classList.add('scroll');
-    spotsBody.style.maxHeight = h*maxRows + 'px';
+    tableWrap.style.maxHeight = h*maxRows + 'px';
   }else{
     tableWrap.classList.remove('scroll');
-    spotsBody.style.maxHeight='';
+    tableWrap.style.maxHeight='';
   }
 }
 
@@ -410,10 +410,10 @@ function tableInView(){
 function consumeTableScroll(dy){
   if(showingMap || !tableWrap || !tableWrap.classList.contains('scroll')) return false;
   if(!tableInView()) return false;
-  const atTop = spotsBody.scrollTop === 0;
-  const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
+  const atTop = tableWrap.scrollTop === 0;
+  const atBottom = tableWrap.scrollTop + tableWrap.clientHeight >= tableWrap.scrollHeight;
   if((dy < 0 && !atTop) || (dy > 0 && !atBottom)){
-    spotsBody.scrollTop += dy;
+    tableWrap.scrollTop += dy;
     lockPageScroll(true);
     return true;
   }
@@ -466,8 +466,8 @@ function checkShrink(){
   const shouldShrink = window.scrollY>0 || window.innerHeight<700;
   if(shouldShrink !== shrinkTable){
     shrinkTable = shouldShrink;
-    if(shrinkTable && spotsBody){
-      spotsBody.scrollTop = 0;
+    if(shrinkTable && tableWrap){
+      tableWrap.scrollTop = 0;
       lockPageScroll(true);
     }
     updateTableScroll();
@@ -551,15 +551,15 @@ function openTableRow(id, block='start'){
     if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = id;
   }
-  if(spotsBody && tableWrap && tableWrap.classList.contains('scroll')){
+  if(tableWrap && tableWrap.classList.contains('scroll')){
     const trRect = tr.getBoundingClientRect();
-    const bodyRect = spotsBody.getBoundingClientRect();
-    const offset = trRect.top - bodyRect.top + spotsBody.scrollTop;
+    const bodyRect = tableWrap.getBoundingClientRect();
+    const offset = trRect.top - bodyRect.top + tableWrap.scrollTop;
     if(block==='center'){
-      spotsBody.scrollTop = offset - spotsBody.clientHeight/2 + trRect.height/2;
+      tableWrap.scrollTop = offset - tableWrap.clientHeight/2 + trRect.height/2;
     }else{
-      const max = spotsBody.scrollHeight - spotsBody.clientHeight;
-      spotsBody.scrollTop = Math.min(offset, max);
+      const max = tableWrap.scrollHeight - tableWrap.clientHeight;
+      tableWrap.scrollTop = Math.min(offset, max);
     }
   }else{
     tr.scrollIntoView({block});
@@ -755,7 +755,7 @@ function setOrigin(lat,lng,label){
     window.addEventListener('touchstart', handleTouchStart, {passive:false});
     window.addEventListener('touchmove', handleTouchMove, {passive:false});
 
-    document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
+    document.querySelectorAll('.tbl-header th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -776,7 +776,7 @@ function setOrigin(lat,lng,label){
       viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
       window.scrollTo(0,0);
-      if(spotsBody) spotsBody.scrollTop = 0;
+      if(tableWrap) tableWrap.scrollTop = 0;
       if(mapView) mapView.scrollTop = 0;
       lockPageScroll(false);
       checkShrink();
