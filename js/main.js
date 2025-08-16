@@ -178,10 +178,12 @@ async function findImage(id){
 }
 
 async function loadImages(){
+  const defaultSrc = await findImage('default');
   const imgs=document.querySelectorAll('img[data-img-id]');
   for(const img of imgs){
     const id=img.getAttribute('data-img-id');
-    const src=await findImage(id);
+    let src=await findImage(id);
+    if(!src && defaultSrc) src=defaultSrc;
     if(src){
       img.src=src;
       img.onerror=()=>img.remove();
