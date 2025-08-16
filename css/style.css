@@ -140,7 +140,9 @@
 
 .leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}
 
-#mapView{display:block;}
-#map{height:60vh;}
-#selectedWrap{display:none;margin-top:16px;border-radius:var(--radius);border:1px solid var(--table-border);background:var(--card);padding:16px;font-size:14px;}
-#selectedWrap p{margin:6px 0;}
+#mapView{display:flex;flex-direction:column;}
+#map{flex:1;}
+#selectedWrap{flex:1;overflow:auto;margin-top:calc(var(--header-h)*-1 + 16px);padding-top:var(--header-h);border-radius:var(--radius);border:1px solid var(--table-border);background:var(--card);display:flex;flex-direction:column;}
+#selectedWrap .sel-top{position:sticky;top:var(--header-h);background:var(--card);padding:16px;z-index:1;}
+#selectedWrap .sel-top .img-box{margin-top:8px;}
+#selectedWrap .sel-details{padding:16px;}
