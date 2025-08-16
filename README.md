@@ -1,6 +1,7 @@
 # Online Efoil Guide
 
 A community‑maintained directory of eFoil spots. The site loads all location data from [`data/locations.csv`](data/locations.csv) and renders it in a filterable table and map.
+If you’re just looking for spot information, head to https://efoil.guide; the sections below are for contributors.
 
 ## Preview
 
