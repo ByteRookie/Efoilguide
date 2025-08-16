@@ -64,23 +64,25 @@
 <main class="wrap" id="main">
   <div id="viewWindow" style="overflow:hidden">
     <div id="viewSlider" style="display:flex;transition:transform .3s">
-      <div class="tbl-header" style="min-width:100%">
-        <table>
-          <thead>
-            <tr>
-              <th class="sortable" data-sort="name">Spot</th>
-              <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
-              <th class="sortable" data-sort="water">Water</th>
-              <th class="sortable" data-sort="season">Season</th>
-              <th class="sortable" data-sort="skill">Skill</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-      <div class="table-wrap" id="tableView" style="min-width:100%">
-        <table id="tbl">
-          <tbody id="spotsBody"></tbody>
-        </table>
+      <div id="tableView" style="min-width:100%">
+        <div class="tbl-header">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">Spot</th>
+                <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
+                <th class="sortable" data-sort="water">Water</th>
+                <th class="sortable" data-sort="season">Season</th>
+                <th class="sortable" data-sort="skill">Skill</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+        <div class="table-wrap">
+          <table id="tbl">
+            <tbody id="spotsBody"></tbody>
+          </table>
+        </div>
       </div>
       <div id="mapView" style="min-width:100%;padding-top:16px">
         <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
