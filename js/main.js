@@ -69,8 +69,11 @@ function parseCitations(str=''){
     (_, txt, names, urls)=>{
       const nArr = names.split(/"\s*,\s*"/).map(s=>s.trim());
       const uArr = urls.split(/"\s*,\s*"/).map(s=>s.trim());
-      const links = nArr.map((n,i)=>`<a href="${uArr[i]||'#'}" target="_blank">${n}</a>`).join('');
-      return `${txt}<span class="cite-group">${links}</span>`;
+      const groups = nArr.map((n,i)=>{
+        const url = uArr[i] || '#';
+        return `<span class="cite-group"><a href="${url}" target="_blank">${n}</a></span>`;
+      }).join('');
+      return `${txt}${groups}`;
     });
 }
 
@@ -224,45 +227,51 @@ async function loadImages(){
     const lat=parseFloat(box.getAttribute('data-lat'));
     const lng=parseFloat(box.getAttribute('data-lng'));
     const srcs=await findImages(id);
-    const slides=[{type:'map'}];
-    srcs.forEach(src=>slides.push({type:'img',src}));
 
-    if(slides.length===1){
+    box.innerHTML='';
+
+    if(srcs.length===0){
       const mapDiv=document.createElement('div');
       mapDiv.className='mini-map';
       box.appendChild(mapDiv);
       createMiniMap(mapDiv, lat, lng);
       box.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
-    }else{
-      const carousel=document.createElement('div');
-      carousel.className='img-carousel';
-      let mapDiv=null;
-      slides.forEach((info,idx)=>{
-        const slide=document.createElement('div');
-        slide.className='slide'+(idx===0?' active':'');
-        if(info.type==='map'){
-          mapDiv=document.createElement('div');
-          mapDiv.className='mini-map';
-          slide.appendChild(mapDiv);
-          slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
-        }else{
-          const img=document.createElement('img');
-          img.src=info.src;
-          img.alt=`${name} image`;
-          img.loading='lazy';
-          img.onerror=()=>slide.remove();
-          slide.appendChild(img);
-          const file=info.src.split('/').pop();
-          const credit=IMG_CREDITS[file];
-          if(credit && (credit.sourceName || credit.sourceURL)){
-            const creditName=credit.sourceName||credit.sourceURL||'';
-            const url=credit.sourceURL;
-            const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
-            slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
-          }
-        }
-        carousel.appendChild(slide);
-      });
+      continue;
+    }
+
+    const toggle=document.createElement('div');
+    toggle.className='media-toggle';
+    const imgBtn=document.createElement('button');
+    imgBtn.textContent='Images';
+    imgBtn.className='active';
+    const mapBtn=document.createElement('button');
+    mapBtn.textContent='Map';
+    toggle.appendChild(imgBtn);
+    toggle.appendChild(mapBtn);
+    box.appendChild(toggle);
+
+    const carousel=document.createElement('div');
+    carousel.className='img-carousel';
+    srcs.forEach((src,idx)=>{
+      const slide=document.createElement('div');
+      slide.className='slide'+(idx===0?' active':'');
+      const img=document.createElement('img');
+      img.src=src;
+      img.alt=`${name} image`;
+      img.loading='lazy';
+      img.onerror=()=>slide.remove();
+      slide.appendChild(img);
+      const file=src.split('/').pop();
+      const credit=IMG_CREDITS[file];
+      if(credit && (credit.sourceName || credit.sourceURL)){
+        const creditName=credit.sourceName||credit.sourceURL||'';
+        const url=credit.sourceURL;
+        const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
+        slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
+      }
+      carousel.appendChild(slide);
+    });
+    if(srcs.length>1){
       const prev=document.createElement('button');
       prev.className='prev';
       prev.textContent='‹';
@@ -271,8 +280,6 @@ async function loadImages(){
       next.textContent='›';
       carousel.appendChild(prev);
       carousel.appendChild(next);
-      box.appendChild(carousel);
-      if(mapDiv) createMiniMap(mapDiv, lat, lng);
       const slidesEls=carousel.querySelectorAll('.slide');
       let idx=0;
       function show(n){
@@ -282,6 +289,31 @@ async function loadImages(){
       prev.addEventListener('click',()=>show(idx-1));
       next.addEventListener('click',()=>show(idx+1));
     }
+    box.appendChild(carousel);
+
+    const mapHolder=document.createElement('div');
+    mapHolder.className='map-holder';
+    const mapDiv=document.createElement('div');
+    mapDiv.className='mini-map';
+    mapHolder.appendChild(mapDiv);
+    mapHolder.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
+    mapHolder.style.display='none';
+    box.appendChild(mapHolder);
+
+    let mapInit=false;
+    imgBtn.addEventListener('click',()=>{
+      imgBtn.classList.add('active');
+      mapBtn.classList.remove('active');
+      carousel.style.display='';
+      mapHolder.style.display='none';
+    });
+    mapBtn.addEventListener('click',()=>{
+      mapBtn.classList.add('active');
+      imgBtn.classList.remove('active');
+      carousel.style.display='none';
+      mapHolder.style.display='';
+      if(!mapInit){ createMiniMap(mapDiv, lat, lng); mapInit=true; }
+    });
   }
 }
 
