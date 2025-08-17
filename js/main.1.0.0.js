@@ -604,8 +604,9 @@ function updateSheetHeight(){
 function handleDetailScroll(){
   const outer = selectedDetail ? selectedDetail.scrollTop : 0;
   const inner = sheetInfo ? sheetInfo.scrollTop : 0;
+  const st = Math.max(outer, inner);
   if(selectedImgBox && selectedImgHeight > 0){
-    const collapse = Math.min(outer, selectedImgHeight);
+    const collapse = Math.min(st, selectedImgHeight);
     const remain = selectedImgHeight - collapse;
     selectedImgBox.style.height = remain + 'px';
     selectedImgBox.style.opacity = remain / selectedImgHeight;
@@ -616,7 +617,6 @@ function handleDetailScroll(){
     if(selectedDetail) selectedDetail.style.transform = '';
   }
   if(scrollTopBtn){
-    const st = Math.max(outer, inner);
     scrollTopBtn.classList.toggle('hidden', st <= 20);
   }
   window.requestAnimationFrame(updateSheetHeight);
