@@ -103,12 +103,13 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopScroll, selectedTopBody, selectedTopMap, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
-  let shrinkTable = false;
-  let touchStartY = 0;
+let openedFromTable = false;
+let shrinkTable = false;
+let touchStartY = 0;
 let markers = {};
 let pageLocked = false;
 const MAP_START = [37.7749,-122.4194];
@@ -331,7 +332,7 @@ async function loadImages(){
   }
 }
 
-function showSelected(s){
+function showSelected(s, mapTop=false){
   const temp = document.createElement('tbody');
   temp.innerHTML = rowHTML(s);
   const topRow = temp.querySelector('tr.parent');
@@ -346,13 +347,33 @@ function showSelected(s){
   }
   if(detail) detail.classList.remove('hide');
   selectedTopBody.innerHTML = '';
-  if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
+  if(mapTop){
+    if(selectedTopScroll) selectedTopScroll.style.display='none';
+    if(selectedTopMap){
+      selectedTopMap.innerHTML='';
+      const mapDiv=document.createElement('div');
+      mapDiv.style.height='100%';
+      selectedTopMap.appendChild(mapDiv);
+      createMiniMap(mapDiv, s.lat, s.lng);
+      selectedTopMap.classList.remove('hidden');
+      selectedWrap.classList.add('map-top');
+    }
+  }else{
+    if(topRow) selectedTopBody.appendChild(topRow);
+    if(selectedTopScroll) selectedTopScroll.style.display='';
+    if(selectedTopMap){
+      selectedTopMap.innerHTML='';
+      selectedTopMap.classList.add('hidden');
+    }
+    selectedWrap.classList.remove('map-top');
+  }
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
+  if(window.innerWidth<700 && mapView) mapView.classList.add('hide-map');
   loadImages();
   updateMapHeights();
 }
@@ -360,8 +381,15 @@ function showSelected(s){
 function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
+  if(selectedTopMap){
+    selectedTopMap.innerHTML='';
+    selectedTopMap.classList.add('hidden');
+  }
+  if(selectedTopScroll) selectedTopScroll.style.display='';
   selectedBody.innerHTML='';
   selectedWrap.classList.add('hidden');
+  selectedWrap.classList.remove('map-top');
+  if(mapView) mapView.classList.remove('hide-map');
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -513,8 +541,17 @@ function render(){
 function attachRowHandlers(){
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     tr.addEventListener('click',()=>{
-      const wasOpen = tr.classList.contains('open');
       const id = tr.getAttribute('data-id');
+      if(window.innerWidth<700 && !showingMap){
+        const spot = SPOTS.find(s=>s.id===id);
+        if(spot){
+          selectedId = id;
+          openedFromTable = true;
+          viewToggle.click();
+        }
+        return;
+      }
+      const wasOpen = tr.classList.contains('open');
       document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
         if(o!==tr){
           o.classList.remove('open');
@@ -756,7 +793,9 @@ function setOrigin(lat,lng,label){
     viewSlider = document.getElementById('viewSlider');
     mapView = document.getElementById('mapView');
     selectedWrap = document.getElementById('selectedWrap');
+    selectedTopScroll = document.getElementById('selectedTopScroll');
     selectedTopBody = document.getElementById('selectedTopBody');
+    selectedTopMap = document.getElementById('selectedTopMap');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
@@ -766,6 +805,10 @@ function setOrigin(lat,lng,label){
       closeSelected.addEventListener('click', ()=>{
         clearSelected();
         selectedId = null;
+        if(openedFromTable){
+          openedFromTable = false;
+          viewToggle.click();
+        }
       });
     }
 
@@ -810,13 +853,14 @@ function setOrigin(lat,lng,label){
           const spot = SPOTS.find(s=>s.id===selectedId);
           if(spot){
             if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
-            showSelected(spot);
-            map.flyTo([spot.lat, spot.lng], 16);
+            showSelected(spot, openedFromTable);
+            if(!openedFromTable) map.flyTo([spot.lat, spot.lng], 16);
           }
         }else{
           clearSelected();
         }
       }else{
+        openedFromTable = false;
         viewWindow.style.height = '';
         mapView.style.height = '';
         clearSelected();

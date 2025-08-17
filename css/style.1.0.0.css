@@ -168,8 +168,15 @@
 
 #mapView{display:flex;flex-direction:column;min-width:100%;padding-top:16px;}
 #map{flex:1;border-radius:var(--radius);border:1px solid var(--table-border);}
+#mapView.hide-map #map{display:none;}
+#mapView.hide-map #selectedWrap{flex:1;}
 #selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
+#selectedWrap.map-top #selectedTop{position:relative;display:block;}
+#selectedWrap.map-top #selectedTopMap{display:block;height:200px;}
+#selectedWrap.map-top #selectedTopScroll{display:none;}
+#selectedWrap.map-top #closeSelected{position:absolute;top:8px;right:8px;background:var(--btn-bg);border-radius:8px;}
 #selectedTop{background:var(--card);border-bottom:1px solid var(--table-border);display:flex;align-items:center;}
+#selectedTopMap{display:none;}
 #selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 #selectedTopScroll table{border-collapse:separate;border-spacing:0;display:flex;width:fit-content;}
 #selectedTopScroll tbody{display:flex;}
