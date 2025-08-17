@@ -158,7 +158,7 @@ header h1 .logo{height:64px;width:64px}
   #infoPopup p{margin:0 0 8px;line-height:1.4}
   #infoPopup .welcome{text-align:center;margin-bottom:16px}
   #infoPopup .welcome p{margin:0 0 12px;line-height:1.5;font-size:16px;font-weight:500}
-  #closeInfo{position:sticky;top:0;display:block;margin:-8px -8px 8px auto;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(4px);border-radius:var(--radius);padding:4px;color:var(--muted);cursor:pointer;font-size:24px;z-index:1}
+  #closeInfo{position:sticky;top:0;display:block;margin:-8px -8px 8px auto;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(4px);border:none;outline:none;border-radius:var(--radius);padding:4px;color:var(--muted);cursor:pointer;font-size:24px;z-index:1}
 @media (max-width:800px){
     #selectedDetail tbody tr{display:block;margin-bottom:12px}
     #selectedDetail tbody td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
