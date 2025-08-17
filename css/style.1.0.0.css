@@ -2,7 +2,7 @@
     color-scheme: light dark;
     --radius:12px; --hover:rgba(0,0,0,.04);
     --header-h:0px;
-    --panel-w:50%;
+    --panel-w:400px;
     --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
@@ -213,7 +213,8 @@
 #tablePanel{position:fixed;top:calc(var(--header-h) + 8px);left:0;width:var(--panel-w);height:calc(100% - var(--header-h) - 8px);background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);transform:translateX(-100%);transition:transform .3s;z-index:40;border:1px solid var(--table-border);border-left:none;border-top-right-radius:var(--radius);border-bottom-right-radius:var(--radius);padding-top:0;overflow:hidden;display:flex;flex-direction:column;}
 #tablePanel.open{transform:translateX(0);}
 #panelGrip{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize}
-#closePanel{position:absolute;top:8px;right:24px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:24px;z-index:5}
+#panelButtons{position:absolute;top:8px;right:24px;display:flex;gap:8px;z-index:5}
+#panelButtons button,#selectedTop button{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:24px}
 #selectedWrap{position:fixed;left:0;top:0;width:440px;max-width:100%;z-index:60;transform:translateY(100%);transition:transform .3s,width .3s;border-top-right-radius:var(--radius);border-bottom-right-radius:var(--radius);overflow:hidden;border:1px solid var(--table-border);background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);display:flex;flex-direction:column;}
 #selectedWrap.show{transform:translateY(0);}
 #sheetWidthGrip{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;}
@@ -225,7 +226,6 @@
   #selectedTopScroll tr{display:flex;gap:8px;}
   #selectedTopScroll td{padding:4px 8px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;}
 #selectedTopScroll .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
-#closeSelected{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:24px;}
 
   .leaflet-bar a{width:39px;height:39px;line-height:39px;font-size:24px;background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);}
   .leaflet-bar a.active{background:var(--btn-alt-bg);border:1px solid var(--accent);}

@@ -88,7 +88,8 @@ let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, m
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip;
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip,
+    togglePanelBtn, toggleSheetBtn;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -102,12 +103,18 @@ let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let sheetDragFromTop = false;
+let panelFull = false;
+let sheetFull = false;
 let resumeId = null;
 let suggestIndex = -1;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
 const SHEET_MARGIN = 15; // gap between header and detail sheet
+const PANEL_DEFAULT_W = 400;
+const SHEET_DEFAULT_W = 440;
+const EXPAND_ICON = '⤢';
+const COLLAPSE_ICON = '⤡';
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
@@ -116,6 +123,17 @@ function updateHeaderOffset(){
 function handleResize(){
   updateHeaderOffset();
   checkShrink();
+  if(window.innerWidth <= 700){
+    if(tablePanel && !panelFull) tablePanel.style.width = '';
+    if(selectedWrap && !sheetFull) selectedWrap.style.width = '';
+  }
+  if(panelFull && tablePanel){
+    const w = window.innerWidth;
+    tablePanel.style.width = w + 'px';
+  }
+  if(sheetFull && selectedWrap){
+    selectedWrap.style.width = window.innerWidth + 'px';
+  }
   if(selectedWrap && selectedWrap.classList.contains('show')){
     const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
     if(sheetOffset < min) sheetOffset = min;
@@ -124,6 +142,42 @@ function handleResize(){
     recenterSelected();
     updateMapControls();
   }
+  if(tablePanel){
+    const w = panelFull ? window.innerWidth : tablePanel.offsetWidth;
+    document.documentElement.style.setProperty('--panel-w', w + 'px');
+  }
+}
+
+function togglePanelSize(){
+  if(!tablePanel) return;
+  panelFull = !panelFull;
+  if(panelFull){
+    const w = window.innerWidth;
+    tablePanel.style.width = w + 'px';
+    if(togglePanelBtn) togglePanelBtn.textContent = COLLAPSE_ICON;
+  }else{
+    tablePanel.style.width = window.innerWidth <= 700 ? '' : PANEL_DEFAULT_W + 'px';
+    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
+  }
+  handleResize();
+}
+
+function toggleSheetSize(){
+  if(!selectedWrap) return;
+  sheetFull = !sheetFull;
+  const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  sheetOffset = minOffset;
+  if(sheetFull){
+    selectedWrap.style.width = window.innerWidth + 'px';
+    if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
+  }else{
+    selectedWrap.style.width = window.innerWidth <= 700 ? '' : SHEET_DEFAULT_W + 'px';
+    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+  }
+  updateSheetTransform();
+  updateSheetHeight();
+  recenterSelected();
+  updateMapControls();
 }
 
 function openPanel(){
@@ -139,6 +193,9 @@ function openPanel(){
     tablePanel.setAttribute('aria-hidden','false');
     document.body.classList.add('panel-open');
     panelOpen = true;
+    panelFull = false;
+    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
+    if(window.innerWidth > 700) tablePanel.style.width = PANEL_DEFAULT_W + 'px';
     document.documentElement.style.setProperty('--panel-w', tablePanel.offsetWidth + 'px');
     lockPageScroll(true);
     if(listCtrlLink){
@@ -154,6 +211,8 @@ function closePanel(){
     tablePanel.setAttribute('aria-hidden','true');
     document.body.classList.remove('panel-open');
     panelOpen = false;
+    panelFull = false;
+    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
     lockPageScroll(false);
     if(listCtrlLink){
       listCtrlLink.classList.remove('active');
@@ -434,6 +493,9 @@ function showSelected(s, fromList=false){
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
+  sheetFull = false;
+  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+  if(window.innerWidth > 700) selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
   const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   sheetOffset = minOffset;
   updateSheetTransform();
@@ -456,6 +518,8 @@ function clearSelected(){
   selectedWrap.style.height='';
   selectedWrap.style.width='';
   if(selectedDetail) selectedDetail.style.maxHeight='';
+  sheetFull = false;
+  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   sheetOffset = 0;
   updateMapControls();
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
@@ -526,6 +590,8 @@ function lockPageScroll(lock){
 function startSheetDrag(e){
   if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
   if(e.target.closest('button') || e.target.closest('#selectedTopScroll')) return;
+  sheetFull = false;
+  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   sheetDragFromTop = e.currentTarget === selectedTop;
   sheetDragStartY = e.touches ? e.touches[0].clientY : e.clientY;
   sheetDragStartOffset = sheetOffset;
@@ -582,8 +648,10 @@ function recenterSelected(){
   if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
   const sheetW = selectedWrap.offsetWidth;
   const openW = window.innerWidth - sheetW;
-  const desiredX = sheetW + openW * 0.25;
-  const desiredY = window.innerHeight / 2;
+  const isMobile = window.innerWidth <= 700;
+  const desiredX = isMobile ? window.innerWidth / 2 : sheetW + openW * 0.33;
+  const navBottom = headerEl ? headerEl.offsetHeight : 0;
+  const desiredY = isMobile ? (navBottom + sheetOffset) / 2 : window.innerHeight / 2;
   const pt = map.latLngToContainerPoint(markers[selectedId].getLatLng());
   const offsetX = pt.x - desiredX;
   const offsetY = pt.y - desiredY;
@@ -926,11 +994,15 @@ function setOrigin(lat,lng,label){
     headerEl = document.querySelector('header');
     tablePanel = document.getElementById('tablePanel');
     closePanelBtn = document.getElementById('closePanel');
+    togglePanelBtn = document.getElementById('togglePanelSize');
+    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
     selectedWrap = document.getElementById('selectedWrap');
     selectedTop = document.getElementById('selectedTop');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
+    toggleSheetBtn = document.getElementById('toggleSheetSize');
+    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
     closeSelected = document.getElementById('closeSelected');
     filterBtn = document.getElementById('filterBtn');
     infoBtn = document.getElementById('infoBtn');
@@ -946,8 +1018,14 @@ function setOrigin(lat,lng,label){
         selectedId = null;
       });
     }
+    if(toggleSheetBtn){
+      toggleSheetBtn.addEventListener('click', toggleSheetSize);
+    }
     if(closePanelBtn){
       closePanelBtn.addEventListener('click', ()=>closePanel());
+    }
+    if(togglePanelBtn){
+      togglePanelBtn.addEventListener('click', togglePanelSize);
     }
     panelGrip = document.getElementById('panelGrip');
     if(panelGrip && tablePanel){
@@ -970,6 +1048,8 @@ function setOrigin(lat,lng,label){
         document.removeEventListener('touchend', stop);
       };
       panelGrip.addEventListener('mousedown', e => {
+        panelFull = false;
+        if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
         startX = e.clientX;
         startW = tablePanel.offsetWidth;
         document.addEventListener('mousemove', move);
@@ -977,6 +1057,8 @@ function setOrigin(lat,lng,label){
         e.preventDefault();
       });
       panelGrip.addEventListener('touchstart', e => {
+        panelFull = false;
+        if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
         startX = e.touches[0].clientX;
         startW = tablePanel.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});
@@ -1007,6 +1089,8 @@ function setOrigin(lat,lng,label){
         updateMapControls();
       };
       sheetWidthGrip.addEventListener('mousedown', e => {
+        sheetFull = false;
+        if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
         startX = e.clientX;
         startW = selectedWrap.offsetWidth;
         document.addEventListener('mousemove', move);
@@ -1014,6 +1098,8 @@ function setOrigin(lat,lng,label){
         e.preventDefault();
       });
       sheetWidthGrip.addEventListener('touchstart', e => {
+        sheetFull = false;
+        if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
         startX = e.touches[0].clientX;
         startW = selectedWrap.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});

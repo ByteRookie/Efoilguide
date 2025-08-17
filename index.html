@@ -66,7 +66,10 @@
 <main id="main">
   <div id="map"></div>
   <div id="tablePanel" class="panel" role="dialog" aria-modal="true" aria-hidden="true">
-    <button id="closePanel" aria-label="Close">✕</button>
+    <div id="panelButtons">
+      <button id="togglePanelSize" aria-label="Expand">⤢</button>
+      <button id="closePanel" aria-label="Close">✕</button>
+    </div>
     <div class="table-wrap">
       <table id="tbl">
         <colgroup>
@@ -97,6 +100,7 @@
           <tbody id="selectedTopBody"></tbody>
         </table>
       </div>
+      <button id="toggleSheetSize" aria-label="Expand">⤢</button>
       <button id="closeSelected" aria-label="Close">✕</button>
     </div>
     <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
