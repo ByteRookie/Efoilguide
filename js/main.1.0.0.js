@@ -1,27 +1,35 @@
-/* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
-const ZIP_CENTROIDS = {
-  /* SF */
-  "94102":[37.7793,-122.4193],"94103":[37.7739,-122.4114],"94105":[37.7890,-122.3942],
-  "94107":[37.7609,-122.4017],"94109":[37.7960,-122.4220],"94110":[37.7486,-122.4158],
-  "94114":[37.7583,-122.4358],"94121":[37.7771,-122.4941],"94122":[37.7609,-122.4842],
-  "94123":[37.8019,-122.4380],"94124":[37.7277,-122.3828],
-  /* Peninsula */
-  "94080":[37.6536,-122.4194],"94404":[37.5585,-122.2689],"94401":[37.5779,-122.3202],
-  "94402":[37.5256,-122.3370],"94403":[37.5387,-122.3023],"94010":[37.5779,-122.3481],
-  "94025":[37.4510,-122.1826],"94063":[37.4836,-122.2050],"94065":[37.5200,-122.2520],
-  "94019":[37.4636,-122.4286],
-  /* East Bay */
-  "94501":[37.7719,-122.2666],"94607":[37.8044,-122.2711],"94608":[37.8347,-122.2833],
-  "94710":[37.8715,-122.2989],"94804":[37.9255,-122.3408],"94606":[37.7936,-122.2490],
-  "94566":[37.6619,-121.8758],"94550":[37.6819,-121.7680],
-  /* North Bay */
-  "94965":[37.8591,-122.4853],"94920":[37.8880,-122.4555],"94952":[38.2324,-122.6367],
-  "94954":[38.2437,-122.6060],"94923":[38.3332,-123.0418],
-  /* South Bay */
-  "95030":[37.2266,-121.9747],
-  /* Napa */
-  "94558":[38.5101,-122.3329]
-};
+/* ---------- ZIP -> lat/lng data (loaded offline) ---------- */
+let ZIP_LOOKUP = {};
+let ZIP_LIST = [];
+
+function haversine(a,b){
+  const toRad = d => d * Math.PI / 180;
+  const R = 3958.761; // miles
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]), lat2 = toRad(b[0]);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+async function loadZipData(){
+  try {
+    const resp = await fetch('data/Zip/us-zips.json');
+    if(resp.ok){
+      ZIP_LOOKUP = await resp.json();
+      ZIP_LIST = Object.entries(ZIP_LOOKUP).map(([z,[lat,lng]])=>({z,lat,lng}));
+    }
+  } catch {}
+}
+
+function findNearestZip(lat,lng){
+  let nearest=null,best=Infinity;
+  for(const item of ZIP_LIST){
+    const d=haversine([lat,lng],[item.lat,item.lng]);
+    if(d<best){best=d;nearest=item.z;}
+  }
+  return nearest;
+}
 
 let SPOTS = [];// loaded from CSV
 let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
@@ -154,7 +162,7 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
-    zip, useGeo, filtersEl, headerEl, sortArrow,
+    zip, zipClear, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
     togglePanelBtn, toggleSheetBtn;
@@ -175,6 +183,7 @@ let panelFull = false;
 let sheetFull = false;
 let resumeId = null;
 let suggestIndex = -1;
+let originMsgDefault = '';
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
@@ -366,14 +375,6 @@ function toggleFilters(){
   handleResize();
 }
 
-function haversine(a,b){
-  const toRad = d=>d*Math.PI/180;
-  const R=3958.761; // miles
-  const dLat=toRad(b[0]-a[0]); const dLng=toRad(b[1]-a[1]);
-  const lat1=toRad(a[0]), lat2=toRad(b[0]);
-  const h=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
-  return 2*R*Math.asin(Math.sqrt(h));
-}
 // Simple road time model: first 10 mi @ 28 mph (urban), next 30 @ 45 mph, remaining @ 60 mph
 function etaMinutes(mi){
   if(mi<=0) return 0;
@@ -399,6 +400,7 @@ function milesFromMinutes(min){
   return lo;
 }
 
+
 function updateMapView(visibleMarkers){
   if(!map) return;
   if(Array.isArray(visibleMarkers) && visibleMarkers.length){
@@ -418,6 +420,7 @@ function updateMapView(visibleMarkers){
     map.flyTo(MAP_START, MAP_ZOOM);
   }
 }
+
 
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
@@ -983,15 +986,15 @@ function applyTileScheme(m){
   apply();
 }
 
-function initMap(){
-  if(map) return;
-  map = L.map('map').setView(MAP_START, MAP_ZOOM);
+  function initMap(){
+    if(map) return;
+    map = L.map('map').setView(MAP_START, MAP_ZOOM);
 
-  applyTileScheme(map);
+    applyTileScheme(map);
 
-  SPOTS.forEach(s=>{
-    const marker = L.marker([s.lat, s.lng]).addTo(map);
-    markers[s.id] = marker;
+    SPOTS.forEach(s=>{
+      const marker = L.marker([s.lat, s.lng]).addTo(map);
+      markers[s.id] = marker;
     marker.on('click', () => {
       if(selectedId === s.id){
         setMarkerSelected(marker,false);
@@ -1025,23 +1028,6 @@ function initMap(){
     clearSelected();
     updateOtherMarkers();
   });
-
-  const reset = L.control({position:'topleft'});
-  reset.onAdd = function(){
-    const div = L.DomUtil.create('div','leaflet-bar');
-    const a = L.DomUtil.create('a','',div);
-    a.href = '#';
-    a.innerHTML = '↺';
-    a.title = 'Reset view';
-    a.setAttribute('aria-label','Reset view');
-    L.DomEvent.on(a,'click',e=>{
-      L.DomEvent.preventDefault(e);
-      L.DomEvent.stopPropagation(e);
-      map.setView(MAP_START, MAP_ZOOM);
-    });
-    return div;
-  };
-  reset.addTo(map);
 
   const listCtrl = L.control({position:'topleft'});
   listCtrl.onAdd = function(){
@@ -1138,6 +1124,7 @@ function applyFilters(){
   }else if(noRow){
     noRow.remove();
   }
+
   minsVal.textContent = `≤ ${mins.value} min`;
   if(!selectedId){
     if(visibleMarkers.length && (visibleMarkers.length<SPOTS.length || qv)){
@@ -1206,7 +1193,7 @@ function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
-  updateMapView();
+  initMap();
   if(locationBox){
     locationBox.classList.add('hidden');
     if(editLocation) editLocation.classList.remove('active');
@@ -1215,6 +1202,7 @@ function setOrigin(lat,lng,label){
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
+    originMsgDefault = originMsg ? originMsg.textContent : '';
     editLocation = document.getElementById('editLocation');
     locationBox = document.getElementById('locationBox');
     spotsBody = document.getElementById('spotsBody');
@@ -1229,7 +1217,10 @@ function setOrigin(lat,lng,label){
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
     zip = document.getElementById('zip');
+    zipClear = document.getElementById('zipClear');
+    if(zipClear) zipClear.classList.toggle('hidden', !zip.value);
     useGeo = document.getElementById('useGeo');
+    await loadZipData();
     filtersEl = document.getElementById('filters');
     headerEl = document.querySelector('header');
     tablePanel = document.getElementById('tablePanel');
@@ -1435,7 +1426,6 @@ function setOrigin(lat,lng,label){
           hideSuggestions();
           applyFilters();
         }
-        map.setView(MAP_START, MAP_ZOOM);
         updateOtherMarkers();
       });
     }
@@ -1469,10 +1459,6 @@ function setOrigin(lat,lng,label){
       }
       handleResize();
     });
-
-    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
-
-
 
   window.addEventListener('resize', handleResize);
   handleResize();
@@ -1585,42 +1571,35 @@ function setOrigin(lat,lng,label){
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
-zip.addEventListener('input', async () => {
-  const z = (zip.value || '').trim();
-  if (z.length !== 5) return;
-
-  if (ZIP_CENTROIDS[z]) {
-    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
+function handleZip(){
+  let clean = (zip.value || '').replace(/\D/g,'').slice(0,5);
+  if(zip.value !== clean) zip.value = clean;
+  zipClear.classList.toggle('hidden', clean.length===0);
+  originMsg.textContent = '';
+  if (clean.length !== 5){
+    if(clean.length>0) originMsg.textContent = 'Please enter a 5-digit ZIP.';
     return;
   }
-  if (zipCache[z]) {
-    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
-    return;
+  const coords = ZIP_LOOKUP[clean];
+  if (coords) {
+    setOrigin(coords[0], coords[1], `ZIP ${clean}`);
+  } else {
+    originMsg.textContent = `ZIP ${clean} not found.`;
   }
+}
+zip.addEventListener('input', handleZip);
+zip.addEventListener('change', handleZip);
 
-  originMsg.textContent = `Looking up ZIP ${z}…`;
-  try {
-    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
-    if (resp.status === 404) {
-      originMsg.textContent = `ZIP ${z} not found.`;
-      return;
-    }
-    if (!resp.ok) throw new Error('Network error');
-    const data = await resp.json();
-    const place = data && data.places && data.places[0];
-    if (place) {
-      const lat = parseFloat(place.latitude);
-      const lng = parseFloat(place.longitude);
-      zipCache[z] = [lat, lng];
-      localStorage.setItem('zipCache', JSON.stringify(zipCache));
-      setOrigin(lat, lng, `ZIP ${z}`);
-    } else {
-      originMsg.textContent = `ZIP ${z} not found.`;
-    }
-  } catch {
-    originMsg.textContent = `Network error while looking up ZIP ${z}.`;
+if(zipClear){
+  zipClear.addEventListener('click', e => {
+    e.preventDefault();
+    zip.value='';
+    ORIGIN = null;
+    originMsg.textContent = originMsgDefault;
+    zipClear.classList.add('hidden');
+    render();
+    });
   }
-});
 
   useGeo.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1629,7 +1608,19 @@ zip.addEventListener('input', async () => {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const nearest = findNearestZip(lat, lng);
+        if(nearest){
+          zip.value = nearest;
+          handleZip();
+        }else{
+          setOrigin(lat, lng, 'your current location');
+          zip.value = '';
+          zipClear.classList.add('hidden');
+        }
+      },
       () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
     updateSelectedTopPadding();
