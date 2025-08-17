@@ -399,13 +399,20 @@ function milesFromMinutes(min){
   return lo;
 }
 
-function updateMapView(){
+function updateMapView(visibleMarkers){
   if(!map) return;
-  if(ORIGIN){
-    const radius = milesFromMinutes(+mins.value);
-    const circle = L.circle(ORIGIN,{radius:radius*1609.34});
-    const bounds = circle.getBounds();
-    const zoom = map.getBoundsZoom(bounds);
+  if(Array.isArray(visibleMarkers) && visibleMarkers.length){
+    if(visibleMarkers.length===1){
+      map.flyTo(visibleMarkers[0].getLatLng(), Math.min(map.getMaxZoom(),18));
+    }else{
+      const group=L.featureGroup(visibleMarkers);
+      map.flyToBounds(group.getBounds(),{padding:[20,20],maxZoom:18});
+    }
+  }else if(ORIGIN){
+    const radius=milesFromMinutes(+mins.value);
+    const circle=L.circle(ORIGIN,{radius:radius*1609.34});
+    const bounds=circle.getBounds();
+    const zoom=map.getBoundsZoom(bounds);
     map.flyTo(ORIGIN, zoom);
   }else{
     map.flyTo(MAP_START, MAP_ZOOM);
@@ -1080,6 +1087,7 @@ function applyFilters(){
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const tmax = +mins.value;
   let anyVisible = false;
+  const visibleMarkers=[];
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
@@ -1107,6 +1115,7 @@ function applyFilters(){
     if(map && markers[id]){
       if(ok){
         if(!map.hasLayer(markers[id])) markers[id].addTo(map);
+        visibleMarkers.push(markers[id]);
       }else{
         if(map.hasLayer(markers[id])) markers[id].remove();
         if(selectedId === id){
@@ -1130,7 +1139,13 @@ function applyFilters(){
     noRow.remove();
   }
   minsVal.textContent = `≤ ${mins.value} min`;
-  if(!selectedId) updateMapView();
+  if(!selectedId){
+    if(visibleMarkers.length && (visibleMarkers.length<SPOTS.length || qv)){
+      updateMapView(visibleMarkers);
+    }else{
+      updateMapView();
+    }
+  }
 }
 
 function hideSuggestions(){
