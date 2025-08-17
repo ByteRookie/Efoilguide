@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Online eFoil Guide</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.v1.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
@@ -16,21 +16,21 @@
       Rig: <strong>Fliteboard Pro + Jet2</strong> • Wings: <strong>MN 1300 C</strong> (front) + <strong>Flow 245 C</strong> (stab) • Battery: <strong>Sport</strong>
       <br><span id="originInfo" class="hint">
         <span id="originMsg">Set your origin to sort by distance & ETA. Your address is never stored.</span>
-        <span id="locationBox" style="display:none">
-          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" style="width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-          <button id="useGeo" style="background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer" title="Use My Location" aria-label="Use My Location">📍</button>
-          <button id="closeLocation" aria-label="Close" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);">✕</button>
+        <span id="locationBox" class="hidden">
+          <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" />
+          <button id="useGeo" title="Use My Location" aria-label="Use My Location">📍</button>
+          <button id="closeLocation" aria-label="Close">✕</button>
         </span>
         <a href="#" id="editLocation">Edit location</a>
       </span>
     </div>
 
-    <div id="searchRow" style="display:flex;gap:8px;align-items:center;width:100%">
-      <input id="q" placeholder="Search all details" style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px" />
-      <button id="viewToggle" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Map</button>
-      <button id="filterToggle" aria-expanded="false" style="background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer">Show filters</button>
+    <div id="searchRow">
+      <input id="q" placeholder="Search all details" />
+      <button id="viewToggle">Map</button>
+      <button id="filterToggle" aria-expanded="false">Show filters</button>
     </div>
-    <div id="filters" class="controls" style="display:none;margin-top:8px">
+    <div id="filters" class="controls hidden">
       <div class="control">
         <div class="legend-row">
           <div class="chip-group">
@@ -51,8 +51,8 @@
             <span class="chip f-skill active b-lvlm" data-value="I">Intermediate</span>
             <span class="chip f-skill active b-lvlh" data-value="A">Advanced</span>
           </div>
-          <div class="chip-group" style="flex:1;align-items:center;position:relative">
-            <input id="mins" type="range" min="15" max="180" step="5" value="180" style="flex:1">
+          <div class="chip-group chip-group-flex">
+            <input id="mins" type="range" min="15" max="180" step="5" value="180">
             <span class="hint" id="minsVal">≤ 180 min</span>
           </div>
         </div>
@@ -62,9 +62,9 @@
 </header>
 
 <main class="wrap" id="main">
-  <div id="viewWindow" style="overflow-x:hidden">
-    <div id="viewSlider" style="display:flex;transition:transform .3s">
-      <div id="tableView" style="min-width:100%">
+  <div id="viewWindow">
+    <div id="viewSlider">
+      <div id="tableView">
         <div class="table-wrap">
           <table id="tbl">
             <thead>
@@ -80,9 +80,9 @@
           </table>
         </div>
       </div>
-      <div id="mapView" style="min-width:100%;padding-top:16px">
-        <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
-        <div id="selectedWrap" style="display:none;border-radius:var(--radius);border:1px solid var(--table-border);overflow:hidden">
+      <div id="mapView">
+        <div id="map"></div>
+        <div id="selectedWrap" class="hidden">
           <div id="selectedTop">
             <div id="selectedTopScroll">
               <table>
@@ -101,9 +101,9 @@
 
 <button id="toTop" aria-label="Back to top">↑</button>
 
-<script src="js/main.js" defer></script>
+<script src="js/main.v1.js" defer></script>
 
-<section class="wrap" style="margin-bottom:40px">
+<section class="wrap mb-40">
   <h2>Regulatory quick‑reference</h2>
   <ul class="muted">
     <li><strong>Harbors/Marinas:</strong> No‑wake (typically 5 mph) inside fairways until outside breakwaters.</li>
