@@ -102,6 +102,8 @@ let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let resumeId = null;
 let suggestIndex = -1;
+let autoCenter = false;
+let suppressMapMove = false;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
@@ -432,6 +434,7 @@ function showSelected(s, fromList=false){
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
+  autoCenter = true;
   loadImages();
   setupDetailDrag();
   if(s && s.lat && s.lng) flyToSpot([s.lat, s.lng]);
@@ -459,6 +462,7 @@ function clearSelected(){
   }
   updateOtherMarkers();
   hideOthers = false;
+  autoCenter = false;
 }
 
 function setMarkerSelected(marker, sel){
@@ -468,13 +472,11 @@ function setMarkerSelected(marker, sel){
 
 function flyToSpot(latlng){
   if(!map) return;
+  suppressMapMove = true;
   map.flyTo(latlng,16);
   map.once('moveend',()=>{
-    if(selectedWrap && selectedWrap.classList.contains('show')){
-      const visible = selectedWrap.offsetHeight - sheetOffset;
-      const offset = Math.max(0, visible/2 - 80);
-      map.panBy([0, offset]);
-    }
+    suppressMapMove = false;
+    centerSelectedMarker();
   });
 }
 
@@ -560,6 +562,22 @@ function updateSheetHeight(){
   if(selectedDetail && selectedTop){
     const topH = selectedTop.offsetHeight;
     selectedDetail.style.maxHeight = (h - topH) + 'px';
+  }
+  centerSelectedMarker();
+}
+
+function centerSelectedMarker(){
+  if(!map || !selectedId || !autoCenter) return;
+  const marker = markers[selectedId];
+  if(!marker) return;
+  const latlng = marker.getLatLng();
+  if(!map.getBounds().contains(latlng)) return;
+  const headerH = headerEl ? headerEl.offsetHeight : 0;
+  const targetY = (headerH + sheetOffset) / 2;
+  const p = map.latLngToContainerPoint(latlng);
+  const dy = targetY - p.y;
+  if(Math.abs(dy) > 1){
+    map.panBy([0, dy], {animate:false});
   }
 }
 
@@ -712,6 +730,9 @@ function initMap(){
     updateOtherMarkers();
   });
 
+  map.on('dragstart', () => { if(!suppressMapMove) autoCenter = false; });
+  map.on('zoomstart', () => { if(!suppressMapMove) autoCenter = false; });
+
   const reset = L.control({position:'topleft'});
   reset.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar');
@@ -723,6 +744,7 @@ function initMap(){
     L.DomEvent.on(a,'click',e=>{
       L.DomEvent.preventDefault(e);
       L.DomEvent.stopPropagation(e);
+      autoCenter = false;
       map.setView(MAP_START, MAP_ZOOM);
     });
     return div;
