@@ -103,8 +103,8 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    tablePanel, closePanelBtn, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, closeLocation, searchRow, filterBtn;
+    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    editLocation, locationBox, closeLocation, searchRow, filterBtn, searchWrap;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -114,12 +114,16 @@ let touchStartY = 0;
 let pageLocked = false;
 let reopenPanel = false;
 let otherCtrlDiv = null;
+let sheetOffset = 0;
+let sheetDragStartY = 0;
+let sheetDragStartOffset = 0;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
-  document.documentElement.style.setProperty('--header-h', hTop + 'px');
+  const sH = searchWrap ? searchWrap.offsetHeight : 0;
+  document.documentElement.style.setProperty('--header-h', (hTop + sH) + 'px');
 }
 function handleResize(){
   updateHeaderOffset();
@@ -227,7 +231,7 @@ function rowHTML(s){
   <tr class="detail-row hide">
     <td colspan="5" class="detail">
       <div class="detail-grid">
-        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
+        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
         <div class="info">
           ${detail('City', s.city)}
           ${detail('Address', s.addr)}
@@ -276,32 +280,12 @@ async function loadImages(){
   for(const box of boxes){
     const id=box.getAttribute('data-img-id');
     const name=box.getAttribute('data-name')||'';
-    const lat=parseFloat(box.getAttribute('data-lat'));
-    const lng=parseFloat(box.getAttribute('data-lng'));
     const srcs=findImages(id);
-
-    box.innerHTML='';
-
     if(srcs.length===0){
-      const mapDiv=document.createElement('div');
-      mapDiv.className='mini-map';
-      box.appendChild(mapDiv);
-      createMiniMap(mapDiv, lat, lng);
-      box.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
+      box.remove();
       continue;
     }
-
-    const toggle=document.createElement('div');
-    toggle.className='media-toggle';
-    const imgBtn=document.createElement('button');
-    imgBtn.textContent='Images';
-    imgBtn.className='active';
-    const mapBtn=document.createElement('button');
-    mapBtn.textContent='Map';
-    toggle.appendChild(imgBtn);
-    toggle.appendChild(mapBtn);
-    box.appendChild(toggle);
-
+    box.innerHTML='';
     const carousel=document.createElement('div');
     carousel.className='img-carousel';
     srcs.forEach((src,idx)=>{
@@ -342,30 +326,6 @@ async function loadImages(){
       next.addEventListener('click',()=>show(idx+1));
     }
     box.appendChild(carousel);
-
-    const mapHolder=document.createElement('div');
-    mapHolder.className='map-holder';
-    const mapDiv=document.createElement('div');
-    mapDiv.className='mini-map';
-    mapHolder.appendChild(mapDiv);
-    mapHolder.insertAdjacentHTML('beforeend', `<div class="img-credit">Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></div>`);
-    mapHolder.style.display='none';
-    box.appendChild(mapHolder);
-
-    let mapInit=false;
-    imgBtn.addEventListener('click',()=>{
-      imgBtn.classList.add('active');
-      mapBtn.classList.remove('active');
-      carousel.style.display='';
-      mapHolder.style.display='none';
-    });
-    mapBtn.addEventListener('click',()=>{
-      mapBtn.classList.add('active');
-      imgBtn.classList.remove('active');
-      carousel.style.display='none';
-      mapHolder.style.display='';
-      if(!mapInit){ createMiniMap(mapDiv, lat, lng); mapInit=true; }
-    });
   }
 }
 
@@ -397,6 +357,8 @@ function showSelected(s, fromList=false){
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
+  sheetOffset = 0;
+  selectedWrap.style.transform = 'translateY(0px)';
   selectedWrap.classList.add('show');
   loadImages();
 }
@@ -407,6 +369,8 @@ function clearSelected(){
   selectedBody.innerHTML='';
   selectedWrap.classList.remove('show');
   selectedWrap.classList.add('hidden');
+  selectedWrap.style.transform='';
+  sheetOffset = 0;
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -430,7 +394,8 @@ function flyToSpot(latlng){
   map.flyTo(latlng,16);
   map.once('moveend',()=>{
     if(selectedWrap && selectedWrap.classList.contains('show')){
-      const offset = selectedWrap.offsetHeight/2;
+      const visible = selectedWrap.offsetHeight - sheetOffset;
+      const offset = Math.max(0, visible/2 - 80);
       map.panBy([0, offset]);
     }
   });
@@ -540,6 +505,37 @@ function handleTouchMove(e){
     touchStartY = e.touches[0].clientY;
     e.preventDefault();
   }
+}
+
+function startSheetDrag(e){
+  if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
+  sheetDragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+  sheetDragStartOffset = sheetOffset;
+  selectedWrap.style.transition = 'none';
+  document.addEventListener('touchmove', sheetDragMove, {passive:false});
+  document.addEventListener('touchend', endSheetDrag);
+  document.addEventListener('mousemove', sheetDragMove);
+  document.addEventListener('mouseup', endSheetDrag);
+}
+
+function sheetDragMove(e){
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  let dy = y - sheetDragStartY;
+  let newOffset = sheetDragStartOffset + dy;
+  const max = selectedWrap.offsetHeight - 80;
+  if(newOffset < 0) newOffset = 0;
+  if(newOffset > max) newOffset = max;
+  sheetOffset = newOffset;
+  selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
+  e.preventDefault();
+}
+
+function endSheetDrag(){
+  selectedWrap.style.transition = '';
+  document.removeEventListener('touchmove', sheetDragMove);
+  document.removeEventListener('touchend', endSheetDrag);
+  document.removeEventListener('mousemove', sheetDragMove);
+  document.removeEventListener('mouseup', endSheetDrag);
 }
 
 function checkShrink(){
@@ -694,13 +690,6 @@ function initMap(){
   updateOtherMarkers();
 }
 
-function createMiniMap(el, lat, lng){
-  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 17);
-  applyTileScheme(m);
-  L.marker([lat, lng]).addTo(m);
-  window.setTimeout(()=>m.invalidateSize(),0);
-}
-
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
@@ -798,12 +787,14 @@ function setOrigin(lat,lng,label){
     tablePanel = document.getElementById('tablePanel');
     closePanelBtn = document.getElementById('closePanel');
     selectedWrap = document.getElementById('selectedWrap');
+    selectedTop = document.getElementById('selectedTop');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
     filterBtn = document.getElementById('filterBtn');
+    searchWrap = document.getElementById('searchWrap');
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -816,6 +807,11 @@ function setOrigin(lat,lng,label){
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
+    }
+
+    if(selectedTop){
+      selectedTop.addEventListener('mousedown', startSheetDrag);
+      selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
     }
 
     window.addEventListener('wheel', handleWheel, {passive:false});
