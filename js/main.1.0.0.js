@@ -113,11 +113,12 @@ let touchStartY = 0;
 let pageLocked = false;
 let reopenPanel = false;
 let otherCtrlDiv = null;
+let listCtrlLink = null;
+let otherCtrlLink = null;
 let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let resumeId = null;
-let sheetFull = false;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
@@ -128,6 +129,10 @@ function updateHeaderOffset(){
 function handleResize(){
   updateHeaderOffset();
   checkShrink();
+  if(selectedWrap && selectedWrap.classList.contains('show')){
+    updateSheetTransform();
+    updateSheetHeight();
+  }
 }
 
 function openPanel(){
@@ -144,6 +149,11 @@ function openPanel(){
     panelOpen = true;
     document.documentElement.style.setProperty('--panel-w', tablePanel.offsetWidth + 'px');
     lockPageScroll(true);
+    if(listCtrlLink){
+      listCtrlLink.classList.add('active');
+      listCtrlLink.innerHTML = '✕';
+      listCtrlLink.title = 'Hide list';
+    }
   }
 }
 function closePanel(){
@@ -152,6 +162,11 @@ function closePanel(){
     document.body.classList.remove('panel-open');
     panelOpen = false;
     lockPageScroll(false);
+    if(listCtrlLink){
+      listCtrlLink.classList.remove('active');
+      listCtrlLink.innerHTML = '≡';
+      listCtrlLink.title = 'Show list';
+    }
     if(resumeId){
       const id = resumeId;
       const spot = SPOTS.find(s=>s.id===id);
@@ -381,14 +396,9 @@ function showSelected(s, fromList=false){
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
-  sheetFull = window.innerWidth <= 700;
-  if(sheetFull){
-    sheetOffset = 0;
-    selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
-  }else{
-    sheetOffset = selectedWrap.offsetHeight * 0.4;
-    selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
-  }
+  sheetOffset = 0;
+  updateSheetTransform();
+  updateSheetHeight();
   selectedWrap.classList.add('show');
   loadImages();
   setupDetailDrag();
@@ -401,6 +411,8 @@ function clearSelected(){
   selectedWrap.classList.remove('show');
   selectedWrap.classList.add('hidden');
   selectedWrap.style.transform='';
+  selectedWrap.style.height='';
+  if(selectedDetail) selectedDetail.style.maxHeight='';
   sheetOffset = 0;
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
@@ -435,6 +447,11 @@ function flyToSpot(latlng){
 function updateOtherMarkers(){
   if(otherCtrlDiv) otherCtrlDiv.classList.toggle('hidden', !selectedId);
   if(!selectedId) hideOthers = false;
+  if(otherCtrlLink){
+    otherCtrlLink.classList.toggle('active', hideOthers);
+    otherCtrlLink.innerHTML = hideOthers ? '🙈' : '👁';
+    otherCtrlLink.title = hideOthers ? 'Show other spots' : 'Hide other spots';
+  }
   Object.entries(markers).forEach(([id, marker])=>{
     if(id === selectedId){
       if(!map.hasLayer(marker)) marker.addTo(map);
@@ -536,15 +553,12 @@ function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragStartOffset + dy;
-  const max = selectedWrap.offsetHeight - 80;
+  const max = window.innerHeight - (headerEl ? headerEl.offsetHeight : 0) - 80;
   if(newOffset < 0) newOffset = 0;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
-  if(sheetFull){
-    selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
-  }else{
-    selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
-  }
+  updateSheetTransform();
+  updateSheetHeight();
   e.preventDefault();
 }
 
@@ -554,6 +568,21 @@ function endSheetDrag(){
   document.removeEventListener('touchend', endSheetDrag);
   document.removeEventListener('mousemove', sheetDragMove);
   document.removeEventListener('mouseup', endSheetDrag);
+}
+
+function updateSheetTransform(){
+  if(!selectedWrap) return;
+  selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
+}
+
+function updateSheetHeight(){
+  if(!selectedWrap) return;
+  const h = window.innerHeight - (headerEl ? headerEl.offsetHeight : 0) - sheetOffset;
+  selectedWrap.style.height = h + 'px';
+  if(selectedDetail && selectedTop){
+    const topH = selectedTop.offsetHeight;
+    selectedDetail.style.maxHeight = (h - topH) + 'px';
+  }
 }
 
 function setupDetailDrag(){
@@ -701,6 +730,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='≡';
     a.title='Show list';
+    listCtrlLink = a;
     L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);togglePanel();});
     return div;
   };
@@ -713,6 +743,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='👁';
     a.title='Show other spots';
+    otherCtrlLink = a;
     L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);hideOthers=!hideOthers;updateOtherMarkers();});
     otherCtrlDiv = div;
     return div;
