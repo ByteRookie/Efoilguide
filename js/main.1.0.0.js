@@ -103,7 +103,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopScroll, selectedTopBody, selectedTopMap, selectedBody, selectedDetail, closeSelected, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -332,7 +332,7 @@ async function loadImages(){
   }
 }
 
-function showSelected(s, mapTop=false){
+function showSelected(s){
   const temp = document.createElement('tbody');
   temp.innerHTML = rowHTML(s);
   const topRow = temp.querySelector('tr.parent');
@@ -348,32 +348,19 @@ function showSelected(s, mapTop=false){
   if(detail) detail.classList.remove('hide');
   selectedTopBody.innerHTML = '';
   selectedBody.innerHTML = '';
-  if(mapTop){
-    if(selectedTopScroll) selectedTopScroll.style.display='none';
-    if(selectedTopMap){
-      selectedTopMap.innerHTML='';
-      const mapDiv=document.createElement('div');
-      mapDiv.style.height='100%';
-      selectedTopMap.appendChild(mapDiv);
-      createMiniMap(mapDiv, s.lat, s.lng);
-      selectedTopMap.classList.remove('hidden');
-      selectedWrap.classList.add('map-top');
-    }
-  }else{
-    if(topRow) selectedTopBody.appendChild(topRow);
-    if(selectedTopScroll) selectedTopScroll.style.display='';
-    if(selectedTopMap){
-      selectedTopMap.innerHTML='';
-      selectedTopMap.classList.add('hidden');
-    }
-    selectedWrap.classList.remove('map-top');
-  }
+  if(topRow) selectedTopBody.appendChild(topRow);
+  if(selectedTopScroll) selectedTopScroll.style.display='';
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
-  selectedWrap.classList.remove('hidden');
-  if(window.innerWidth<700 && mapView) mapView.classList.add('hide-map');
+  if(window.innerWidth<700){
+    selectedWrap.classList.remove('hidden');
+    selectedWrap.classList.remove('show');
+    if(mapView) mapView.classList.add('hide-map');
+  }else{
+    selectedWrap.classList.add('show');
+  }
   loadImages();
   updateMapHeights();
 }
@@ -381,15 +368,15 @@ function showSelected(s, mapTop=false){
 function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
-  if(selectedTopMap){
-    selectedTopMap.innerHTML='';
-    selectedTopMap.classList.add('hidden');
-  }
   if(selectedTopScroll) selectedTopScroll.style.display='';
   selectedBody.innerHTML='';
-  selectedWrap.classList.add('hidden');
-  selectedWrap.classList.remove('map-top');
-  if(mapView) mapView.classList.remove('hide-map');
+  if(window.innerWidth<700){
+    selectedWrap.classList.add('hidden');
+    selectedWrap.classList.remove('show');
+    if(mapView) mapView.classList.remove('hide-map');
+  }else{
+    selectedWrap.classList.remove('show');
+  }
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -795,11 +782,14 @@ function setOrigin(lat,lng,label){
     selectedWrap = document.getElementById('selectedWrap');
     selectedTopScroll = document.getElementById('selectedTopScroll');
     selectedTopBody = document.getElementById('selectedTopBody');
-    selectedTopMap = document.getElementById('selectedTopMap');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
+
+    if(selectedWrap && window.innerWidth>=700){
+      selectedWrap.classList.remove('hidden');
+    }
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -853,8 +843,8 @@ function setOrigin(lat,lng,label){
           const spot = SPOTS.find(s=>s.id===selectedId);
           if(spot){
             if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
-            showSelected(spot, openedFromTable);
-            if(!openedFromTable) map.flyTo([spot.lat, spot.lng], 16);
+            showSelected(spot);
+            map.flyTo([spot.lat, spot.lng], 16);
           }
         }else{
           clearSelected();

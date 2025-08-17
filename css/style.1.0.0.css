@@ -171,12 +171,7 @@
 #mapView.hide-map #map{display:none;}
 #mapView.hide-map #selectedWrap{flex:1;}
 #selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
-#selectedWrap.map-top #selectedTop{position:relative;display:block;}
-#selectedWrap.map-top #selectedTopMap{display:block;height:200px;}
-#selectedWrap.map-top #selectedTopScroll{display:none;}
-#selectedWrap.map-top #closeSelected{position:absolute;top:8px;right:8px;background:var(--btn-bg);border-radius:8px;}
 #selectedTop{background:var(--card);border-bottom:1px solid var(--table-border);display:flex;align-items:center;}
-#selectedTopMap{display:none;}
 #selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 #selectedTopScroll table{border-collapse:separate;border-spacing:0;display:flex;width:fit-content;}
 #selectedTopScroll tbody{display:flex;}
@@ -193,4 +188,16 @@
   #selectedDetail{overflow:auto;}
   #selectedDetail .detail-grid{height:auto;}
   #selectedDetail .detail-grid .info{overflow:visible;}
+}
+
+@media (max-width:700px){
+  #selectedWrap .mini-map{width:100%;}
+}
+
+@media (min-width:700px){
+  #mapView{position:relative;}
+  #selectedWrap{position:absolute;left:0;right:0;bottom:0;max-height:60%;pointer-events:none;transform:translateY(100%);transition:transform .3s;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--table-border);border-bottom:0;}
+  #selectedTop{background:transparent;}
+  #selectedDetail table{background:transparent;}
+  #selectedWrap.show{transform:translateY(0);pointer-events:auto;}
 }
