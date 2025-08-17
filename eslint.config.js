@@ -10,7 +10,8 @@ export default [
         navigator: "readonly",
         localStorage: "readonly",
         fetch: "readonly",
-        L: "readonly"
+        L: "readonly",
+        Papa: "readonly"
       }
     },
     rules: {
