@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, panelGrip, filterBtn, infoBtn, infoPopup, closeInfo;
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -116,8 +116,6 @@ let otherCtrlDiv = null;
 let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
-let panelDragStartX = 0;
-let panelDragStartW = 0;
 let resumeId = null;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
@@ -550,34 +548,6 @@ function endSheetDrag(){
   document.removeEventListener('mouseup', endSheetDrag);
 }
 
-function startPanelDrag(e){
-  if(!panelOpen) return;
-  panelDragStartX = e.touches ? e.touches[0].clientX : e.clientX;
-  panelDragStartW = tablePanel.offsetWidth;
-  document.addEventListener('touchmove', panelDragMove, {passive:false});
-  document.addEventListener('touchend', endPanelDrag);
-  document.addEventListener('mousemove', panelDragMove);
-  document.addEventListener('mouseup', endPanelDrag);
-}
-
-function panelDragMove(e){
-  const x = e.touches ? e.touches[0].clientX : e.clientX;
-  let dw = x - panelDragStartX;
-  let newW = panelDragStartW + dw;
-  const max = window.innerWidth - 80;
-  if(newW < 200) newW = 200;
-  if(newW > max) newW = max;
-  document.documentElement.style.setProperty('--panel-w', newW + 'px');
-  e.preventDefault();
-}
-
-function endPanelDrag(){
-  document.removeEventListener('touchmove', panelDragMove);
-  document.removeEventListener('touchend', endPanelDrag);
-  document.removeEventListener('mousemove', panelDragMove);
-  document.removeEventListener('mouseup', endPanelDrag);
-}
-
 function setupDetailDrag(){
   const grip = selectedBody ? selectedBody.querySelector('.detail-grip') : null;
   const img = selectedBody ? selectedBody.querySelector('.img-box') : null;
@@ -599,41 +569,6 @@ function setupDetailDrag(){
     document.removeEventListener('mousemove', move);
     document.removeEventListener('mouseup', up);
   }
-}
-
-function initColResize(){
-  const table = document.getElementById('tbl');
-  if(!table) return;
-  const cols = table.querySelectorAll('colgroup col');
-  const ths = table.querySelectorAll('thead th');
-  ths.forEach((th,i)=>{
-    if(i===ths.length-1) return;
-    if(cols[i]){
-      const w = th.offsetWidth;
-      cols[i].style.width = w + 'px';
-      th.style.width = w + 'px';
-    }
-    const grip = document.createElement('div');
-    grip.className='col-grip';
-    th.appendChild(grip);
-    let startX=0,startW=0;
-    grip.addEventListener('mousedown',e=>{
-      startX = e.clientX;
-      startW = parseInt(window.getComputedStyle(cols[i]).width,10);
-      function move(ev){
-        const w = Math.max(40, startW + (ev.clientX - startX));
-        cols[i].style.width = w+'px';
-        th.style.width = w+'px';
-      }
-      function up(){
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-      }
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
-      e.preventDefault();
-    });
-  });
 }
 
 function checkShrink(){
@@ -882,14 +817,12 @@ function setOrigin(lat,lng,label){
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
-    panelGrip = document.getElementById('panelGrip');
     filterBtn = document.getElementById('filterBtn');
     infoBtn = document.getElementById('infoBtn');
     infoPopup = document.getElementById('infoPopup');
     closeInfo = document.getElementById('closeInfo');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
-    initColResize();
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -904,10 +837,6 @@ function setOrigin(lat,lng,label){
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
       selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
-    }
-    if(panelGrip){
-      panelGrip.addEventListener('mousedown', startPanelDrag);
-      panelGrip.addEventListener('touchstart', startPanelDrag, {passive:false});
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
