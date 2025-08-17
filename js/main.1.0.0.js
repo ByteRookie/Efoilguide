@@ -102,7 +102,7 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
-    zip, useGeo, filtersEl, headerEl, searchPanel, toTop, sortArrow, tableWrap,
+    zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let selectedId = null;
@@ -119,9 +119,8 @@ const MAP_ZOOM = 10;
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
-  const hSearch = searchPanel ? searchPanel.offsetHeight : 0;
   document.documentElement.style.setProperty('--header-top', hTop + 'px');
-  document.documentElement.style.setProperty('--header-h', (hTop + hSearch) + 'px');
+  document.documentElement.style.setProperty('--header-h', hTop + 'px');
 }
 function handleResize(){
   updateHeaderOffset();
@@ -427,6 +426,17 @@ function setMarkerSelected(marker, sel){
   if(el) el.classList.toggle('selected', sel);
 }
 
+function flyToSpot(latlng){
+  if(!map) return;
+  map.flyTo(latlng,16);
+  map.once('moveend',()=>{
+    if(selectedWrap && selectedWrap.classList.contains('show')){
+      const offset = selectedWrap.offsetHeight/2;
+      map.panBy([0, offset]);
+    }
+  });
+}
+
 function updateOtherMarkers(){
   if(otherCtrlDiv) otherCtrlDiv.classList.toggle('hidden', !selectedId);
   if(!selectedId) hideOthers = false;
@@ -578,7 +588,7 @@ function attachRowHandlers(){
       selectedId = id;
       if(markers[id]){
         setMarkerSelected(markers[id], true);
-        map.flyTo(markers[id].getLatLng(), 16);
+        flyToSpot(markers[id].getLatLng());
         const spot = SPOTS.find(s=>s.id===id);
         if(spot) showSelected(spot, true);
         updateOtherMarkers();
@@ -618,7 +628,7 @@ function initMap(){
     const marker = L.marker([s.lat, s.lng]).addTo(map);
     markers[s.id] = marker;
     marker.on('click', () => {
-      map.flyTo([s.lat, s.lng], 16);
+      flyToSpot([s.lat, s.lng]);
       if(selectedId === s.id){
         setMarkerSelected(marker,false);
         selectedId = null;
@@ -649,6 +659,7 @@ function initMap(){
     a.title = 'Reset view';
     L.DomEvent.on(a,'click',e=>{
       L.DomEvent.preventDefault(e);
+      L.DomEvent.stopPropagation(e);
       map.setView(MAP_START, MAP_ZOOM);
     });
     return div;
@@ -662,7 +673,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='≡';
     a.title='Show list';
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);togglePanel();});
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);togglePanel();});
     return div;
   };
   listCtrl.addTo(map);
@@ -674,7 +685,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='⚙';
     a.title='Filters';
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);toggleFilters();});
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);toggleFilters();});
     return div;
   };
   filterCtrl.addTo(map);
@@ -686,7 +697,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='👁';
     a.title='Show other spots';
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);hideOthers=!hideOthers;updateOtherMarkers();});
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);hideOthers=!hideOthers;updateOtherMarkers();});
     otherCtrlDiv = div;
     return div;
   };
@@ -795,7 +806,6 @@ function setOrigin(lat,lng,label){
     zip = document.getElementById('zip');
     useGeo = document.getElementById('useGeo');
     filtersEl = document.getElementById('filters');
-    searchPanel = document.getElementById('searchPanel');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
     tablePanel = document.getElementById('tablePanel');
