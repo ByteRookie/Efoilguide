@@ -1600,7 +1600,9 @@ zip.addEventListener('input', async () => {
     updateSelectedTopPadding();
     updatePanelIcon();
     updateSheetIcon();
+
   });
+
     SPOTS = await loadSpots();
     await loadImageCredits();
     render();
@@ -1612,15 +1614,6 @@ zip.addEventListener('input', async () => {
 
     window.addEventListener('scroll', checkShrink);
   });
-
-  SPOTS = await loadSpots();
-  await loadImageCredits();
-  render();
-  initMap();
-  applyFilters();
-
-  window.addEventListener('scroll', checkShrink);
-});
 
 if (typeof module !== 'undefined') {
   module.exports = { detail, rowHTML };
