@@ -575,8 +575,10 @@ function centerSelectedMarker(){
   const headerH = headerEl ? headerEl.offsetHeight : 0;
   const targetY = (headerH + sheetOffset) / 2;
   const p = map.latLngToContainerPoint(latlng);
-  const dy = targetY - p.y;
+  const dy = p.y - targetY;
   if(Math.abs(dy) > 1){
+    suppressMapMove = true;
+    map.once('moveend', () => { suppressMapMove = false; });
     map.panBy([0, dy], {animate:false});
   }
 }
