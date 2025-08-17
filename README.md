@@ -113,6 +113,20 @@ Prerequisite: Node.js not required—this is a static site. You just need Python
 3. Open `http://localhost:8000` in your browser.
 
 
+### Postal code dataset
+
+The site can work offline by using a global list of postal codes from the
+[zauberware/postal-codes-json-xml-csv](https://github.com/zauberware/postal-codes-json-xml-csv)
+project. A small sample lives at `data/postal-codes.sample.json`.
+Run the script below to download and build the full dataset into
+`data/postal-codes.json`:
+
+```bash
+bash scripts/download_postal_codes.sh
+```
+
+Re-run the script whenever you need to refresh the postal code list.
+
 ## License
 
 This project is released under an all rights reserved license; see the [LICENSE](LICENSE) for details.

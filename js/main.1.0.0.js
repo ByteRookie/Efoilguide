@@ -25,6 +25,7 @@ const ZIP_CENTROIDS = {
 
 let SPOTS = [];// loaded from CSV
 let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
+let POSTAL_CODES = {};// loaded from offline dataset
 
 async function loadSpots(){
   const resp = await fetch('data/locations.csv');
@@ -49,6 +50,31 @@ async function loadImageCredits(){
   }catch{
     IMG_CREDITS = {};
   }
+}
+
+async function loadPostalCodes(){
+  try{
+    let resp = await fetch('data/postal-codes.json');
+    if(!resp.ok) resp = await fetch('data/postal-codes.sample.json');
+    if(resp.ok){
+      POSTAL_CODES = await resp.json();
+    }
+  }catch{
+    POSTAL_CODES = {};
+  }
+}
+
+function findNearestZip(lat,lng){
+  let best = null;
+  let bestDist = Infinity;
+  for(const [code,[zLat,zLng]] of Object.entries(POSTAL_CODES)){
+    const d = haversine([lat,lng],[zLat,zLng]);
+    if(d < bestDist){
+      bestDist = d;
+      best = { code, lat: zLat, lng: zLng };
+    }
+  }
+  return best;
 }
 
 
@@ -903,6 +929,7 @@ function setOrigin(lat,lng,label){
     siteTitle = document.querySelector('header h1');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
+    await loadPostalCodes();
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -1042,7 +1069,6 @@ function setOrigin(lat,lng,label){
       handleResize();
     });
 
-    const zipCache = JSON.parse(localStorage.getItem('zipCache') || '{}');
 
 
 
@@ -1157,53 +1183,46 @@ function setOrigin(lat,lng,label){
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
-zip.addEventListener('input', async () => {
-  const z = (zip.value || '').trim();
-  if (z.length !== 5) return;
-
-  if (ZIP_CENTROIDS[z]) {
-    setOrigin(ZIP_CENTROIDS[z][0], ZIP_CENTROIDS[z][1], `ZIP ${z}`);
-    return;
-  }
-  if (zipCache[z]) {
-    setOrigin(zipCache[z][0], zipCache[z][1], `ZIP ${z}`);
-    return;
-  }
-
-  originMsg.textContent = `Looking up ZIP ${z}…`;
-  try {
-    const resp = await fetch(`https://api.zippopotam.us/us/${z}`);
-    if (resp.status === 404) {
-      originMsg.textContent = `ZIP ${z} not found.`;
+let zipTimer;
+zip.addEventListener('input', () => {
+  const raw = (zip.value || '').toUpperCase();
+  const cleaned = raw.replace(/\s+/g, '');
+  if (raw !== cleaned) zip.value = cleaned;
+  clearTimeout(zipTimer);
+  if (!cleaned) return;
+  zipTimer = setTimeout(() => {
+    if (!/^[A-Z0-9]{3,10}$/.test(cleaned)) {
+      originMsg.textContent = 'Invalid ZIP format.';
       return;
     }
-    if (!resp.ok) throw new Error('Network error');
-    const data = await resp.json();
-    const place = data && data.places && data.places[0];
-    if (place) {
-      const lat = parseFloat(place.latitude);
-      const lng = parseFloat(place.longitude);
-      zipCache[z] = [lat, lng];
-      localStorage.setItem('zipCache', JSON.stringify(zipCache));
-      setOrigin(lat, lng, `ZIP ${z}`);
+    const hit = POSTAL_CODES[cleaned] || ZIP_CENTROIDS[cleaned];
+    if (hit) {
+      setOrigin(hit[0], hit[1], `ZIP ${cleaned}`);
     } else {
-      originMsg.textContent = `ZIP ${z} not found.`;
+      originMsg.textContent = `ZIP ${cleaned} not found.`;
     }
-  } catch {
-    originMsg.textContent = `Network error while looking up ZIP ${z}.`;
-  }
+  }, 300);
 });
 
-  useGeo.addEventListener('click', (e) => {
+  useGeo.addEventListener('click', e => {
     e.preventDefault();
     if (!navigator.geolocation) {
       originMsg.textContent = 'Geolocation not supported by this browser.';
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
-      () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
-    );
+    navigator.geolocation.getCurrentPosition(pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const nearest = findNearestZip(lat, lng);
+      if (nearest) {
+        zip.value = nearest.code;
+        setOrigin(nearest.lat, nearest.lng, `ZIP ${nearest.code}`);
+      } else {
+        setOrigin(lat, lng, 'your current location');
+      }
+    }, () => {
+      originMsg.textContent = 'Location permission denied or unavailable.';
+    });
   });
   SPOTS = await loadSpots();
   await loadImageCredits();
