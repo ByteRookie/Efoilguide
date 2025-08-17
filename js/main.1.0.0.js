@@ -106,6 +106,7 @@ let suggestIndex = -1;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
+const SHEET_MARGIN = 15; // gap between header and detail sheet
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
@@ -115,10 +116,11 @@ function handleResize(){
   updateHeaderOffset();
   checkShrink();
   if(selectedWrap && selectedWrap.classList.contains('show')){
-    const min = headerEl ? headerEl.offsetHeight : 0;
+    const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
     if(sheetOffset < min) sheetOffset = min;
     updateSheetTransform();
     updateSheetHeight();
+    recenterSelected();
   }
 }
 
@@ -242,8 +244,8 @@ function badgeSeason(s){
   return `<span class="badge ${cls}">${label}</span>`;
 }
 function chipsSkill(arr){
-  const dot={'B':'lvle','I':'lvlm','A':'lvlh'};
-  return `<span class="lvl">${arr.map(k=>`<span class="dot ${dot[k]}"></span>`).join('')}</span>`;
+  const mapCls={B:['Beginner','b-lvle'],I:['Intermediate','b-lvlm'],A:['Advanced','b-lvlh']};
+  return '<span class="lvl">'+arr.map(k=>{const m=mapCls[k];return m?`<span class="badge ${m[1]}">${m[0]}</span>`:'';}).join('')+'</span>';
 }
 
 function rowHTML(s){
@@ -430,7 +432,7 @@ function showSelected(s, fromList=false){
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
-  const minOffset = headerEl ? headerEl.offsetHeight : 0;
+  const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   sheetOffset = minOffset;
   updateSheetTransform();
   updateSheetHeight();
@@ -474,11 +476,7 @@ function flyToSpot(latlng){
   if(!map) return;
   map.flyTo(latlng,16);
   map.once('moveend',()=>{
-    if(selectedWrap && selectedWrap.classList.contains('show')){
-      const visible = selectedWrap.offsetHeight - sheetOffset;
-      const offset = Math.max(0, visible/2 - 80);
-      map.panBy([0, offset]);
-    }
+    recenterSelected();
   });
 }
 
@@ -535,13 +533,14 @@ function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragStartOffset - dy;
-  const min = headerEl ? headerEl.offsetHeight : 0;
+  const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   const max = window.innerHeight - 80;
   if(newOffset < min) newOffset = min;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
   updateSheetTransform();
   updateSheetHeight();
+  recenterSelected();
   e.preventDefault();
 }
 
@@ -551,6 +550,7 @@ function endSheetDrag(){
   document.removeEventListener('touchend', endSheetDrag);
   document.removeEventListener('mousemove', sheetDragMove);
   document.removeEventListener('mouseup', endSheetDrag);
+  recenterSelected();
 }
 
 function updateSheetTransform(){
@@ -566,6 +566,19 @@ function updateSheetHeight(){
     const topH = selectedTop.offsetHeight;
     selectedDetail.style.maxHeight = (h - topH) + 'px';
   }
+}
+
+function recenterSelected(){
+  if(!map || !selectedId || !markers[selectedId]) return;
+  if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
+  const sheetW = selectedWrap.offsetWidth;
+  const openW = window.innerWidth - sheetW;
+  const desiredX = sheetW + openW * 0.25;
+  const desiredY = window.innerHeight / 2;
+  const pt = map.latLngToContainerPoint(markers[selectedId].getLatLng());
+  const offsetX = pt.x - desiredX;
+  const offsetY = pt.y - desiredY;
+  map.panBy([offsetX, offsetY], {animate:false});
 }
 
 function setupDetailDrag(){
@@ -964,12 +977,14 @@ function setOrigin(lat,lng,label){
         if(w < min) w = min;
         if(w > max) w = max;
         selectedWrap.style.width = w + 'px';
+        recenterSelected();
       };
       const stop = () => {
         document.removeEventListener('mousemove', move);
         document.removeEventListener('mouseup', stop);
         document.removeEventListener('touchmove', move);
         document.removeEventListener('touchend', stop);
+        recenterSelected();
       };
       sheetWidthGrip.addEventListener('mousedown', e => {
         startX = e.clientX;
