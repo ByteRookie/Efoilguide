@@ -101,18 +101,39 @@ function detail(label, value, spanClass = '', pClass = '') {
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
-    waterChips, seasonChips, skillChips,  // chip sets
+    waterChips, seasonChips, skillChips,
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    tablePanel, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
-let showingMap = false;
 let selectedId = null;
-  let shrinkTable = false;
-  let touchStartY = 0;
 let markers = {};
+let panelOpen = false;
+let hideOthers = false;
+let shrinkTable = false;
+let touchStartY = 0;
 let pageLocked = false;
+let reopenPanel = false;
+let otherCtrlDiv = null;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
+
+function openPanel(){
+  if(tablePanel){
+    tablePanel.classList.add('open');
+    panelOpen = true;
+    lockPageScroll(true);
+  }
+}
+function closePanel(){
+  if(tablePanel){
+    tablePanel.classList.remove('open');
+    panelOpen = false;
+    lockPageScroll(false);
+  }
+}
+function togglePanel(){
+  panelOpen ? closePanel() : openPanel();
+}
 
 function haversine(a,b){
   const toRad = d=>d*Math.PI/180;
@@ -331,7 +352,13 @@ async function loadImages(){
   }
 }
 
-function showSelected(s){
+function showSelected(s, fromList=false){
+  if(fromList && panelOpen){
+    closePanel();
+    reopenPanel = true;
+  }else{
+    reopenPanel = false;
+  }
   const temp = document.createElement('tbody');
   temp.innerHTML = rowHTML(s);
   const topRow = temp.querySelector('tr.parent');
@@ -353,21 +380,27 @@ function showSelected(s){
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
+  selectedWrap.classList.add('show');
   loadImages();
-  updateMapHeights();
 }
 
 function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
+  selectedWrap.classList.remove('show');
   selectedWrap.classList.add('hidden');
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
     if(d && d.classList.contains('detail-row')) d.classList.add('hide');
   });
-  updateMapHeights();
+  if(reopenPanel){
+    openPanel();
+    reopenPanel = false;
+  }
+  updateOtherMarkers();
+  hideOthers = false;
 }
 
 function setMarkerSelected(marker, sel){
@@ -375,14 +408,22 @@ function setMarkerSelected(marker, sel){
   if(el) el.classList.toggle('selected', sel);
 }
 
-function updateMapHeights(){
-  if(!showingMap) return;
-  const top = viewWindow.getBoundingClientRect().top;
-  const avail = window.innerHeight - top;
-  mapView.style.height = avail + 'px';
-  viewWindow.style.height = avail + 'px';
-  if(map) map.invalidateSize();
+function updateOtherMarkers(){
+  if(otherCtrlDiv) otherCtrlDiv.classList.toggle('hidden', !selectedId);
+  if(!selectedId) hideOthers = false;
+  Object.entries(markers).forEach(([id, marker])=>{
+    if(id === selectedId){
+      if(!map.hasLayer(marker)) marker.addTo(map);
+    }else{
+      if(hideOthers && selectedId){
+        if(map.hasLayer(marker)) map.removeLayer(marker);
+      }else{
+        if(!map.hasLayer(marker)) marker.addTo(map);
+      }
+    }
+  });
 }
+
 
 function moveSortArrow(th){
   if(sortArrow) th.appendChild(sortArrow);
@@ -421,7 +462,7 @@ function tableInView(){
 }
 
 function consumeTableScroll(dy){
-  if(showingMap || !tableWrap || !tableWrap.classList.contains('scroll')) return false;
+  if(!tableWrap || !tableWrap.classList.contains('scroll')) return false;
   if(!tableInView()) return false;
   const atTop = spotsBody.scrollTop === 0;
   const atBottom = spotsBody.scrollTop + spotsBody.clientHeight >= spotsBody.scrollHeight;
@@ -435,7 +476,7 @@ function consumeTableScroll(dy){
 }
 
 function consumeDetailScroll(dy){
-  if(!showingMap || !selectedDetail || selectedDetail.scrollHeight <= selectedDetail.clientHeight) return false;
+  if(!selectedDetail || selectedDetail.scrollHeight <= selectedDetail.clientHeight) return false;
   const atTop = selectedDetail.scrollTop === 0;
   const atBottom = selectedDetail.scrollTop + selectedDetail.clientHeight >= selectedDetail.scrollHeight;
   if((dy < 0 && !atTop) || (dy > 0 && !atBottom)){
@@ -513,70 +554,20 @@ function render(){
 function attachRowHandlers(){
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     tr.addEventListener('click',()=>{
-      const wasOpen = tr.classList.contains('open');
       const id = tr.getAttribute('data-id');
-      document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
-        if(o!==tr){
-          o.classList.remove('open');
-          const d=o.nextElementSibling;
-          if(d && d.classList.contains('detail-row')) d.classList.add('hide');
-        }
-      });
-      tr.classList.toggle('open', !wasOpen);
-      const detail = tr.nextElementSibling;
-      if(detail && detail.classList.contains('detail-row')){
-        detail.classList.toggle('hide', wasOpen);
-      }
-      if(!wasOpen){
-        if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
-        selectedId = id;
-        if(showingMap && markers[id]){
-          setMarkerSelected(markers[id], true);
-          const spot = SPOTS.find(s=>s.id===id);
-          if(spot) showSelected(spot);
-        }
-      }else if(selectedId===id){
-        if(markers[id]) setMarkerSelected(markers[id], false);
-        selectedId = null;
-        if(showingMap) clearSelected();
+      if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
+      selectedId = id;
+      if(markers[id]){
+        setMarkerSelected(markers[id], true);
+        map.flyTo(markers[id].getLatLng(), 16);
+        const spot = SPOTS.find(s=>s.id===id);
+        if(spot) showSelected(spot, true);
+        updateOtherMarkers();
       }
     });
   });
 }
 
-function openTableRow(id, block='start'){
-  const tr = document.querySelector(`#tbl tbody tr.parent[data-id="${id}"]`);
-  if(!tr) return;
-  const wasOpen = tr.classList.contains('open');
-  document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
-    if(o!==tr){
-      o.classList.remove('open');
-      const d=o.nextElementSibling;
-      if(d && d.classList.contains('detail-row')) d.classList.add('hide');
-    }
-  });
-  tr.classList.add('open');
-  const detail = tr.nextElementSibling;
-  if(detail && detail.classList.contains('detail-row')) detail.classList.remove('hide');
-  if(!wasOpen) {
-    if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
-    selectedId = id;
-  }
-  if(spotsBody && tableWrap && tableWrap.classList.contains('scroll')){
-    const trRect = tr.getBoundingClientRect();
-    const bodyRect = spotsBody.getBoundingClientRect();
-    const offset = trRect.top - bodyRect.top + spotsBody.scrollTop;
-    if(block==='center'){
-      spotsBody.scrollTop = offset - spotsBody.clientHeight/2 + trRect.height/2;
-    }else{
-      const max = spotsBody.scrollHeight - spotsBody.clientHeight;
-      spotsBody.scrollTop = Math.min(offset, max);
-    }
-  }else{
-    tr.scrollIntoView({block});
-  }
-  loadImages();
-}
 
 function applyTileScheme(m){
   const light = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -613,11 +604,13 @@ function initMap(){
         setMarkerSelected(marker,false);
         selectedId = null;
         clearSelected();
+        updateOtherMarkers();
       }else{
         if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
         selectedId = s.id;
         setMarkerSelected(marker,true);
         showSelected(s);
+        updateOtherMarkers();
       }
     });
   });
@@ -625,6 +618,7 @@ function initMap(){
     if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = null;
     clearSelected();
+    updateOtherMarkers();
   });
 
   const reset = L.control({position:'topleft'});
@@ -642,7 +636,45 @@ function initMap(){
   };
   reset.addTo(map);
 
+  const listCtrl = L.control({position:'topleft'});
+  listCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='≡';
+    a.title='Show list';
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);togglePanel();});
+    return div;
+  };
+  listCtrl.addTo(map);
+
+  const filterCtrl = L.control({position:'topright'});
+  filterCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='⚙';
+    a.title='Filters';
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(filterToggle) filterToggle.click();});
+    return div;
+  };
+  filterCtrl.addTo(map);
+
+  const otherCtrl = L.control({position:'topright'});
+  otherCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar hidden');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='👁';
+    a.title='Show other spots';
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);hideOthers=!hideOthers;updateOtherMarkers();});
+    otherCtrlDiv = div;
+    return div;
+  };
+  otherCtrl.addTo(map);
+
   applyFilters();
+  updateOtherMarkers();
 }
 
 function createMiniMap(el, lat, lng){
@@ -751,10 +783,7 @@ function setOrigin(lat,lng,label){
     filterToggle.setAttribute('aria-expanded', filtersHidden ? 'false' : 'true');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
-    viewToggle = document.getElementById('viewToggle');
-    viewWindow = document.getElementById('viewWindow');
-    viewSlider = document.getElementById('viewSlider');
-    mapView = document.getElementById('mapView');
+    tablePanel = document.getElementById('tablePanel');
     selectedWrap = document.getElementById('selectedWrap');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
@@ -789,40 +818,8 @@ function setOrigin(lat,lng,label){
 
     sortArrow = document.getElementById('sortArrow');
 
-    viewToggle.addEventListener('click', () => {
-      showingMap = !showingMap;
-      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
-      viewToggle.textContent = showingMap ? 'Table' : 'Map';
-      window.scrollTo(0,0);
-      if(spotsBody) spotsBody.scrollTop = 0;
-      if(mapView) mapView.scrollTop = 0;
-      lockPageScroll(false);
-      checkShrink();
-      if(showingMap){
-        // size the container before Leaflet initializes to avoid a zero-height map
-        updateMapHeights();
-        initMap();
-        applyFilters();
-        updateMapView();
-        // run again once visible so Leaflet recalculates dimensions
-        window.requestAnimationFrame(updateMapHeights);
-        if(selectedId){
-          const spot = SPOTS.find(s=>s.id===selectedId);
-          if(spot){
-            if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
-            showSelected(spot);
-            map.flyTo([spot.lat, spot.lng], 16);
-          }
-        }else{
-          clearSelected();
-        }
-      }else{
-        viewWindow.style.height = '';
-        mapView.style.height = '';
-        clearSelected();
-        if(selectedId) window.requestAnimationFrame(()=>openTableRow(selectedId,'start'));
-      }
-    });
+    initMap();
+    applyFilters();
 
       // toggle filters visibility and button label
       filterToggle.addEventListener('click', () => {
@@ -858,7 +855,6 @@ function setOrigin(lat,lng,label){
   }
   function handleResize(){
     updateHeaderOffset();
-    updateMapHeights();
     checkShrink();
   }
   window.addEventListener('resize', handleResize);

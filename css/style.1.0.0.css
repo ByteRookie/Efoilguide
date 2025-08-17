@@ -1,6 +1,7 @@
   :root{
     color-scheme: light dark;
     --radius:12px; --hover:rgba(0,0,0,.04);
+    --header-h:0px;
     --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
@@ -166,9 +167,11 @@
 
 .leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}
 
-#mapView{display:flex;flex-direction:column;min-width:100%;padding-top:16px;}
-#map{flex:1;border-radius:var(--radius);border:1px solid var(--table-border);}
-#selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
+#map{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;}
+#tablePanel{position:fixed;top:var(--header-h);left:0;width:50%;height:calc(100% - var(--header-h));background:var(--bg);overflow-y:auto;transform:translateX(-100%);transition:transform .3s;z-index:40;border-right:1px solid var(--table-border);}
+#tablePanel.open{transform:translateX(0);}
+#selectedWrap{position:fixed;left:0;right:0;height:50%;bottom:-50%;z-index:60;transition:bottom .3s;border-top-left-radius:var(--radius);border-top-right-radius:var(--radius);overflow:hidden;border:1px solid var(--table-border);}
+#selectedWrap.show{bottom:0;}
 #selectedTop{background:var(--card);border-bottom:1px solid var(--table-border);display:flex;align-items:center;}
 #selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 #selectedTopScroll table{border-collapse:separate;border-spacing:0;display:flex;width:fit-content;}
@@ -177,7 +180,7 @@
 #selectedTopScroll td{padding:8px 12px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;}
 #selectedTopScroll .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
 #closeSelected{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:16px;}
-#selectedDetail{flex:1;overflow:hidden;}
+#selectedDetail{flex:1;overflow:hidden;height:calc(100% - 40px);}
 #selectedDetail table,#selectedDetail tbody,#selectedDetail tr,#selectedDetail td.detail{height:100%;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
 #selectedDetail .detail-grid{height:100%;}
@@ -187,3 +190,5 @@
   #selectedDetail .detail-grid{height:auto;}
   #selectedDetail .detail-grid .info{overflow:visible;}
 }
+
+.leaflet-top{top:var(--header-h)!important;}

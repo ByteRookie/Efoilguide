@@ -27,7 +27,6 @@
 
     <div id="searchRow">
       <input id="q" placeholder="Search all details" />
-      <button id="viewToggle">Map</button>
       <button id="filterToggle" aria-expanded="false">Show filters</button>
     </div>
     <div id="filters" class="controls hidden">
@@ -61,40 +60,34 @@
   </div>
 </header>
 
-<main class="wrap" id="main">
-  <div id="viewWindow">
-    <div id="viewSlider">
-      <div id="tableView">
-        <div class="table-wrap">
-          <table id="tbl">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort="name">Spot</th>
-                <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
-                <th class="sortable" data-sort="water">Water</th>
-                <th class="sortable" data-sort="season">Season</th>
-                <th class="sortable" data-sort="skill">Skill</th>
-              </tr>
-            </thead>
-            <tbody id="spotsBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div id="mapView">
-        <div id="map"></div>
-        <div id="selectedWrap" class="hidden">
-          <div id="selectedTop">
-            <div id="selectedTopScroll">
-              <table>
-                <tbody id="selectedTopBody"></tbody>
-              </table>
-            </div>
-            <button id="closeSelected" aria-label="Close">✕</button>
-          </div>
-          <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
-        </div>
-      </div>
+<main id="main">
+  <div id="map"></div>
+  <div id="tablePanel" class="panel">
+    <div class="table-wrap">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="name">Spot</th>
+            <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
+            <th class="sortable" data-sort="water">Water</th>
+            <th class="sortable" data-sort="season">Season</th>
+            <th class="sortable" data-sort="skill">Skill</th>
+          </tr>
+        </thead>
+        <tbody id="spotsBody"></tbody>
+      </table>
     </div>
+  </div>
+  <div id="selectedWrap" class="hidden bottom-sheet">
+    <div id="selectedTop">
+      <div id="selectedTopScroll">
+        <table>
+          <tbody id="selectedTopBody"></tbody>
+        </table>
+      </div>
+      <button id="closeSelected" aria-label="Close">✕</button>
+    </div>
+    <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
   </div>
   <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
