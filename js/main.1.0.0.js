@@ -103,7 +103,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
-    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, scrollTopBtn, map,
+    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, scrollTopBtn, map, sheetInfo,
     editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle;
 let selectedImgBox = null;
 let selectedId = null;
@@ -426,8 +426,16 @@ function showSelected(s, fromList=false){
   }
   if(scrollTopBtn) scrollTopBtn.classList.add('hidden');
   selectedDetail.scrollTop = 0;
+  if(sheetInfo){
+    sheetInfo.removeEventListener('scroll', handleDetailScroll);
+    sheetInfo = null;
+  }
   const info = selectedBody.querySelector('.info');
-  if(info) info.scrollTop = 0;
+  if(info){
+    info.scrollTop = 0;
+    info.addEventListener('scroll', handleDetailScroll);
+    sheetInfo = info;
+  }
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
   sheetOffset = window.innerWidth >= 768 ? window.innerHeight / 2 : 0;
@@ -443,6 +451,10 @@ function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
+  if(sheetInfo){
+    sheetInfo.removeEventListener('scroll', handleDetailScroll);
+    sheetInfo = null;
+  }
   if(selectedImgBox){
     selectedImgBox.remove();
     selectedImgBox = null;
@@ -569,6 +581,17 @@ function updateSheetHeight(){
     const topH = selectedTop.offsetHeight;
     selectedDetail.style.maxHeight = (h - topH) + 'px';
   }
+}
+
+function handleDetailScroll(){
+  const st = Math.max(selectedDetail ? selectedDetail.scrollTop : 0, sheetInfo ? sheetInfo.scrollTop : 0);
+  if(selectedTop){
+    selectedTop.classList.toggle('scrolled', st > 20 || !selectedImgBox);
+  }
+  if(scrollTopBtn){
+    scrollTopBtn.classList.toggle('hidden', st <= 20);
+  }
+  window.requestAnimationFrame(updateSheetHeight);
 }
 
 function setupDetailDrag(){
@@ -913,6 +936,7 @@ function setOrigin(lat,lng,label){
     if(scrollTopBtn && selectedDetail){
       scrollTopBtn.addEventListener('click', ()=>{
         selectedDetail.scrollTo({top:0, behavior:'smooth'});
+        if(sheetInfo) sheetInfo.scrollTo({top:0, behavior:'smooth'});
       });
     }
     if(closePanelBtn){
@@ -962,16 +986,7 @@ function setOrigin(lat,lng,label){
       });
     }
     if(selectedDetail){
-      selectedDetail.addEventListener('scroll', ()=>{
-        const st = selectedDetail.scrollTop;
-        if(selectedTop){
-          selectedTop.classList.toggle('scrolled', st > 20 || !selectedTop.querySelector('.img-box'));
-        }
-        if(scrollTopBtn){
-          scrollTopBtn.classList.toggle('hidden', st <= 20);
-        }
-        window.requestAnimationFrame(updateSheetHeight);
-      });
+      selectedDetail.addEventListener('scroll', handleDetailScroll);
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});

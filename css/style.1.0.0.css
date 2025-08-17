@@ -216,7 +216,7 @@
   #selectedTopScroll td{padding:4px 8px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;color:inherit;}
 #selectedTopScroll .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
 #closeSelected{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:24px;}
-#scrollTopBtn{position:absolute;top:8px;right:48px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;}
+#scrollTopBtn{position:absolute;bottom:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;z-index:70;}
 
   .leaflet-bar a{width:39px;height:39px;line-height:39px;font-size:24px;background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);}
   .leaflet-bar a.active{background:var(--btn-alt-bg);border:1px solid var(--accent);}
