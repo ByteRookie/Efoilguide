@@ -352,7 +352,7 @@ function showSelected(s){
   selectedDetail.scrollTop = 0;
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
-  selectedWrap.style.display='';
+  selectedWrap.classList.remove('hidden');
   loadImages();
   updateMapHeights();
 }
@@ -361,7 +361,7 @@ function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
-  selectedWrap.style.display='none';
+  selectedWrap.classList.add('hidden');
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -746,7 +746,7 @@ function setOrigin(lat,lng,label){
     filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
     // ensure toggle text matches initial state
-    const filtersHidden = filtersEl.style.display === 'none';
+    const filtersHidden = filtersEl.classList.contains('hidden');
     filterToggle.textContent = filtersHidden ? 'Show filters' : 'Hide filters';
     filterToggle.setAttribute('aria-expanded', filtersHidden ? 'false' : 'true');
     headerEl = document.querySelector('header');
@@ -826,8 +826,8 @@ function setOrigin(lat,lng,label){
 
       // toggle filters visibility and button label
       filterToggle.addEventListener('click', () => {
-        const willOpen = filtersEl.style.display === 'none';
-        filtersEl.style.display = willOpen ? '' : 'none';
+        const willOpen = filtersEl.classList.contains('hidden');
+        filtersEl.classList.toggle('hidden');
         filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
         filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
         handleResize();
@@ -835,16 +835,16 @@ function setOrigin(lat,lng,label){
 
     editLocation.addEventListener('click', e => {
       e.preventDefault();
-      editLocation.style.display = 'none';
-      locationBox.style.display = '';
+      editLocation.classList.add('hidden');
+      locationBox.classList.remove('hidden');
       searchRow.style.marginTop = '8px';
       zip.focus();
       handleResize();
     });
 
     closeLocation.addEventListener('click', () => {
-      locationBox.style.display = 'none';
-      editLocation.style.display = '';
+      locationBox.classList.add('hidden');
+      editLocation.classList.remove('hidden');
       searchRow.style.marginTop = '';
       handleResize();
     });

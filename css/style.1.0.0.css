@@ -33,6 +33,8 @@
   main.wrap{padding-top:0}
   h1{margin:8px 0 4px;font-weight:800;font-size:clamp(24px,4vw,40px)}
   .sub{color:var(--muted);font-size:14px}
+  .hidden{display:none!important}
+  .mb-40{margin-bottom:40px}
   details{margin:8px 0}
   details summary{cursor:pointer;color:var(--accent);font-weight:600;list-style:none;font-size:16px}
   details[open] summary{margin-bottom:8px}
@@ -48,6 +50,7 @@
 .chip.b-lvlm.active{border-left:4px solid var(--med)}
 .chip.b-lvlh.active{border-left:4px solid var(--hard)}
   .chip-group{display:flex;align-items:center;gap:6px}
+  .chip-group-flex{flex:1;align-items:center;position:relative}
 .chip-group-label{color:var(--muted);font-size:13px;margin-right:6px;white-space:nowrap}
   .legend-row{display:flex;gap:16px;overflow-x:auto;padding-bottom:4px}
   .legend-row::-webkit-scrollbar{height:6px}
@@ -140,6 +143,16 @@
   #originInfo a,#locationBox{margin-left:8px}
   #locationBox{display:inline-flex;align-items:center;gap:8px}
   #closeLocation{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);margin-left:4px;padding:4px}
+  #zip{width:100px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px}
+  #useGeo{background:var(--btn-alt-bg);border:1px solid var(--btn-alt-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer}
+  #searchRow{display:flex;gap:8px;align-items:center;width:100%}
+  #q{flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:8px}
+  #viewToggle,#filterToggle{background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);border-radius:8px;padding:8px;cursor:pointer}
+  #filters{margin-top:8px}
+  #mins{flex:1}
+  #viewWindow{overflow-x:hidden}
+  #viewSlider{display:flex;transition:transform .3s}
+  #tableView{min-width:100%}
 
   .leaflet-popup-content-wrapper,
   .leaflet-popup-tip{background:var(--card);color:var(--text);border:1px solid var(--control-border)}
@@ -153,8 +166,8 @@
 
 .leaflet-marker-icon.selected{filter:hue-rotate(120deg) brightness(1.3);}
 
-#mapView{display:flex;flex-direction:column;}
-#map{flex:1;}
+#mapView{display:flex;flex-direction:column;min-width:100%;padding-top:16px;}
+#map{flex:1;border-radius:var(--radius);border:1px solid var(--table-border);}
 #selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
 #selectedTop{background:var(--card);border-bottom:1px solid var(--table-border);display:flex;align-items:center;}
 #selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;}
