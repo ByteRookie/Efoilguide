@@ -82,18 +82,7 @@ async function loadImageCredits(){
 }
 
 
-function parseCitations(str=''){
-  return str.replace(/\{\{Citation:\s*"(.*?)"\s*SourceName:\s*"([^]*?)"\s*SourceURL:\s*"([^]*?)"\s*\}\}/g,
-    (_, txt, names, urls)=>{
-      const nArr = names.split(/"\s*,\s*"/).map(s=>s.trim());
-      const uArr = urls.split(/"\s*,\s*"/).map(s=>s.trim());
-      const groups = nArr.map((n,i)=>{
-        const url = uArr[i] || '#';
-        return `<span class="cite-group"><a href="${url}" target="_blank">${n}</a></span>`;
-      }).join('');
-      return `${txt}${groups}`;
-    });
-}
+/* global parseCitations */
 
 function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
   if (value == null || String(value).trim() === '') return '';
