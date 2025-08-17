@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, closeLocation, panelGrip, filterBtn;
+    editLocation, locationBox, panelGrip, filterBtn;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -172,6 +172,7 @@ function togglePanel(){
 function toggleFilters(){
   if(!filtersEl) return;
   filtersEl.classList.toggle('hidden');
+  if(filterBtn) filterBtn.classList.toggle('open');
   handleResize();
 }
 
@@ -621,21 +622,20 @@ function setupDetailDrag(){
 function initColResize(){
   const table = document.getElementById('tbl');
   if(!table) return;
-  const cols = table.querySelectorAll('col');
   const ths = table.querySelectorAll('thead th');
   ths.forEach((th,i)=>{
-    if(i>=cols.length) return;
     if(i===ths.length-1) return;
     const grip = document.createElement('div');
     grip.className='col-grip';
     th.appendChild(grip);
-    let startX=0,startW=0;
+    let startX=0,startW=0,cells=[];
     grip.addEventListener('mousedown',e=>{
       startX = e.clientX;
-      startW = cols[i].offsetWidth || th.offsetWidth;
+      startW = th.offsetWidth;
+      cells = [...table.querySelectorAll(`tr > *:nth-child(${i+1})`)];
       function move(ev){
         const w = startW + (ev.clientX - startX);
-        if(w>30){ cols[i].style.width = w+'px'; }
+        if(w>30){ cells.forEach(c=>c.style.width = w+'px'); }
       }
       function up(){
         document.removeEventListener('mousemove', move);
@@ -881,7 +881,6 @@ function setOrigin(lat,lng,label){
     originMsg = document.getElementById('originMsg');
     editLocation = document.getElementById('editLocation');
     locationBox = document.getElementById('locationBox');
-    closeLocation = document.getElementById('closeLocation');
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
     mins = document.getElementById('mins');
@@ -951,15 +950,15 @@ function setOrigin(lat,lng,label){
 
     editLocation.addEventListener('click', e => {
       e.preventDefault();
-      editLocation.classList.add('hidden');
-      locationBox.classList.remove('hidden');
-      zip.focus();
-      handleResize();
-    });
-
-    closeLocation.addEventListener('click', () => {
-      locationBox.classList.add('hidden');
-      editLocation.classList.remove('hidden');
+      const open = !locationBox.classList.contains('hidden');
+      if(open){
+        locationBox.classList.add('hidden');
+        editLocation.textContent = 'Edit location';
+      }else{
+        locationBox.classList.remove('hidden');
+        editLocation.textContent = 'Close location';
+        zip.focus();
+      }
       handleResize();
     });
 
