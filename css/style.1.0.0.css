@@ -36,6 +36,7 @@
   header .wrap{max-width:none;margin:0;padding:0}
   main.wrap{padding-top:0}
   h1{margin:0;font-weight:800;font-size:clamp(24px,4vw,40px);white-space:nowrap;line-height:48px;height:48px}
+  header h1{cursor:pointer}
   .header-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:25px;padding:8px;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px)}
   .search-wrap{position:relative;justify-self:center;display:inline-flex;justify-content:center;width:min(50vw,100%)}
   .search-wrap ul{list-style:none;margin-top:4px;padding:0;position:absolute;top:100%;left:0;right:0;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);max-height:50vh;overflow:auto;z-index:70}

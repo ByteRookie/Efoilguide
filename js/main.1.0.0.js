@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip;
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -369,6 +369,16 @@ async function loadImages(){
       }
       prev.addEventListener('click',()=>show(idx-1));
       next.addEventListener('click',()=>show(idx+1));
+      let startX=null;
+      carousel.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+      carousel.addEventListener('touchend',e=>{
+        if(startX===null) return;
+        const dx=e.changedTouches[0].clientX-startX;
+        if(Math.abs(dx)>30){
+          if(dx<0) show(idx+1); else show(idx-1);
+        }
+        startX=null;
+      },{passive:true});
     }
     box.appendChild(carousel);
   }
@@ -410,6 +420,7 @@ function showSelected(s, fromList=false){
   selectedWrap.classList.add('show');
   loadImages();
   setupDetailDrag();
+  if(s && s.lat && s.lng) flyToSpot([s.lat, s.lng]);
 }
 
 function clearSelected(){
@@ -608,7 +619,6 @@ function attachRowHandlers(){
       selectedId = id;
       if(markers[id]){
         setMarkerSelected(markers[id], true);
-        flyToSpot(markers[id].getLatLng());
         const spot = SPOTS.find(s=>s.id===id);
         if(spot) showSelected(spot, true);
         updateOtherMarkers();
@@ -648,7 +658,6 @@ function initMap(){
     const marker = L.marker([s.lat, s.lng]).addTo(map);
     markers[s.id] = marker;
     marker.on('click', () => {
-      flyToSpot([s.lat, s.lng]);
       if(selectedId === s.id){
         setMarkerSelected(marker,false);
         selectedId = null;
@@ -868,6 +877,7 @@ function setOrigin(lat,lng,label){
     infoBtn = document.getElementById('infoBtn');
     infoPopup = document.getElementById('infoPopup');
     closeInfo = document.getElementById('closeInfo');
+    siteTitle = document.querySelector('header h1');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -941,6 +951,37 @@ function setOrigin(lat,lng,label){
       });
     }
 
+    if(siteTitle){
+      siteTitle.addEventListener('click', () => {
+        if(panelOpen) closePanel();
+        clearSelected();
+        selectedId = null;
+        if(filtersEl){
+          filtersEl.classList.add('hidden');
+          if(filterBtn) filterBtn.classList.remove('active','open');
+        }
+        if(locationBox){
+          locationBox.classList.add('hidden');
+          locationBox.setAttribute('aria-hidden','true');
+          if(editLocation) editLocation.classList.remove('active');
+        }
+        if(infoPopup){
+          infoPopup.classList.add('hidden');
+          infoPopup.setAttribute('aria-hidden','true');
+          if(infoBtn) infoBtn.classList.remove('active');
+          lockPageScroll(false);
+        }
+        if(q){
+          q.value = '';
+          if(qClear) qClear.classList.add('hidden');
+          hideSuggestions();
+          applyFilters();
+        }
+        map.setView(MAP_START, MAP_ZOOM);
+        updateOtherMarkers();
+      });
+    }
+
   document.querySelectorAll('#tbl thead th.sortable').forEach(th => {
       th.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -1008,7 +1049,7 @@ function setOrigin(lat,lng,label){
             hideSuggestions();
             if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
             selectedId=id;
-            if(markers[id]){setMarkerSelected(markers[id], true);flyToSpot([spot.lat, spot.lng]);}
+            if(markers[id]) setMarkerSelected(markers[id], true);
             showSelected(spot, true);
             updateOtherMarkers();
             applyFilters();
@@ -1041,10 +1082,7 @@ function setOrigin(lat,lng,label){
         hideSuggestions();
         if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
         selectedId = id;
-        if(markers[id]){
-          setMarkerSelected(markers[id], true);
-          flyToSpot([spot.lat, spot.lng]);
-        }
+        if(markers[id]) setMarkerSelected(markers[id], true);
         showSelected(spot, true);
         updateOtherMarkers();
         applyFilters();
