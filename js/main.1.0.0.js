@@ -890,11 +890,19 @@ function setOrigin(lat,lng,label){
   function updateHeaderOffset(){
     document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
   }
-  function handleResize(){
-    updateHeaderOffset();
-    updateMapHeights();
-    checkShrink();
-  }
+    function handleResize(){
+      updateHeaderOffset();
+      updateMapHeights();
+      checkShrink();
+      if(selectedWrap){
+        if(window.innerWidth>=700){
+          selectedWrap.classList.remove('hidden');
+        }else if(!selectedId){
+          selectedWrap.classList.add('hidden');
+          selectedWrap.classList.remove('show');
+        }
+      }
+    }
   window.addEventListener('resize', handleResize);
   handleResize();
 
