@@ -89,7 +89,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -578,7 +578,7 @@ function initMap(){
     const marker = L.marker([s.lat, s.lng]).addTo(map);
     markers[s.id] = marker;
     marker.on('click', () => {
-      map.flyTo([s.lat, s.lng], 13);
+      map.flyTo([s.lat, s.lng], 16);
       if(selectedId === s.id){
         setMarkerSelected(marker,false);
         selectedId = null;
@@ -616,7 +616,7 @@ function initMap(){
 }
 
 function createMiniMap(el, lat, lng){
-  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 14);
+  const m = L.map(el, { attributionControl:false }).setView([lat, lng], 17);
   applyTileScheme(m);
   L.marker([lat, lng]).addTo(m);
   window.setTimeout(()=>m.invalidateSize(),0);
@@ -729,7 +729,15 @@ function setOrigin(lat,lng,label){
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
+    closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
+
+    if(closeSelected){
+      closeSelected.addEventListener('click', ()=>{
+        clearSelected();
+        selectedId = null;
+      });
+    }
 
     window.addEventListener('wheel', handleWheel, {passive:false});
     window.addEventListener('touchstart', handleTouchStart, {passive:false});
@@ -773,7 +781,7 @@ function setOrigin(lat,lng,label){
           if(spot){
             if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
             showSelected(spot);
-            map.flyTo([spot.lat, spot.lng], 13);
+            map.flyTo([spot.lat, spot.lng], 16);
           }
         }else{
           clearSelected();

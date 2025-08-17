@@ -84,9 +84,12 @@
         <div id="map" style="border-radius:var(--radius);border:1px solid var(--table-border)"></div>
         <div id="selectedWrap" style="display:none;border-radius:var(--radius);border:1px solid var(--table-border);overflow:hidden">
           <div id="selectedTop">
-            <table>
-              <tbody id="selectedTopBody"></tbody>
-            </table>
+            <div id="selectedTopScroll">
+              <table>
+                <tbody id="selectedTopBody"></tbody>
+              </table>
+            </div>
+            <button id="closeSelected" aria-label="Close">✕</button>
           </div>
           <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
         </div>

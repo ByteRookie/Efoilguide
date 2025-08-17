@@ -60,12 +60,12 @@
   .toggle:checked{background:var(--accent)}
   .toggle:before{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
   .toggle:checked:before{transform:translateX(18px)}
-  .table-wrap{border:1px solid var(--table-border);border-radius:var(--radius)}
+  .table-wrap{border:1px solid var(--table-border);border-radius:var(--radius);overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
   .table-wrap table{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;background:var(--card)}
   .table-wrap thead,.table-wrap tbody tr{display:table;width:100%;table-layout:fixed}
   .table-wrap tbody{display:block;transition:max-height .6s}
   .table-wrap.scroll tbody{overflow:auto;overscroll-behavior:contain}
-  .table-wrap thead th{position:sticky;top:var(--header-h);z-index:2;background:var(--card)}
+  .table-wrap thead th{position:sticky;top:var(--header-h);z-index:2;background:var(--card);white-space:nowrap}
     th,td{padding:12px 14px;border-bottom:1px solid var(--table-border);vertical-align:top;font-size:14px;word-break:break-word;text-align:left}
     tbody tr{transition:background .2s}
     tbody tr.hide{display:none}
@@ -119,15 +119,16 @@
     .detail-grid .info{flex:2 1 260px}
     #toTop{position:fixed;right:20px;bottom:20px;padding:10px 12px;border-radius:50%;border:none;background:var(--btn-bg);color:var(--text);box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:100}
   #toTop.show{display:block}
-  @media (max-width:800px){
-    .table-wrap tbody tr,
+@media (max-width:800px){
     #selectedDetail tbody tr{display:block;margin-bottom:12px}
-    .table-wrap tbody td,
     #selectedDetail tbody td{display:flex;justify-content:space-between;border-bottom:1px dashed var(--table-border);padding:8px 12px}
-    .table-wrap tbody td:before,
     #selectedDetail tbody td:before{content:attr(data-label);color:var(--muted);margin-right:10px}
-    .table-wrap tbody td.detail,
     #selectedDetail tbody td.detail{display:block}
+  }
+
+  @media (max-width:500px){
+    .badge{font-size:11px;padding:2px 6px}
+    #selectedTopScroll td{font-size:13px}
   }
 .cite-group{display:inline-block;margin-left:4px;font-size:0.75em;}
 .cite-group a{display:block;color:var(--muted);background:var(--badge);border:1px solid var(--badge-border);border-radius:4px;padding:0 4px;text-decoration:none;}
@@ -151,9 +152,13 @@
 #mapView{display:flex;flex-direction:column;}
 #map{flex:1;}
 #selectedWrap{display:flex;flex-direction:column;flex:1;border:1px solid var(--table-border);border-radius:var(--radius);overflow:hidden;}
-#selectedTop{background:var(--card);}
-#selectedTop table{width:100%;min-width:0;table-layout:fixed;border-collapse:separate;border-spacing:0;}
-#selectedTop td{border-bottom:1px solid var(--table-border);padding:8px 12px;display:flex;align-items:center;gap:4px;}
-#selectedTop .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
+#selectedTop{background:var(--card);border-bottom:1px solid var(--table-border);display:flex;align-items:center;}
+#selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+#selectedTopScroll table{border-collapse:separate;border-spacing:0;display:flex;width:fit-content;}
+#selectedTopScroll tbody{display:flex;}
+#selectedTopScroll tr{display:flex;gap:16px;}
+#selectedTopScroll td{padding:8px 12px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;}
+#selectedTopScroll .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
+#closeSelected{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:16px;}
 #selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
