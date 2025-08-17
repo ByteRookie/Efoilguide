@@ -112,6 +112,8 @@ let shrinkTable = false;
 let touchStartY = 0;
 let markers = {};
 let pageLocked = false;
+let pendingView = false;
+let forceView = false;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
@@ -534,6 +536,7 @@ function attachRowHandlers(){
         if(spot){
           selectedId = id;
           openedFromTable = true;
+          forceView = true;
           viewToggle.click();
         }
         return;
@@ -674,6 +677,7 @@ function createMiniMap(el, lat, lng){
   applyTileScheme(m);
   L.marker([lat, lng]).addTo(m);
   window.setTimeout(()=>m.invalidateSize(),0);
+  el._miniMap = m;
 }
 
 /* ---------- Filters ---------- */
@@ -795,7 +799,10 @@ function setOrigin(lat,lng,label){
       closeSelected.addEventListener('click', ()=>{
         clearSelected();
         selectedId = null;
-        if(openedFromTable){
+        if(window.innerWidth<700 && pendingView){
+          pendingView = false;
+          applyView();
+        }else if(openedFromTable){
           openedFromTable = false;
           viewToggle.click();
         }
@@ -824,38 +831,15 @@ function setOrigin(lat,lng,label){
 
     viewToggle.addEventListener('click', () => {
       showingMap = !showingMap;
-      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
       viewToggle.textContent = showingMap ? 'Table' : 'Map';
-      window.scrollTo(0,0);
-      if(spotsBody) spotsBody.scrollTop = 0;
-      if(mapView) mapView.scrollTop = 0;
-      lockPageScroll(false);
-      checkShrink();
-      if(showingMap){
-        // size the container before Leaflet initializes to avoid a zero-height map
-        updateMapHeights();
-        initMap();
-        applyFilters();
-        updateMapView();
-        // run again once visible so Leaflet recalculates dimensions
-        window.requestAnimationFrame(updateMapHeights);
-        if(selectedId){
-          const spot = SPOTS.find(s=>s.id===selectedId);
-          if(spot){
-            if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
-            showSelected(spot);
-            map.flyTo([spot.lat, spot.lng], 16);
-          }
-        }else{
-          clearSelected();
-        }
-      }else{
+      if(window.innerWidth<700 && selectedId && !forceView){
+        pendingView = true;
         openedFromTable = false;
-        viewWindow.style.height = '';
-        mapView.style.height = '';
-        clearSelected();
-        if(selectedId) window.requestAnimationFrame(()=>openTableRow(selectedId,'start'));
+        return;
       }
+      forceView = false;
+      pendingView = false;
+      applyView();
     });
 
       // toggle filters visibility and button label
@@ -894,13 +878,55 @@ function setOrigin(lat,lng,label){
       updateHeaderOffset();
       updateMapHeights();
       checkShrink();
-      if(selectedWrap){
-        if(window.innerWidth>=700){
-          selectedWrap.classList.remove('hidden');
-        }else if(!selectedId){
+      if(!selectedWrap) return;
+      if(window.innerWidth>=700){
+        selectedWrap.classList.remove('hidden');
+        if(selectedId){
+          selectedWrap.classList.add('show');
+          if(mapView) mapView.classList.remove('hide-map');
+          const mini = selectedWrap.querySelector('.mini-map');
+          if(mini && mini._miniMap) window.setTimeout(()=>mini._miniMap.invalidateSize(),0);
+        }
+      }else{
+        if(selectedId){
+          selectedWrap.classList.remove('show');
+          if(mapView) mapView.classList.add('hide-map');
+        }else{
           selectedWrap.classList.add('hidden');
           selectedWrap.classList.remove('show');
+          if(mapView) mapView.classList.remove('hide-map');
         }
+      }
+    }
+    function applyView(){
+      viewSlider.style.transform = showingMap ? 'translateX(-100%)' : 'translateX(0)';
+      viewToggle.textContent = showingMap ? 'Table' : 'Map';
+      window.scrollTo(0,0);
+      if(spotsBody) spotsBody.scrollTop = 0;
+      if(mapView) mapView.scrollTop = 0;
+      lockPageScroll(false);
+      checkShrink();
+      if(showingMap){
+        updateMapHeights();
+        initMap();
+        applyFilters();
+        updateMapView();
+        window.requestAnimationFrame(updateMapHeights);
+        if(selectedId){
+          const spot = SPOTS.find(s=>s.id===selectedId);
+          if(spot){
+            if(markers[selectedId]) setMarkerSelected(markers[selectedId], true);
+            showSelected(spot);
+            map.flyTo([spot.lat, spot.lng], 16);
+          }
+        }else{
+          clearSelected();
+        }
+      }else{
+        viewWindow.style.height = '';
+        mapView.style.height = '';
+        clearSelected();
+        if(selectedId) window.requestAnimationFrame(()=>openTableRow(selectedId,'start'));
       }
     }
   window.addEventListener('resize', handleResize);

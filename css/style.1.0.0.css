@@ -193,9 +193,13 @@
 @media (max-width:700px){
   #selectedWrap td.detail{padding:0;}
   #selectedWrap .detail-grid{flex-direction:column;}
-  #selectedWrap .detail-grid .img-box{max-width:100%;position:static;}
+  #selectedWrap .detail-grid .img-box{max-width:100%;position:static;flex:none;width:100%;}
   #selectedWrap .detail-grid .info{padding:16px;}
   #selectedWrap .mini-map{width:100%;border-radius:0;}
+}
+
+@media (max-width:700px){
+  #mapView{margin-left:calc(-1*clamp(16px,4vw,32px));margin-right:calc(-1*clamp(16px,4vw,32px));}
 }
 
 @media (min-width:700px){
