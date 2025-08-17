@@ -147,7 +147,7 @@ header h1 .logo{height:64px;width:64px}
     .detail-label{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
     .detail-label .icon{font-size:14px}
     .detail-value{font-size:14px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
-  #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:80;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
+  #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:30;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
   #siteFooter a{color:var(--text)}
   #infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;z-index:200;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
   #infoPopup .info-inner{position:relative}
