@@ -155,8 +155,8 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
-    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip,
+    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
     togglePanelBtn, toggleSheetBtn;
 let selectedId = null;
 let markers = {};
@@ -183,6 +183,33 @@ const PANEL_RATIO = 0.5; // default panel width (50% of viewport on desktop)
 const SHEET_DEFAULT_W = 440;
 const EXPAND_ICON = '⤢';
 const COLLAPSE_ICON = '⤡';
+
+function isPanelDefault(){
+  if(!tablePanel) return true;
+  const isMobile = window.innerWidth <= 700;
+  const defaultW = isMobile ? window.innerWidth : Math.round(window.innerWidth * PANEL_RATIO);
+  return !panelFull && Math.abs(tablePanel.offsetWidth - defaultW) < 2;
+}
+function isSheetDefault(){
+  if(!selectedWrap) return true;
+  const isMobile = window.innerWidth <= 700;
+  const defaultW = isMobile ? window.innerWidth : SHEET_DEFAULT_W;
+  const defaultOffset = isMobile ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  const defaultFull = isMobile;
+  return sheetFull === defaultFull &&
+    Math.abs(selectedWrap.clientWidth - defaultW) < 2 &&
+    Math.abs(sheetOffset - defaultOffset) < 2;
+}
+function updatePanelIcon(){
+  if(togglePanelBtn) togglePanelBtn.textContent = isPanelDefault() ? EXPAND_ICON : COLLAPSE_ICON;
+}
+function updateSheetIcon(){
+  if(toggleSheetBtn) toggleSheetBtn.textContent = isSheetDefault() ? EXPAND_ICON : COLLAPSE_ICON;
+}
+function updateSelectedTopPadding(){
+  if(!selectedTopScroll || !selectedButtons) return;
+  selectedTopScroll.style.marginRight = (selectedButtons.offsetWidth + 8) + 'px';
+}
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
@@ -226,39 +253,45 @@ function handleResize(){
     }
   }
   updateMapControls();
+  updateSelectedTopPadding();
+  updatePanelIcon();
+  updateSheetIcon();
 }
 
 function togglePanelSize(){
   if(!tablePanel) return;
-  panelFull = !panelFull;
-  if(panelFull){
-    const w = window.innerWidth;
-    tablePanel.style.width = w + 'px';
-    if(togglePanelBtn) togglePanelBtn.textContent = COLLAPSE_ICON;
+  const isMobile = window.innerWidth <= 700;
+  const defaultW = isMobile ? window.innerWidth : Math.round(window.innerWidth * PANEL_RATIO);
+  if(panelFull || !isPanelDefault()){
+    panelFull = false;
+    tablePanel.style.width = isMobile ? '100%' : defaultW + 'px';
   }else{
-    tablePanel.style.width = window.innerWidth <= 700 ? '100%' : Math.round(window.innerWidth * PANEL_RATIO) + 'px';
-    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
+    panelFull = true;
+    tablePanel.style.width = window.innerWidth + 'px';
   }
   handleResize();
+  updatePanelIcon();
 }
 
 function toggleSheetSize(){
   if(!selectedWrap) return;
-  sheetFull = !sheetFull;
   const isMobile = window.innerWidth <= 700;
-  if(sheetFull){
+  const defaultOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  if(sheetFull || !isSheetDefault()){
+    sheetFull = false;
+    sheetOffset = defaultOffset;
+    selectedWrap.style.width = isMobile ? '100%' : SHEET_DEFAULT_W + 'px';
+  }else{
+    sheetFull = true;
     sheetOffset = 0;
     selectedWrap.style.width = isMobile ? '100%' : window.innerWidth + 'px';
-    if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
-  }else{
-    sheetOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-    selectedWrap.style.width = isMobile ? '100%' : SHEET_DEFAULT_W + 'px';
-    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   }
   updateSheetTransform();
   updateSheetHeight();
   recenterSelected();
   updateMapControls();
+  updateSheetIcon();
+  updateSelectedTopPadding();
 }
 
 function openPanel(){
@@ -275,7 +308,6 @@ function openPanel(){
     document.body.classList.add('panel-open');
     panelOpen = true;
     panelFull = false;
-    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
     const w = window.innerWidth <= 700 ? window.innerWidth : Math.round(window.innerWidth * PANEL_RATIO);
     tablePanel.style.width = window.innerWidth <= 700 ? '100%' : w + 'px';
     document.documentElement.style.setProperty('--panel-w', tablePanel.offsetWidth + 'px');
@@ -287,6 +319,7 @@ function openPanel(){
     }
   }
   updateMapControls();
+  updatePanelIcon();
 }
 function closePanel(){
   if(tablePanel){
@@ -296,7 +329,6 @@ function closePanel(){
     document.body.classList.remove('panel-open');
     panelOpen = false;
     panelFull = false;
-    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
     lockPageScroll(false);
     if(listCtrlLink){
       listCtrlLink.classList.remove('active');
@@ -314,6 +346,7 @@ function closePanel(){
     }
   }
   updateMapControls();
+  updatePanelIcon();
 }
 function togglePanel(){
   panelOpen ? closePanel() : openPanel();
@@ -656,15 +689,15 @@ function showSelected(s, fromList=false){
   if(isMobile){
     selectedWrap.style.width = '100%';
     sheetOffset = 0;
-    if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
   }else{
     selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
     sheetOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   }
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
+  updateSelectedTopPadding();
+  updateSheetIcon();
   updateMapControls();
   loadImages();
   setupDetailDrag();
@@ -684,8 +717,9 @@ function clearSelected(){
   selectedWrap.style.width='';
   if(selectedDetail) selectedDetail.style.maxHeight='';
   sheetFull = false;
-  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   sheetOffset = 0;
+  updateSelectedTopPadding();
+  updateSheetIcon();
   updateMapControls();
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
@@ -756,7 +790,7 @@ function startSheetDrag(e){
   if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
   if(e.target.closest('button') || e.target.closest('#selectedTopScroll')) return;
   sheetFull = false;
-  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+  updateSheetIcon();
   sheetDragFromTop = e.currentTarget === selectedTop;
   sheetDragStartY = e.touches ? e.touches[0].clientY : e.clientY;
   sheetDragStartOffset = sheetOffset;
@@ -780,6 +814,7 @@ function sheetDragMove(e){
   updateSheetHeight();
   recenterSelected();
   updateMapControls();
+  updateSheetIcon();
   e.preventDefault();
 }
 
@@ -791,6 +826,7 @@ function endSheetDrag(){
   document.removeEventListener('mouseup', endSheetDrag);
   recenterSelected();
   updateMapControls();
+  updateSheetIcon();
 }
 
 function updateSheetTransform(){
@@ -1184,14 +1220,14 @@ function setOrigin(lat,lng,label){
     tablePanel = document.getElementById('tablePanel');
     closePanelBtn = document.getElementById('closePanel');
     togglePanelBtn = document.getElementById('togglePanelSize');
-    if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
     selectedWrap = document.getElementById('selectedWrap');
     selectedTop = document.getElementById('selectedTop');
+    selectedTopScroll = document.getElementById('selectedTopScroll');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
     toggleSheetBtn = document.getElementById('toggleSheetSize');
-    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+    selectedButtons = document.getElementById('selectedButtons');
     closeSelected = document.getElementById('closeSelected');
     filterBtn = document.getElementById('filterBtn');
     infoBtn = document.getElementById('infoBtn');
@@ -1229,16 +1265,18 @@ function setOrigin(lat,lng,label){
         document.documentElement.style.setProperty('--panel-w', w + 'px');
         tablePanel.style.width = w + 'px';
         handleResize();
+        updatePanelIcon();
       };
       const stop = () => {
         document.removeEventListener('mousemove', move);
         document.removeEventListener('mouseup', stop);
         document.removeEventListener('touchmove', move);
         document.removeEventListener('touchend', stop);
+        panelFull = false;
+        updatePanelIcon();
       };
       panelGrip.addEventListener('mousedown', e => {
         panelFull = false;
-        if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
         startX = e.clientX;
         startW = tablePanel.offsetWidth;
         document.addEventListener('mousemove', move);
@@ -1247,7 +1285,6 @@ function setOrigin(lat,lng,label){
       });
       panelGrip.addEventListener('touchstart', e => {
         panelFull = false;
-        if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
         startX = e.touches[0].clientX;
         startW = tablePanel.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});
@@ -1268,18 +1305,22 @@ function setOrigin(lat,lng,label){
         selectedWrap.style.width = w + 'px';
         recenterSelected();
         updateMapControls();
+        updateSheetIcon();
+        updateSelectedTopPadding();
       };
       const stop = () => {
         document.removeEventListener('mousemove', move);
         document.removeEventListener('mouseup', stop);
         document.removeEventListener('touchmove', move);
         document.removeEventListener('touchend', stop);
+        sheetFull = false;
         recenterSelected();
         updateMapControls();
+        updateSheetIcon();
+        updateSelectedTopPadding();
       };
       sheetWidthGrip.addEventListener('mousedown', e => {
         sheetFull = false;
-        if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
         startX = e.clientX;
         startW = selectedWrap.offsetWidth;
         document.addEventListener('mousemove', move);
@@ -1288,7 +1329,6 @@ function setOrigin(lat,lng,label){
       });
       sheetWidthGrip.addEventListener('touchstart', e => {
         sheetFull = false;
-        if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
         startX = e.touches[0].clientX;
         startW = selectedWrap.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});
@@ -1557,7 +1597,22 @@ zip.addEventListener('input', async () => {
       pos => setOrigin(pos.coords.latitude, pos.coords.longitude, 'your current location'),
       () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
+    updateSelectedTopPadding();
+    updatePanelIcon();
+    updateSheetIcon();
   });
+    SPOTS = await loadSpots();
+    await loadImageCredits();
+    render();
+    initMap();
+    applyFilters();
+    updateSelectedTopPadding();
+    updatePanelIcon();
+    updateSheetIcon();
+
+    window.addEventListener('scroll', checkShrink);
+  });
+
   SPOTS = await loadSpots();
   await loadImageCredits();
   render();
