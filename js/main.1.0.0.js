@@ -104,12 +104,11 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, panelGrip, filterBtn;
+    editLocation, locationBox, panelGrip, filterBtn, infoBtn, infoPopup, closeInfo;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
 let hideOthers = false;
-let shrinkTable = false;
 let touchStartY = 0;
 let pageLocked = false;
 let reopenPanel = false;
@@ -456,25 +455,8 @@ function moveSortArrow(th){
 
 function updateTableScroll(){
   if(!tableWrap || !spotsBody) return;
-  const rows = [...spotsBody.querySelectorAll('tr.parent:not(.hide)')];
-  if(rows.length===0){
-    tableWrap.classList.remove('scroll');
-    spotsBody.style.maxHeight='';
-    return;
-  }
-  const h = rows[0].getBoundingClientRect().height;
-  const top = tableWrap.getBoundingClientRect().top;
-  const avail = window.innerHeight - top;
-  const maxVisible = Math.floor(avail / h);
-  const target = shrinkTable ? 5 : 10;
-  const maxRows = Math.min(target, maxVisible);
-  if(rows.length>maxRows){
-    tableWrap.classList.add('scroll');
-    spotsBody.style.maxHeight = h*maxRows + 'px';
-  }else{
-    tableWrap.classList.remove('scroll');
-    spotsBody.style.maxHeight='';
-  }
+  tableWrap.classList.remove('scroll');
+  spotsBody.style.maxHeight='';
 }
 
 function tableInView(){
@@ -622,20 +604,26 @@ function setupDetailDrag(){
 function initColResize(){
   const table = document.getElementById('tbl');
   if(!table) return;
+  const cols = table.querySelectorAll('colgroup col');
   const ths = table.querySelectorAll('thead th');
   ths.forEach((th,i)=>{
     if(i===ths.length-1) return;
+    if(cols[i]){
+      const w = th.offsetWidth;
+      cols[i].style.width = w + 'px';
+      th.style.width = w + 'px';
+    }
     const grip = document.createElement('div');
     grip.className='col-grip';
     th.appendChild(grip);
-    let startX=0,startW=0,cells=[];
+    let startX=0,startW=0;
     grip.addEventListener('mousedown',e=>{
       startX = e.clientX;
-      startW = th.offsetWidth;
-      cells = [...table.querySelectorAll(`tr > *:nth-child(${i+1})`)];
+      startW = parseInt(window.getComputedStyle(cols[i]).width,10);
       function move(ev){
-        const w = startW + (ev.clientX - startX);
-        if(w>30){ cells.forEach(c=>c.style.width = w+'px'); }
+        const w = Math.max(40, startW + (ev.clientX - startX));
+        cols[i].style.width = w+'px';
+        th.style.width = w+'px';
       }
       function up(){
         document.removeEventListener('mousemove', move);
@@ -649,15 +637,7 @@ function initColResize(){
 }
 
 function checkShrink(){
-  const shouldShrink = window.scrollY>0 || window.innerHeight<700;
-  if(shouldShrink !== shrinkTable){
-    shrinkTable = shouldShrink;
-    if(shrinkTable && spotsBody){
-      spotsBody.scrollTop = 0;
-      lockPageScroll(true);
-    }
-    updateTableScroll();
-  }
+  // table always uses full panel height; no shrink handling needed
 }
 
 function render(){
@@ -904,6 +884,11 @@ function setOrigin(lat,lng,label){
     tableWrap = document.querySelector('.table-wrap');
     panelGrip = document.getElementById('panelGrip');
     filterBtn = document.getElementById('filterBtn');
+    infoBtn = document.getElementById('infoBtn');
+    infoPopup = document.getElementById('infoPopup');
+    closeInfo = document.getElementById('closeInfo');
+    const yearEl = document.getElementById('year');
+    if(yearEl) yearEl.textContent = new Date().getFullYear();
     initColResize();
 
     if(closeSelected){
@@ -926,6 +911,12 @@ function setOrigin(lat,lng,label){
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
+    }
+    if(infoBtn && infoPopup){
+      infoBtn.addEventListener('click', e=>{e.preventDefault();infoPopup.classList.remove('hidden');lockPageScroll(true);});
+    }
+    if(closeInfo && infoPopup){
+      closeInfo.addEventListener('click', ()=>{infoPopup.classList.add('hidden');lockPageScroll(false);});
     }
 
     window.addEventListener('wheel', handleWheel, {passive:false});

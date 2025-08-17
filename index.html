@@ -17,6 +17,7 @@
       <div class="settings">
         <button id="filterBtn" aria-label="Filters">⚙</button>
         <a href="#" id="editLocation">Edit location</a>
+        <button id="infoBtn" aria-label="Regulatory quick-reference">ℹ</button>
         <span id="locationBox" class="hidden">
           <div class="loc-row">
             <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" />
@@ -98,22 +99,27 @@
   <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
 
+<footer id="siteFooter">© <a href="https://github.com/byterookie" target="_blank">byterookie</a> <span id="year"></span> — This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</footer>
+
 <button id="toTop" aria-label="Back to top">↑</button>
 
-<script src="js/main.1.0.0.js" defer></script>
+<div id="infoPopup" class="hidden">
+  <div class="info-inner">
+    <button id="closeInfo" aria-label="Close">✕</button>
+    <h2>Regulatory quick‑reference</h2>
+    <ul class="muted">
+      <li><strong>Harbors/Marinas:</strong> No‑wake (typically 5 mph) inside fairways until outside breakwaters.</li>
+      <li><strong>CA proximity rule (common‑sense baseline):</strong> 5 mph within ~100 ft of swimmers and ~200 ft of beaches, docks, and moored boats. Always obey posted signs.</li>
+      <li><strong>COLREGS (“Rules of the Road”):</strong> Applies everywhere—give way to vessels constrained by draft (ships/ferries), cross channels at right angles, show lights if dusk/night (avoid night on eFoil).</li>
+      <li><strong>Sanctuaries/Wildlife:</strong> Keep clear of marine mammals; never chase. Heed local eelgrass/sanctuary zones (e.g., parts of Richardson & Tomales bays).</li>
+      <li><strong>Inland lakes:</strong> Expect <em>quagga mussel inspections</em> (arrive clean & dry), day‑use hours, and occasional algae advisories.</li>
+      <li><strong>Night lights:</strong> Pass on the right-hand (white stern) side of other boats; red/green bow lights mean stay clear ahead.</li>
+    </ul>
+    <p class="hint">This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</p>
+  </div>
+</div>
 
-<section class="wrap mb-40">
-  <h2>Regulatory quick‑reference</h2>
-  <ul class="muted">
-    <li><strong>Harbors/Marinas:</strong> No‑wake (typically 5 mph) inside fairways until outside breakwaters.</li>
-    <li><strong>CA proximity rule (common‑sense baseline):</strong> 5 mph within ~100 ft of swimmers and ~200 ft of beaches, docks, and moored boats. Always obey posted signs.</li>
-    <li><strong>COLREGS (“Rules of the Road”):</strong> Applies everywhere—give way to vessels constrained by draft (ships/ferries), cross channels at right angles, show lights if dusk/night (avoid night on eFoil).</li>
-    <li><strong>Sanctuaries/Wildlife:</strong> Keep clear of marine mammals; never chase. Heed local eelgrass/sanctuary zones (e.g., parts of Richardson & Tomales bays).</li>
-    <li><strong>Inland lakes:</strong> Expect <em>quagga mussel inspections</em> (arrive clean & dry), day‑use hours, and occasional algae advisories.</li>
-    <li><strong>Night lights:</strong> Pass on the right-hand (white stern) side of other boats; red/green bow lights mean stay clear ahead.</li>
-  </ul>
-  <p class="hint">This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</p>
-</section>
+<script src="js/main.1.0.0.js" defer></script>
 
 </body>
 </html>
