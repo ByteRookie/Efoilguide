@@ -1030,6 +1030,23 @@ function applyTileScheme(m){
     updateOtherMarkers();
   });
 
+  const reset = L.control({position:'topleft'});
+  reset.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='↺';
+    a.title='Reset view';
+    a.setAttribute('aria-label','Reset view');
+    L.DomEvent.on(a,'click',e=>{
+      L.DomEvent.preventDefault(e);
+      L.DomEvent.stopPropagation(e);
+      updateMapView();
+    });
+    return div;
+  };
+  reset.addTo(map);
+
   const listCtrl = L.control({position:'topleft'});
   listCtrl.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar');
@@ -1589,14 +1606,15 @@ function handleZip(){
 zip.addEventListener('input', handleZip);
 zip.addEventListener('change', handleZip);
 
-if(zipClear){
-  zipClear.addEventListener('click', e => {
-    e.preventDefault();
-    zip.value='';
-    ORIGIN = null;
-    originMsg.textContent = originMsgDefault;
-    zipClear.classList.add('hidden');
-    render();
+  if(zipClear){
+    zipClear.addEventListener('click', e => {
+      e.preventDefault();
+      zip.value='';
+      ORIGIN = null;
+      originMsg.textContent = originMsgDefault;
+      zipClear.classList.add('hidden');
+      render();
+      updateMapView();
     });
   }
 
