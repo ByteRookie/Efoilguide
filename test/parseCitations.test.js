@@ -5,6 +5,7 @@ const { parseCitations } = require('../js/parseCitations.js');
 
 function setupDom() {
   const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  global.window = dom.window;
   global.document = dom.window.document;
   return dom;
 }
@@ -20,10 +21,11 @@ test('parses citation into link groups', () => {
 });
 
 test('malformed citation remains unchanged', () => {
-  setupDom();
+  const dom = setupDom();
   const input = 'Bad {{Citation: "oops" SourceName: "Only"}} end';
   const html = parseCitations(input);
-  assert.equal(html, input);
+  dom.window.document.body.innerHTML = html;
+  assert.equal(dom.window.document.body.textContent, input);
 });
 
 test('nested citation treated as text', () => {
@@ -33,6 +35,14 @@ test('nested citation treated as text', () => {
   dom.window.document.body.innerHTML = html;
   const groups = dom.window.document.querySelectorAll('.cite-group');
   assert.equal(groups.length, 1);
-  assert.ok(html.includes('{{Citation: "inner" SourceName: "N" SourceURL: "U" }}'));
+  assert.ok(dom.window.document.body.textContent.includes('{{Citation: "inner" SourceName: "N" SourceURL: "U" }}'));
 });
 
+test('script tags are removed', () => {
+  const dom = setupDom();
+  const input = 'Bad <script>alert(1)</script> end';
+  const html = parseCitations(input);
+  dom.window.document.body.innerHTML = html;
+  assert.equal(dom.window.document.querySelector('script'), null);
+  assert.ok(!dom.window.document.body.textContent.includes('alert(1)'));
+});
