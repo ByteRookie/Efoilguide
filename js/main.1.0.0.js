@@ -119,8 +119,7 @@ function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
   if (typeof window !== 'undefined' && value instanceof window.Node) {
     target.appendChild(value);
   } else {
-    const nodes = parseCitations(String(value));
-    target.appendChild(nodes);
+    target.innerHTML = parseCitations(String(value));
   }
   if (target !== valueDiv) valueDiv.appendChild(target);
   wrap.appendChild(labelDiv);
