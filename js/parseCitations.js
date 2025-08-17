@@ -1,3 +1,11 @@
+let DOMPurify;
+if (typeof window !== 'undefined' && window.DOMPurify) {
+  DOMPurify = window.DOMPurify;
+} else {
+  const { JSDOM } = require('jsdom');
+  DOMPurify = require('dompurify')(new JSDOM('').window);
+}
+
 function parseCitations(str = '') {
   const tokens = [];
   let i = 0;
@@ -109,25 +117,18 @@ function parseCitations(str = '') {
     }
   }
 
-  const container = document.createDocumentFragment();
+  let out = '';
   tokens.forEach(tok => {
     if (tok.type === 'text') {
-      container.appendChild(document.createTextNode(tok.value));
+      out += tok.value;
     } else {
-      container.appendChild(document.createTextNode(tok.text));
+      out += tok.text;
       tok.sources.forEach(src => {
-        const span = document.createElement('span');
-        span.className = 'cite-group';
-        const a = document.createElement('a');
-        a.href = src.url;
-        a.target = '_blank';
-        a.textContent = src.name;
-        span.appendChild(a);
-        container.appendChild(span);
+        out += `<span class="cite-group"><a href="${src.url}" target="_blank">${src.name}</a></span>`;
       });
     }
   });
-  return container;
+  return DOMPurify ? DOMPurify.sanitize(out) : out;
 }
 
 if (typeof window !== 'undefined') {
