@@ -161,7 +161,7 @@ function isSheetDefault(){
   const defaultOffset = isMobile ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   const defaultFull = isMobile;
   return sheetFull === defaultFull &&
-    Math.abs(selectedWrap.offsetWidth - defaultW) < 2 &&
+    Math.abs(selectedWrap.clientWidth - defaultW) < 2 &&
     Math.abs(sheetOffset - defaultOffset) < 2;
 }
 function updatePanelIcon(){
@@ -172,7 +172,7 @@ function updateSheetIcon(){
 }
 function updateSelectedTopPadding(){
   if(!selectedTopScroll || !selectedButtons) return;
-  selectedTopScroll.style.paddingRight = (selectedButtons.offsetWidth + 8) + 'px';
+  selectedTopScroll.style.marginRight = (selectedButtons.offsetWidth + 8) + 'px';
 }
 
 function updateHeaderOffset(){
