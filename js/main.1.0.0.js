@@ -400,19 +400,6 @@ function milesFromMinutes(min){
   return lo;
 }
 
-function updateMapView(){
-  if(!map) return;
-  if(ORIGIN){
-    const radius = milesFromMinutes(+mins.value);
-    const circle = L.circle(ORIGIN,{radius:radius*1609.34});
-    const bounds = circle.getBounds();
-    const zoom = map.getBoundsZoom(bounds);
-    map.setView(ORIGIN, zoom);
-  }else{
-    map.setView(MAP_START, MAP_ZOOM);
-  }
-}
-
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
   const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
@@ -977,16 +964,15 @@ function applyTileScheme(m){
   apply();
 }
 
-function initMap(){
-  if(map) return;
-  map = L.map('map').setView(MAP_START, MAP_ZOOM);
+  function initMap(){
+    if(map) return;
+    map = L.map('map').setView(MAP_START, MAP_ZOOM);
 
-  applyTileScheme(map);
-  updateMapView();
+    applyTileScheme(map);
 
-  SPOTS.forEach(s=>{
-    const marker = L.marker([s.lat, s.lng]).addTo(map);
-    markers[s.id] = marker;
+    SPOTS.forEach(s=>{
+      const marker = L.marker([s.lat, s.lng]).addTo(map);
+      markers[s.id] = marker;
     marker.on('click', () => {
       if(selectedId === s.id){
         setMarkerSelected(marker,false);
@@ -1020,23 +1006,6 @@ function initMap(){
     clearSelected();
     updateOtherMarkers();
   });
-
-  const reset = L.control({position:'topleft'});
-  reset.onAdd = function(){
-    const div = L.DomUtil.create('div','leaflet-bar');
-    const a = L.DomUtil.create('a','',div);
-    a.href = '#';
-    a.innerHTML = '↺';
-    a.title = 'Reset view';
-    a.setAttribute('aria-label','Reset view');
-    L.DomEvent.on(a,'click',e=>{
-      L.DomEvent.preventDefault(e);
-      L.DomEvent.stopPropagation(e);
-      updateMapView();
-    });
-    return div;
-  };
-  reset.addTo(map);
 
   const listCtrl = L.control({position:'topleft'});
   listCtrl.onAdd = function(){
@@ -1131,9 +1100,8 @@ function applyFilters(){
   }else if(noRow){
     noRow.remove();
   }
-  minsVal.textContent = `≤ ${mins.value} min`;
-  if(!selectedId) updateMapView();
-}
+    minsVal.textContent = `≤ ${mins.value} min`;
+  }
 
 function hideSuggestions(){
   if(!qSuggest) return;
@@ -1194,7 +1162,6 @@ function setOrigin(lat,lng,label){
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
   initMap();
-  updateMapView();
   if(locationBox){
     locationBox.classList.add('hidden');
     if(editLocation) editLocation.classList.remove('active');
@@ -1407,7 +1374,6 @@ function setOrigin(lat,lng,label){
           hideSuggestions();
           applyFilters();
         }
-        updateMapView();
         updateOtherMarkers();
       });
     }
@@ -1580,9 +1546,8 @@ if(zipClear){
     originMsg.textContent = originMsgDefault;
     zipClear.classList.add('hidden');
     render();
-    updateMapView();
-  });
-}
+    });
+  }
 
   useGeo.addEventListener('click', (e) => {
     e.preventDefault();
