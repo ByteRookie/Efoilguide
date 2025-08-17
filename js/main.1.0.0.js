@@ -407,9 +407,9 @@ function updateMapView(){
     const circle = L.circle(ORIGIN,{radius:radius*1609.34});
     const bounds = circle.getBounds();
     const zoom = map.getBoundsZoom(bounds);
-    map.flyTo(ORIGIN, zoom);
+    map.setView(ORIGIN, zoom);
   }else{
-    map.flyTo(MAP_START, MAP_ZOOM);
+    map.setView(MAP_START, MAP_ZOOM);
   }
 }
 
