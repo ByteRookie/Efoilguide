@@ -361,6 +361,7 @@ function showSelected(s){
     selectedWrap.classList.remove('show');
     if(mapView) mapView.classList.add('hide-map');
   }else{
+    selectedWrap.classList.remove('hidden');
     selectedWrap.classList.add('show');
   }
   loadImages();
