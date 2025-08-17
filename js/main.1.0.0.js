@@ -1237,6 +1237,24 @@ function setOrigin(lat,lng,label){
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
 
+    if(infoPopup && infoBtn){
+      try{
+        const seen = localStorage.getItem('seenInfoPopup');
+        if(!seen){
+          infoPopup.classList.remove('hidden');
+          infoPopup.setAttribute('aria-hidden','false');
+          infoBtn.classList.add('active');
+          lockPageScroll(true);
+          localStorage.setItem('seenInfoPopup','1');
+        }
+      }catch(e){
+        infoPopup.classList.remove('hidden');
+        infoPopup.setAttribute('aria-hidden','false');
+        infoBtn.classList.add('active');
+        lockPageScroll(true);
+      }
+    }
+
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
         clearSelected();
