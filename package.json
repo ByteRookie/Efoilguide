@@ -1,0 +1,13 @@
+{
+  "name": "efoilguide",
+  "version": "1.0.0",
+  "description": "A community-maintained directory of eFoil spots.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}
+
