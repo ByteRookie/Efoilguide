@@ -167,12 +167,26 @@
     #useGeo{font-size:12px;color:var(--accent);cursor:pointer;}
     #q{width:100%;max-width:50vw;min-width:0;background:rgba(255,255,255,.8);border:1px solid var(--input-border);border-radius:8px;color:var(--text);padding:0 32px 0 12px;backdrop-filter:blur(4px);justify-self:center;height:48px}
     #qClear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:0;line-height:1}
+    #searchToggle{display:none}
     @media (max-width:600px){
       #q{max-width:80vw}
       .search-wrap{width:min(80vw,100%)}
     }
     @media (prefers-color-scheme: dark){
       #q{background:rgba(14,17,22,.8)}
+    }
+    .search-wrap.full{position:fixed;top:8px;left:8px;right:8px;z-index:90}
+    .search-wrap.full #q{display:block;width:100%}
+    .search-wrap.full #qClear{display:block}
+
+    .search-collapsed #q{display:none}
+    .search-collapsed #qClear{display:none}
+    .search-collapsed #searchToggle{display:flex}
+
+    header.searching .header-row > *:not(.search-wrap){
+      filter:blur(4px);
+      opacity:0;
+      pointer-events:none;
     }
 @media (max-width:600px){
   h1{line-height:40px;height:40px;font-size:clamp(20px,5vw,28px)}
