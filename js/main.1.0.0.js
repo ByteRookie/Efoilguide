@@ -106,6 +106,7 @@ let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, scrollTopBtn, map, sheetInfo,
     editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle;
 let selectedImgBox = null;
+let selectedImgHeight = 0;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -416,6 +417,7 @@ function showSelected(s, fromList=false){
   } else {
     selectedImgBox = null;
   }
+  if(selectedDetail) selectedDetail.style.transform = '';
   selectedTopBody.innerHTML = '';
   if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
@@ -443,6 +445,20 @@ function showSelected(s, fromList=false){
   updateSheetHeight();
   selectedWrap.classList.add('show');
   loadImages();
+  if(selectedImgBox){
+    const initHeight = () => {
+      selectedImgHeight = selectedImgBox.offsetHeight;
+      selectedImgBox.style.height = selectedImgHeight + 'px';
+      selectedImgBox.style.opacity = '1';
+      updateSheetHeight();
+    };
+    const img = selectedImgBox.querySelector('img');
+    if(img && img.complete) initHeight();
+    else if(img) img.addEventListener('load', initHeight, {once:true});
+    else selectedImgHeight = 0;
+  }else{
+    selectedImgHeight = 0;
+  }
   setupDetailDrag();
   if(s && s.lat && s.lng) flyToSpot([s.lat, s.lng]);
 }
@@ -459,6 +475,8 @@ function clearSelected(){
     selectedImgBox.remove();
     selectedImgBox = null;
   }
+  selectedImgHeight = 0;
+  if(selectedDetail) selectedDetail.style.transform='';
   selectedWrap.classList.remove('show');
   selectedWrap.classList.add('hidden');
   selectedWrap.setAttribute('aria-hidden','true');
@@ -584,11 +602,21 @@ function updateSheetHeight(){
 }
 
 function handleDetailScroll(){
-  const st = Math.max(selectedDetail ? selectedDetail.scrollTop : 0, sheetInfo ? sheetInfo.scrollTop : 0);
-  if(selectedTop){
-    selectedTop.classList.toggle('scrolled', st > 20 || !selectedImgBox);
+  const outer = selectedDetail ? selectedDetail.scrollTop : 0;
+  const inner = sheetInfo ? sheetInfo.scrollTop : 0;
+  if(selectedImgBox && selectedImgHeight > 0){
+    const collapse = Math.min(outer, selectedImgHeight);
+    const remain = selectedImgHeight - collapse;
+    selectedImgBox.style.height = remain + 'px';
+    selectedImgBox.style.opacity = remain / selectedImgHeight;
+    if(selectedDetail) selectedDetail.style.transform = `translateY(-${collapse}px)`;
+    if(selectedTop) selectedTop.classList.toggle('scrolled', collapse >= selectedImgHeight);
+  }else if(selectedTop){
+    selectedTop.classList.add('scrolled');
+    if(selectedDetail) selectedDetail.style.transform = '';
   }
   if(scrollTopBtn){
+    const st = Math.max(outer, inner);
     scrollTopBtn.classList.toggle('hidden', st <= 20);
   }
   window.requestAnimationFrame(updateSheetHeight);

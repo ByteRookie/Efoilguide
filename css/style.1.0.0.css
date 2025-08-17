@@ -205,7 +205,7 @@
 #selectedWrap.show{transform:translate(-50%,0);}
 #selectedTop{position:relative;cursor:grab;overflow:hidden;}
 #selectedTop.scrolled{border-bottom:1px solid var(--table-border);}
-#selectedTop .img-box{width:100%;transition:opacity .3s,height .3s;}
+#selectedTop .img-box{width:100%;overflow:hidden;}
 #selectedTop.scrolled .img-box{opacity:0;height:0;}
 #selectedOverlay{position:absolute;left:0;bottom:0;width:100%;background:linear-gradient(to top,rgba(0,0,0,.8),rgba(0,0,0,0));color:#fff;padding:8px 0;transition:background .3s,color .3s;}
 #selectedTop.scrolled #selectedOverlay{position:relative;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));color:var(--text);}
