@@ -91,11 +91,14 @@
   </div>
   <div id="selectedWrap" class="hidden bottom-sheet" role="dialog" aria-modal="true" aria-hidden="true">
     <div id="selectedTop">
-      <div id="selectedTopScroll">
-        <table>
-          <tbody id="selectedTopBody"></tbody>
-        </table>
+      <div id="selectedOverlay">
+        <div id="selectedTopScroll">
+          <table>
+            <tbody id="selectedTopBody"></tbody>
+          </table>
+        </div>
       </div>
+      <button id="scrollTopBtn" class="hidden" aria-label="Back to top">⇧</button>
       <button id="closeSelected" aria-label="Close">✕</button>
     </div>
     <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
