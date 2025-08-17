@@ -271,6 +271,11 @@ function rowHTML(s){
   const distMi = ORIGIN ? haversine(ORIGIN,[s.lat,s.lng]) : null;
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
+  const infoDetails = [
+    detail('Water', badgeWater(s.water), '', '', '💧'),
+    detail('Season', badgeSeason(s.season), '', '', '📅'),
+    detail('Skill', chipsSkill(s.skill), '', '', '🎯')
+  ];
   const locationDetails = [
     detail('City', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.city)}" target="_blank">${s.city}</a>`, '', '', '🏙️'),
     detail('Address', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank">${s.addr}</a>`, '', '', '📍'),
@@ -311,6 +316,7 @@ function rowHTML(s){
     s.popularity ? detail('Popularity', s.popularity, '', '', '📈') : ''
   ];
   const sections = [
+    detailSection('Spot Info', infoDetails, 'ℹ️'),
     detailSection('Location', locationDetails, '📍'),
     detailSection('Launch, Parking & Amenities', launchDetails, '⚓️'),
     detailSection('Safety & Conditions', safetyDetails, '⚠️'),
@@ -429,9 +435,11 @@ function showSelected(s, fromList=false){
   if(topRow){
     topRow.classList.remove('parent');
     topRow.removeAttribute('data-id');
-    topRow.querySelectorAll('td').forEach(td=>{
+    const cells = Array.from(topRow.querySelectorAll('td'));
+    cells.forEach((td, idx)=>{
       const lbl = td.getAttribute('data-label');
       if(lbl) td.innerHTML = `<span class="cell-label">${lbl}:</span> ` + td.innerHTML;
+      if(idx > 1) td.remove();
     });
   }
   if(detail) detail.classList.remove('hide');
