@@ -58,10 +58,20 @@ function parseCSV(text){
   });
 }
 
-async function loadSpots(){
-  const resp = await fetch('data/locations.csv');
-  const text = await resp.text();
-  return parseCSV(text);
+async function loadSpots(retries = 1){
+  try{
+    const resp = await fetch('data/locations.csv');
+    if(!resp.ok) throw new Error('Network response was not ok');
+    const text = await resp.text();
+    return parseCSV(text);
+  }catch(err){
+    console.error('Failed to load locations:', err);
+    if(retries > 0){
+      return await loadSpots(retries - 1);
+    }
+    alert('Unable to load locations. Please try again later.');
+    return [];
+  }
 }
 
 
