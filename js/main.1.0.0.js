@@ -787,7 +787,7 @@ function applyFilters(){
     }
   });
   minsVal.textContent = `≤ ${mins.value} min`;
-  updateMapView();
+  if(!selectedId) updateMapView();
 }
 
 function hideSuggestions(){
