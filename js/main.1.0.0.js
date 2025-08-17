@@ -100,7 +100,7 @@ function detail(label, value, spanClass = '', pClass = '') {
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
-let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
+let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
@@ -121,6 +121,7 @@ let resumeId = null;
 let suggestIndex = -1;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
+const SEARCH_COLLAPSE_W = 150; // px width to collapse search
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
@@ -583,7 +584,14 @@ function setupDetailDrag(){
 }
 
 function checkShrink(){
-  // table always uses full panel height; no shrink handling needed
+  if(!searchWrap) return;
+  if(searchWrap.classList.contains('full')) return;
+  if(searchWrap.offsetWidth < SEARCH_COLLAPSE_W){
+    document.body.classList.add('search-collapsed');
+  }else{
+    document.body.classList.remove('search-collapsed');
+    if(headerEl) headerEl.classList.remove('searching');
+  }
 }
 
 function render(){
@@ -856,6 +864,8 @@ function setOrigin(lat,lng,label){
     q = document.getElementById('q');
     qSuggest = document.getElementById('qSuggest');
     qClear = document.getElementById('qClear');
+    searchWrap = document.querySelector('.search-wrap');
+    searchToggle = document.getElementById('searchToggle');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
     waterChips = [...document.querySelectorAll('.f-water')];
@@ -929,6 +939,13 @@ function setOrigin(lat,lng,label){
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
       selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
+    }
+    if(searchToggle && searchWrap && q){
+      searchToggle.addEventListener('click', () => {
+        searchWrap.classList.add('full');
+        if(headerEl) headerEl.classList.add('searching');
+        q.focus();
+      });
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
@@ -1053,6 +1070,12 @@ function setOrigin(lat,lng,label){
             showSelected(spot, true);
             updateOtherMarkers();
             applyFilters();
+            if(document.body.classList.contains('search-collapsed') && searchWrap){
+              searchWrap.classList.remove('full');
+              if(headerEl) headerEl.classList.remove('searching');
+              q.blur();
+              checkShrink();
+            }
           }
           e.preventDefault();
         }
@@ -1067,7 +1090,13 @@ function setOrigin(lat,lng,label){
         qClear.classList.add('hidden');
         hideSuggestions();
         applyFilters();
-        q.focus();
+        if(document.body.classList.contains('search-collapsed') && searchWrap){
+          searchWrap.classList.remove('full');
+          if(headerEl) headerEl.classList.remove('searching');
+          checkShrink();
+        }else{
+          q.focus();
+        }
       });
     }
     if(qSuggest){
@@ -1086,10 +1115,25 @@ function setOrigin(lat,lng,label){
         showSelected(spot, true);
         updateOtherMarkers();
         applyFilters();
+        if(document.body.classList.contains('search-collapsed') && searchWrap){
+          searchWrap.classList.remove('full');
+          if(headerEl) headerEl.classList.remove('searching');
+          q.blur();
+          checkShrink();
+        }
       };
       qSuggest.addEventListener('mousedown', choose);
       qSuggest.addEventListener('touchstart', choose, {passive:false});
-      q.addEventListener('blur',()=>window.setTimeout(hideSuggestions,100));
+      q.addEventListener('blur', () => {
+        window.setTimeout(() => {
+          hideSuggestions();
+          if(document.body.classList.contains('search-collapsed') && searchWrap && q.value.trim()===''){
+            searchWrap.classList.remove('full');
+            if(headerEl) headerEl.classList.remove('searching');
+            checkShrink();
+          }
+        },100);
+      });
     }
     mins.addEventListener('input', () => {
       applyFilters();
