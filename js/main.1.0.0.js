@@ -1115,12 +1115,14 @@ function setOrigin(lat,lng,label){
         tablePanel.style.width = w + 'px';
         handleResize();
       };
-      const stop = () => {
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', stop);
-        document.removeEventListener('touchmove', move);
-        document.removeEventListener('touchend', stop);
-      };
+        const stop = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', stop);
+          document.removeEventListener('touchmove', move);
+          document.removeEventListener('touchend', stop);
+          panelFull = false;
+          if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
+        };
       panelGrip.addEventListener('mousedown', e => {
         panelFull = false;
         if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
@@ -1154,14 +1156,16 @@ function setOrigin(lat,lng,label){
         recenterSelected();
         updateMapControls();
       };
-      const stop = () => {
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', stop);
-        document.removeEventListener('touchmove', move);
-        document.removeEventListener('touchend', stop);
-        recenterSelected();
-        updateMapControls();
-      };
+        const stop = () => {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', stop);
+          document.removeEventListener('touchmove', move);
+          document.removeEventListener('touchend', stop);
+          sheetFull = false;
+          if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+          recenterSelected();
+          updateMapControls();
+        };
       sheetWidthGrip.addEventListener('mousedown', e => {
         sheetFull = false;
         if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
