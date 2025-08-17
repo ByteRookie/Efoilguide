@@ -151,6 +151,13 @@ header h1 .logo{height:64px;width:64px}
   #siteFooter a{color:var(--text)}
   #infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;z-index:200;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
   #infoPopup .info-inner{position:relative}
+  #infoPopup h2{margin:0 0 12px;font-size:24px;text-align:center}
+  #infoPopup h3{margin:16px 0 8px;font-size:18px}
+  #infoPopup h4{margin:12px 0 4px;font-size:15px}
+  #infoPopup ul{margin:0 0 8px 20px;padding-left:20px}
+  #infoPopup p{margin:0 0 8px;line-height:1.4}
+  #infoPopup .welcome{text-align:center;margin-bottom:16px}
+  #infoPopup .welcome p{margin:0 0 12px;line-height:1.5;font-size:16px;font-weight:500}
   #closeInfo{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:24px}
 @media (max-width:800px){
     #selectedDetail tbody tr{display:block;margin-bottom:12px}
