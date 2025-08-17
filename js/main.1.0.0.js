@@ -18,6 +18,17 @@ async function loadZipData(){
     if(resp.ok){
       ZIP_LOOKUP = await resp.json();
       ZIP_LIST = Object.entries(ZIP_LOOKUP).map(([z,[lat,lng]])=>({z,lat,lng}));
+      const dl=document.getElementById('zipList');
+      if(dl){
+        const frag=document.createDocumentFragment();
+        for(const {z,lat,lng} of ZIP_LIST){
+          const opt=document.createElement('option');
+          opt.value=z;
+          opt.textContent=`${z} (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+          frag.appendChild(opt);
+        }
+        dl.appendChild(frag);
+      }
     }
   } catch {}
 }
