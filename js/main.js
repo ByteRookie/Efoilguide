@@ -89,7 +89,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,  // chip sets
     zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    viewToggle, viewWindow, viewSlider, mapView, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, mapEl, map,
     editLocation, locationBox, closeLocation, searchRow;
 let showingMap = false;
 let selectedId = null;
@@ -337,6 +337,7 @@ function showSelected(s){
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
   selectedWrap.style.display='';
+  if(mapEl && window.innerWidth<700) mapEl.style.display='none';
   loadImages();
   updateMapHeights();
 }
@@ -346,6 +347,7 @@ function clearSelected(){
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
   selectedWrap.style.display='none';
+  if(mapEl) mapEl.style.display='';
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -395,6 +397,17 @@ function updateTableScroll(){
     tableWrap.classList.remove('scroll');
     spotsBody.style.maxHeight='';
   }
+}
+
+function syncDetailPosition(){
+  if(!tableWrap) return;
+  const detail = document.querySelector('#tbl tbody tr.detail-row:not(.hide) td.detail');
+  if(!detail) return;
+  const w = tableWrap.clientWidth;
+  detail.style.boxSizing = 'border-box';
+  detail.style.width = w + 'px';
+  detail.style.maxWidth = w + 'px';
+  detail.style.transform = `translateX(${tableWrap.scrollLeft}px)`;
 }
 
 function tableInView(){
@@ -511,6 +524,7 @@ function attachRowHandlers(){
       if(detail && detail.classList.contains('detail-row')){
         detail.classList.toggle('hide', wasOpen);
       }
+      syncDetailPosition();
       if(!wasOpen){
         if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
         selectedId = id;
@@ -560,6 +574,7 @@ function openTableRow(id, block='start'){
     tr.scrollIntoView({block});
   }
   loadImages();
+  syncDetailPosition();
 }
 
 function applyTileScheme(m){
@@ -745,6 +760,7 @@ function setOrigin(lat,lng,label){
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
+    mapEl = document.getElementById('map');
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -752,6 +768,8 @@ function setOrigin(lat,lng,label){
         selectedId = null;
       });
     }
+
+    if(tableWrap) tableWrap.addEventListener('scroll', syncDetailPosition);
 
     window.addEventListener('wheel', handleWheel, {passive:false});
     window.addEventListener('touchstart', handleTouchStart, {passive:false});
@@ -844,6 +862,10 @@ function setOrigin(lat,lng,label){
     updateHeaderOffset();
     updateMapHeights();
     checkShrink();
+    if(mapEl && selectedWrap && selectedWrap.style.display !== 'none'){
+      mapEl.style.display = window.innerWidth < 700 ? 'none' : '';
+    }
+    syncDetailPosition();
   }
   window.addEventListener('resize', handleResize);
   handleResize();
