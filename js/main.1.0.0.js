@@ -26,42 +26,17 @@ const ZIP_CENTROIDS = {
 let SPOTS = [];// loaded from CSV
 let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
 
-function parseCSV(text){
-  const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(',');
-  return lines.slice(1).filter(l=>l.trim()).map(line=>{
-    const values=[];
-    let cur='', inQuotes=false;
-    for(let i=0;i<line.length;i++){
-      const ch=line[i];
-      if(inQuotes){
-        if(ch=='"'){
-          if(line[i+1]=='"'){cur+='"'; i++;}
-          else inQuotes=false;
-        }else{cur+=ch;}
-      }else{
-        if(ch=='"'){inQuotes=true;}
-        else if(ch==','){values.push(cur); cur='';}
-        else{cur+=ch;}
-      }
-    }
-    values.push(cur);
-    const obj={};
-    headers.forEach((h,i)=>{
-      const v=(values[i]||'').trim();
-      obj[h]=v;
-    });
-    obj.lat=parseFloat(obj.lat);
-    obj.lng=parseFloat(obj.lng);
-    obj.skill=obj.skill?obj.skill.split('|'):[];
-    return obj;
-  });
-}
-
 async function loadSpots(){
   const resp = await fetch('data/locations.csv');
   const text = await resp.text();
-  return parseCSV(text);
+  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+  return parsed.data.map(row => {
+    const obj = { ...row };
+    obj.lat = parseFloat(obj.lat);
+    obj.lng = parseFloat(obj.lng);
+    obj.skill = obj.skill ? obj.skill.split('|') : [];
+    return obj;
+  });
 }
 
 
