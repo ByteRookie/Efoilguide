@@ -100,7 +100,7 @@ function detail(label, value, spanClass = '', pClass = '') {
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
-let originMsg, spotsBody, q, qSuggest, mins, minsVal,
+let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
@@ -781,20 +781,24 @@ function applyFilters(){
   updateMapView();
 }
 
+function hideSuggestions(){
+  if(!qSuggest) return;
+  qSuggest.innerHTML='';
+  qSuggest.classList.add('hidden');
+  qSuggest.setAttribute('aria-hidden','true');
+  suggestIndex = -1;
+}
+
 function updateSuggestions(){
   if(!qSuggest) return;
   const qv = q.value.trim().toLowerCase();
   if(!qv){
-    qSuggest.innerHTML='';
-    qSuggest.classList.add('hidden');
-    qSuggest.setAttribute('aria-hidden','true');
+    hideSuggestions();
     return;
   }
   const matches = SPOTS.filter(s=>s.name.toLowerCase().includes(qv)).slice(0,5);
   if(matches.length===0){
-    qSuggest.innerHTML='';
-    qSuggest.classList.add('hidden');
-    qSuggest.setAttribute('aria-hidden','true');
+    hideSuggestions();
     return;
   }
   qSuggest.innerHTML = matches.map(m=>`<li data-id="${m.id}" role="option">${m.name}</li>`).join('');
@@ -842,6 +846,7 @@ function setOrigin(lat,lng,label){
     spotsBody = document.getElementById('spotsBody');
     q = document.getElementById('q');
     qSuggest = document.getElementById('qSuggest');
+    qClear = document.getElementById('qClear');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
     waterChips = [...document.querySelectorAll('.f-water')];
@@ -976,6 +981,7 @@ function setOrigin(lat,lng,label){
     q.addEventListener('input', () => {
       updateSuggestions();
       applyFilters();
+      if(qClear) qClear.classList.toggle('hidden', q.value==='');
     });
     q.addEventListener('keydown', e=>{
       if(!qSuggest || qSuggest.classList.contains('hidden')) return;
@@ -999,8 +1005,7 @@ function setOrigin(lat,lng,label){
           const spot=SPOTS.find(s=>s.id===id);
           if(spot){
             q.value=spot.name;
-            qSuggest.classList.add('hidden');
-            qSuggest.setAttribute('aria-hidden','true');
+            hideSuggestions();
             if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
             selectedId=id;
             if(markers[id]){setMarkerSelected(markers[id], true);flyToSpot([spot.lat, spot.lng]);}
@@ -1011,10 +1016,19 @@ function setOrigin(lat,lng,label){
           e.preventDefault();
         }
       }else if(e.key==='Escape'){
-        qSuggest.classList.add('hidden');
-        qSuggest.setAttribute('aria-hidden','true');
+        hideSuggestions();
       }
     });
+    if(qClear){
+      qClear.addEventListener('click', e => {
+        e.preventDefault();
+        q.value='';
+        qClear.classList.add('hidden');
+        hideSuggestions();
+        applyFilters();
+        q.focus();
+      });
+    }
     if(qSuggest){
       const choose = e => {
         const li = e.target.closest('li[data-id]');
@@ -1024,9 +1038,7 @@ function setOrigin(lat,lng,label){
         const spot = SPOTS.find(s=>s.id===id);
         if(!spot) return;
         q.value = spot.name;
-        qSuggest.classList.add('hidden');
-        qSuggest.setAttribute('aria-hidden','true');
-        suggestIndex = -1;
+        hideSuggestions();
         if(selectedId && selectedId!==id && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
         selectedId = id;
         if(markers[id]){
@@ -1039,7 +1051,7 @@ function setOrigin(lat,lng,label){
       };
       qSuggest.addEventListener('mousedown', choose);
       qSuggest.addEventListener('touchstart', choose, {passive:false});
-      q.addEventListener('blur',()=>window.setTimeout(()=>qSuggest.classList.add('hidden'),100));
+      q.addEventListener('blur',()=>window.setTimeout(hideSuggestions,100));
     }
     mins.addEventListener('input', () => {
       applyFilters();
