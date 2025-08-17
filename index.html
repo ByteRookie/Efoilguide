@@ -25,42 +25,41 @@
       </span>
     </div>
 
-  </div>
-</header>
-
-<div id="searchUI">
-  <div id="searchRow">
-    <input id="q" placeholder="Search all details" />
-  </div>
-  <div id="filters" class="controls hidden">
-    <div class="control">
-      <div class="legend-row">
-        <div class="chip-group">
-          <span class="chip-group-label">Water:</span>
-          <span class="chip f-water active b-salt" data-value="salt">Salt</span>
-          <span class="chip f-water active b-fresh" data-value="fresh">Fresh</span>
-          <span class="chip f-water active b-brack" data-value="brackish">Brackish</span>
-        </div>
-        <div class="chip-group">
-          <span class="chip-group-label">Season:</span>
-          <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
-          <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
-          <span class="chip f-season active b-sum" data-value="summer">Summer</span>
-        </div>
-        <div class="chip-group">
-          <span class="chip-group-label">Skill:</span>
-          <span class="chip f-skill active b-lvle" data-value="B">Beginner</span>
-          <span class="chip f-skill active b-lvlm" data-value="I">Intermediate</span>
-          <span class="chip f-skill active b-lvlh" data-value="A">Advanced</span>
-        </div>
-        <div class="chip-group chip-group-flex">
-          <input id="mins" type="range" min="15" max="180" step="5" value="180">
-          <span class="hint" id="minsVal">≤ 180 min</span>
+    <div id="searchRow">
+      <input id="q" placeholder="Search all details" />
+      <button id="filterBtn" aria-label="Filters" type="button">⚙</button>
+    </div>
+    <div id="filters" class="controls hidden">
+      <div class="control">
+        <div class="legend-row">
+          <div class="chip-group">
+            <span class="chip-group-label">Water:</span>
+            <span class="chip f-water active b-salt" data-value="salt">Salt</span>
+            <span class="chip f-water active b-fresh" data-value="fresh">Fresh</span>
+            <span class="chip f-water active b-brack" data-value="brackish">Brackish</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Season:</span>
+            <span class="chip f-season active b-yr" data-value="year">Year‑round</span>
+            <span class="chip f-season active b-sprfall" data-value="spring-fall">Spring–Fall</span>
+            <span class="chip f-season active b-sum" data-value="summer">Summer</span>
+          </div>
+          <div class="chip-group">
+            <span class="chip-group-label">Skill:</span>
+            <span class="chip f-skill active b-lvle" data-value="B">Beginner</span>
+            <span class="chip f-skill active b-lvlm" data-value="I">Intermediate</span>
+            <span class="chip f-skill active b-lvlh" data-value="A">Advanced</span>
+          </div>
+          <div class="chip-group chip-group-flex">
+            <input id="mins" type="range" min="15" max="180" step="5" value="180">
+            <span class="hint" id="minsVal">≤ 180 min</span>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
-</div>
+</header>
 
 <main id="main">
   <div id="map"></div>

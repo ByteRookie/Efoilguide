@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, closeLocation, searchRow;
+    editLocation, locationBox, closeLocation, searchRow, filterBtn;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -119,7 +119,6 @@ const MAP_ZOOM = 10;
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
-  document.documentElement.style.setProperty('--header-top', hTop + 'px');
   document.documentElement.style.setProperty('--header-h', hTop + 'px');
 }
 function handleResize(){
@@ -371,7 +370,7 @@ async function loadImages(){
 }
 
 function showSelected(s, fromList=false){
-  if(fromList && panelOpen){
+  if(panelOpen){
     closePanel();
     reopenPanel = true;
   }else{
@@ -678,18 +677,6 @@ function initMap(){
   };
   listCtrl.addTo(map);
 
-  const filterCtrl = L.control({position:'topright'});
-  filterCtrl.onAdd = function(){
-    const div = L.DomUtil.create('div','leaflet-bar');
-    const a = L.DomUtil.create('a','',div);
-    a.href='#';
-    a.innerHTML='⚙';
-    a.title='Filters';
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);toggleFilters();});
-    return div;
-  };
-  filterCtrl.addTo(map);
-
   const otherCtrl = L.control({position:'topright'});
   otherCtrl.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar hidden');
@@ -816,6 +803,7 @@ function setOrigin(lat,lng,label){
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
+    filterBtn = document.getElementById('filterBtn');
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -825,6 +813,9 @@ function setOrigin(lat,lng,label){
     }
     if(closePanelBtn){
       closePanelBtn.addEventListener('click', ()=>closePanel());
+    }
+    if(filterBtn){
+      filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
     }
 
     window.addEventListener('wheel', handleWheel, {passive:false});
