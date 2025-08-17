@@ -100,7 +100,7 @@ function detail(label, value, spanClass = '', pClass = '') {
 /* ---------- Distance & ETA ---------- */
 let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
-let originMsg, spotsBody, q, qSuggest, qClear, mins, minsVal,
+let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
@@ -121,6 +121,7 @@ let resumeId = null;
 let suggestIndex = -1;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
+const MOBILE_BP = 400; // px width to collapse search
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
@@ -132,6 +133,9 @@ function handleResize(){
   if(selectedWrap && selectedWrap.classList.contains('show')){
     updateSheetTransform();
     updateSheetHeight();
+  }
+  if(searchWrap && window.innerWidth > MOBILE_BP){
+    searchWrap.classList.remove('full');
   }
 }
 
@@ -856,6 +860,8 @@ function setOrigin(lat,lng,label){
     q = document.getElementById('q');
     qSuggest = document.getElementById('qSuggest');
     qClear = document.getElementById('qClear');
+    searchWrap = document.querySelector('.search-wrap');
+    searchToggle = document.getElementById('searchToggle');
     mins = document.getElementById('mins');
     minsVal = document.getElementById('minsVal');
     waterChips = [...document.querySelectorAll('.f-water')];
@@ -929,6 +935,12 @@ function setOrigin(lat,lng,label){
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
       selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
+    }
+    if(searchToggle && searchWrap && q){
+      searchToggle.addEventListener('click', () => {
+        searchWrap.classList.add('full');
+        q.focus();
+      });
     }
     if(filterBtn){
       filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
@@ -1053,6 +1065,10 @@ function setOrigin(lat,lng,label){
             showSelected(spot, true);
             updateOtherMarkers();
             applyFilters();
+            if(window.innerWidth <= MOBILE_BP && searchWrap){
+              searchWrap.classList.remove('full');
+              q.blur();
+            }
           }
           e.preventDefault();
         }
@@ -1067,7 +1083,11 @@ function setOrigin(lat,lng,label){
         qClear.classList.add('hidden');
         hideSuggestions();
         applyFilters();
-        q.focus();
+        if(window.innerWidth <= MOBILE_BP && searchWrap){
+          searchWrap.classList.remove('full');
+        }else{
+          q.focus();
+        }
       });
     }
     if(qSuggest){
@@ -1086,10 +1106,21 @@ function setOrigin(lat,lng,label){
         showSelected(spot, true);
         updateOtherMarkers();
         applyFilters();
+        if(window.innerWidth <= MOBILE_BP && searchWrap){
+          searchWrap.classList.remove('full');
+          q.blur();
+        }
       };
       qSuggest.addEventListener('mousedown', choose);
       qSuggest.addEventListener('touchstart', choose, {passive:false});
-      q.addEventListener('blur',()=>window.setTimeout(hideSuggestions,100));
+      q.addEventListener('blur', () => {
+        window.setTimeout(() => {
+          hideSuggestions();
+          if(window.innerWidth <= MOBILE_BP && searchWrap && q.value.trim()===''){
+            searchWrap.classList.remove('full');
+          }
+        },100);
+      });
     }
     mins.addEventListener('input', () => {
       applyFilters();
