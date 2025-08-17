@@ -1193,6 +1193,7 @@ function setOrigin(lat,lng,label){
   ORIGIN = [lat,lng];
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
+  initMap();
   updateMapView();
   if(locationBox){
     locationBox.classList.add('hidden');
@@ -1552,7 +1553,7 @@ function setOrigin(lat,lng,label){
 
 setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 
-zip.addEventListener('input', () => {
+function handleZip(){
   let clean = (zip.value || '').replace(/\D/g,'').slice(0,5);
   if(zip.value !== clean) zip.value = clean;
   zipClear.classList.toggle('hidden', clean.length===0);
@@ -1567,7 +1568,9 @@ zip.addEventListener('input', () => {
   } else {
     originMsg.textContent = `ZIP ${clean} not found.`;
   }
-});
+}
+zip.addEventListener('input', handleZip);
+zip.addEventListener('change', handleZip);
 
 if(zipClear){
   zipClear.addEventListener('click', e => {
@@ -1591,10 +1594,15 @@ if(zipClear){
       pos => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        setOrigin(lat, lng, 'your current location');
         const nearest = findNearestZip(lat, lng);
-        if(nearest) zip.value = nearest;
-        zipClear.classList.toggle('hidden', !zip.value);
+        if(nearest){
+          zip.value = nearest;
+          handleZip();
+        }else{
+          setOrigin(lat, lng, 'your current location');
+          zip.value = '';
+          zipClear.classList.add('hidden');
+        }
       },
       () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
