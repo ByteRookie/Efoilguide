@@ -164,5 +164,13 @@
 #selectedTopScroll td{padding:8px 12px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex:0 0 auto;}
 #selectedTopScroll .cell-label{font-weight:600;margin-right:4px;color:var(--muted);}
 #closeSelected{background:none;border:none;color:var(--muted);cursor:pointer;padding:8px 12px;font-size:16px;}
-#selectedDetail{flex:1;overflow:auto;overscroll-behavior:contain;}
+#selectedDetail{flex:1;overflow:hidden;}
+#selectedDetail table,#selectedDetail tbody,#selectedDetail tr,#selectedDetail td.detail{height:100%;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:var(--card);}
+#selectedDetail .detail-grid{height:100%;}
+#selectedDetail .detail-grid .info{overflow:auto;}
+@media (max-width:700px){
+  #selectedDetail{overflow:auto;}
+  #selectedDetail .detail-grid{height:auto;}
+  #selectedDetail .detail-grid .info{overflow:visible;}
+}
