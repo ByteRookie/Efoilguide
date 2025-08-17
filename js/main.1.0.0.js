@@ -113,7 +113,7 @@ let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, m
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle;
+    editLocation, locationBox, filterBtn, infoBtn, downloadPostalCodes, infoPopup, closeInfo, panelGrip, siteTitle;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -924,6 +924,7 @@ function setOrigin(lat,lng,label){
     closeSelected = document.getElementById('closeSelected');
     filterBtn = document.getElementById('filterBtn');
     infoBtn = document.getElementById('infoBtn');
+    downloadPostalCodes = document.getElementById('downloadPostalCodes');
     infoPopup = document.getElementById('infoPopup');
     closeInfo = document.getElementById('closeInfo');
     siteTitle = document.querySelector('header h1');
@@ -997,6 +998,30 @@ function setOrigin(lat,lng,label){
         infoPopup.setAttribute('aria-hidden', hidden);
         infoBtn.classList.toggle('active', !hidden);
         lockPageScroll(!hidden);
+      });
+    }
+    if(downloadPostalCodes){
+      downloadPostalCodes.addEventListener('click', async e => {
+        e.preventDefault();
+        try{
+          let resp = await fetch('data/postal-codes.json');
+          if(!resp.ok) resp = await fetch('data/postal-codes.sample.json');
+          if(resp.ok){
+            const blob = await resp.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'postal-codes.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }else if(originMsg){
+            originMsg.textContent = 'Postal-code file not found.';
+          }
+        }catch{
+          if(originMsg) originMsg.textContent = 'Error downloading postal codes.';
+        }
       });
     }
     if(closeInfo && infoPopup && infoBtn){

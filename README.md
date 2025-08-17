@@ -125,7 +125,7 @@ Run the script below to download and build the full dataset into
 bash scripts/download_postal_codes.sh
 ```
 
-Re-run the script whenever you need to refresh the postal code list.
+Re-run the script whenever you need to refresh the postal code list. On the live site, click the ⬇ button in the header to download the current postal-code file.
 
 ## License
 
