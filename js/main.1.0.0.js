@@ -400,6 +400,28 @@ function milesFromMinutes(min){
   return lo;
 }
 
+
+function updateMapView(visibleMarkers){
+  if(!map) return;
+  if(Array.isArray(visibleMarkers) && visibleMarkers.length){
+    if(visibleMarkers.length===1){
+      map.flyTo(visibleMarkers[0].getLatLng(), Math.min(map.getMaxZoom(),18));
+    }else{
+      const group=L.featureGroup(visibleMarkers);
+      map.flyToBounds(group.getBounds(),{padding:[20,20],maxZoom:18});
+    }
+  }else if(ORIGIN){
+    const radius=milesFromMinutes(+mins.value);
+    const circle=L.circle(ORIGIN,{radius:radius*1609.34});
+    const bounds=circle.getBounds();
+    const zoom=map.getBoundsZoom(bounds);
+    map.flyTo(ORIGIN, zoom);
+  }else{
+    map.flyTo(MAP_START, MAP_ZOOM);
+  }
+}
+
+
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
   const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
@@ -1051,6 +1073,7 @@ function applyFilters(){
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const tmax = +mins.value;
   let anyVisible = false;
+  const visibleMarkers=[];
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
@@ -1078,6 +1101,7 @@ function applyFilters(){
     if(map && markers[id]){
       if(ok){
         if(!map.hasLayer(markers[id])) markers[id].addTo(map);
+        visibleMarkers.push(markers[id]);
       }else{
         if(map.hasLayer(markers[id])) markers[id].remove();
         if(selectedId === id){
@@ -1100,8 +1124,16 @@ function applyFilters(){
   }else if(noRow){
     noRow.remove();
   }
-    minsVal.textContent = `≤ ${mins.value} min`;
+
+  minsVal.textContent = `≤ ${mins.value} min`;
+  if(!selectedId){
+    if(visibleMarkers.length && (visibleMarkers.length<SPOTS.length || qv)){
+      updateMapView(visibleMarkers);
+    }else{
+      updateMapView();
+    }
   }
+}
 
 function hideSuggestions(){
   if(!qSuggest) return;
@@ -1210,6 +1242,26 @@ function setOrigin(lat,lng,label){
     siteTitle = document.querySelector('header h1');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
+
+    if(infoPopup && infoBtn){
+      const INFO_POPUP_KEY = 'seenInfoPopup';
+      const INFO_POPUP_VERSION = '2';
+      try{
+        const seen = localStorage.getItem(INFO_POPUP_KEY);
+        if(seen !== INFO_POPUP_VERSION){
+          infoPopup.classList.remove('hidden');
+          infoPopup.setAttribute('aria-hidden','false');
+          infoBtn.classList.add('active');
+          lockPageScroll(true);
+          localStorage.setItem(INFO_POPUP_KEY, INFO_POPUP_VERSION);
+        }
+      }catch(e){
+        infoPopup.classList.remove('hidden');
+        infoPopup.setAttribute('aria-hidden','false');
+        infoBtn.classList.add('active');
+        lockPageScroll(true);
+      }
+    }
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
