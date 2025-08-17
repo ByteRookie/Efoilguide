@@ -742,6 +742,7 @@ function clearSelected(){
   }
   updateOtherMarkers();
   hideOthers = false;
+  updateMapView();
 }
 
 function setMarkerSelected(marker, sel){
@@ -1194,11 +1195,8 @@ function setOrigin(lat,lng,label){
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
   initMap();
-  if(locationBox){
-    locationBox.classList.add('hidden');
-    if(editLocation) editLocation.classList.remove('active');
-    handleResize();
-  }
+  updateMapView();
+  handleResize();
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
@@ -1427,6 +1425,7 @@ function setOrigin(lat,lng,label){
           applyFilters();
         }
         updateOtherMarkers();
+        updateMapView();
       });
     }
 
