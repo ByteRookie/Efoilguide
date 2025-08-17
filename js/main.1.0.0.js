@@ -166,15 +166,21 @@ function handleResize(){
   }
   if(selectedWrap){
     if(sheetFull){
-      selectedWrap.style.width = window.innerWidth + 'px';
+      selectedWrap.style.width = isMobile ? '100%' : window.innerWidth + 'px';
+      sheetOffset = 0;
     }else if(isMobile){
       selectedWrap.style.width = '100%';
-    }else if(!selectedWrap.style.width || selectedWrap.style.width === '100%'){
-      selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
-    }
-    if(selectedWrap.classList.contains('show')){
       const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
       if(sheetOffset < min) sheetOffset = min;
+    }else if(!selectedWrap.style.width || selectedWrap.style.width === '100%'){
+      selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
+      const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+      if(sheetOffset < min) sheetOffset = min;
+    }else{
+      const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+      if(sheetOffset < min) sheetOffset = min;
+    }
+    if(selectedWrap.classList.contains('show')){
       updateSheetTransform();
       updateSheetHeight();
       recenterSelected();
@@ -200,13 +206,14 @@ function togglePanelSize(){
 function toggleSheetSize(){
   if(!selectedWrap) return;
   sheetFull = !sheetFull;
-  const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-  sheetOffset = minOffset;
+  const isMobile = window.innerWidth <= 700;
   if(sheetFull){
-    selectedWrap.style.width = window.innerWidth + 'px';
+    sheetOffset = 0;
+    selectedWrap.style.width = isMobile ? '100%' : window.innerWidth + 'px';
     if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
   }else{
-    selectedWrap.style.width = window.innerWidth <= 700 ? '100%' : SHEET_DEFAULT_W + 'px';
+    sheetOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+    selectedWrap.style.width = isMobile ? '100%' : SHEET_DEFAULT_W + 'px';
     if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   }
   updateSheetTransform();
@@ -353,7 +360,7 @@ function rowHTML(s){
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
   const infoDetails = [
-    detail('Distance / Time', distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : null, '', '', '📏'),
+    detail('Distance / Time', distTxt, '', '', '📏'),
     detail('Water', badgeWater(s.water), '', '', '💧'),
     detail('Season', badgeSeason(s.season), '', '', '📅'),
     detail('Skill', chipsSkill(s.skill), '', '', '🎯')
@@ -533,12 +540,17 @@ function showSelected(s, fromList=false){
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
-  sheetFull = false;
-  if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
-  if(window.innerWidth > 700) selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
-  else selectedWrap.style.width = '100%';
-  const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-  sheetOffset = minOffset;
+  const isMobile = window.innerWidth <= 700;
+  sheetFull = isMobile;
+  if(isMobile){
+    selectedWrap.style.width = '100%';
+    sheetOffset = 0;
+    if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
+  }else{
+    selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
+    sheetOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+    if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
+  }
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
@@ -648,7 +660,7 @@ function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragFromTop ? sheetDragStartOffset + dy : sheetDragStartOffset - dy;
-  const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  const min = window.innerWidth <= 700 ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   const max = window.innerHeight - 80;
   if(newOffset < min) newOffset = min;
   if(newOffset > max) newOffset = max;
@@ -693,7 +705,8 @@ function recenterSelected(){
   const isMobile = window.innerWidth <= 700;
   const desiredX = isMobile ? window.innerWidth / 2 : sheetW + openW * 0.33;
   const navBottom = headerEl ? headerEl.offsetHeight : 0;
-  const desiredY = isMobile ? (navBottom + sheetOffset) / 2 : window.innerHeight / 2;
+  const topVisible = sheetOffset < navBottom ? 0 : navBottom;
+  const desiredY = isMobile ? (topVisible + sheetOffset) / 2 : window.innerHeight / 2;
   const pt = map.latLngToContainerPoint(markers[selectedId].getLatLng());
   const offsetX = pt.x - desiredX;
   const offsetY = pt.y - desiredY;
