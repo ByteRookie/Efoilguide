@@ -8,7 +8,7 @@
 </h1>
 
 A community‑maintained directory of eFoil spots. The site loads all location data from [`data/locations.csv`](data/locations.csv) and renders it in a filterable table and map.
-If you’re just looking for spot information, head to https://byterookie.github.io/Efoilguide/; the sections below are for contributors.
+If you’re just looking for spot information, head to https://byterookie.github.io/eFoilGuide/; the sections below are for contributors.
 
 ## Preview
 
@@ -95,22 +95,22 @@ Fields can contain more than one citation by placing them sequentially:
 
 3. Commit your changes and open a pull request describing the new spot.
 
-The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://byterookie.github.io/Efoilguide/).
+The guide is published via GitHub Pages. After your pull request is merged, the new location will appear on [the live site](https://byterookie.github.io/eFoilGuide/).
 
 ## Local development
 No build step is required. Serve the folder with a static file server—opening `index.html` directly may not load data.
 
 ### Quick Start
 
-If you only want to browse the live site, visit [the live site](https://byterookie.github.io/Efoilguide/). The steps below run the site locally.
+If you only want to browse the live site, visit [the live site](https://byterookie.github.io/eFoilGuide/). The steps below run the site locally.
 
 Prerequisite: Node.js not required—this is a static site. You just need Python for a simple server.
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/<your_username>/Efoilguide.git
-   cd Efoilguide
+   git clone https://github.com/<your_username>/eFoilGuide.git
+   cd eFoilGuide
    ```
 2. Start a simple static server:
 
