@@ -102,8 +102,8 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
-    zip, useGeo, filterToggle, filtersEl, headerEl, toTop, sortArrow, tableWrap,
-    tablePanel, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    zip, useGeo, filtersEl, headerEl, searchPanel, toTop, sortArrow, tableWrap,
+    tablePanel, closePanelBtn, selectedWrap, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, closeLocation, searchRow;
 let selectedId = null;
 let markers = {};
@@ -117,9 +117,21 @@ let otherCtrlDiv = null;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
+function updateHeaderOffset(){
+  const hTop = headerEl ? headerEl.offsetHeight : 0;
+  const hSearch = searchPanel ? searchPanel.offsetHeight : 0;
+  document.documentElement.style.setProperty('--header-top', hTop + 'px');
+  document.documentElement.style.setProperty('--header-h', (hTop + hSearch) + 'px');
+}
+function handleResize(){
+  updateHeaderOffset();
+  checkShrink();
+}
+
 function openPanel(){
   if(tablePanel){
     tablePanel.classList.add('open');
+    document.body.classList.add('panel-open');
     panelOpen = true;
     lockPageScroll(true);
   }
@@ -127,12 +139,19 @@ function openPanel(){
 function closePanel(){
   if(tablePanel){
     tablePanel.classList.remove('open');
+    document.body.classList.remove('panel-open');
     panelOpen = false;
     lockPageScroll(false);
   }
 }
 function togglePanel(){
   panelOpen ? closePanel() : openPanel();
+}
+
+function toggleFilters(){
+  if(!filtersEl) return;
+  filtersEl.classList.toggle('hidden');
+  handleResize();
 }
 
 function haversine(a,b){
@@ -655,7 +674,7 @@ function initMap(){
     a.href='#';
     a.innerHTML='⚙';
     a.title='Filters';
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);if(filterToggle) filterToggle.click();});
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);toggleFilters();});
     return div;
   };
   filterCtrl.addTo(map);
@@ -775,15 +794,12 @@ function setOrigin(lat,lng,label){
     skillChips = [...document.querySelectorAll('.f-skill')];
     zip = document.getElementById('zip');
     useGeo = document.getElementById('useGeo');
-    filterToggle = document.getElementById('filterToggle');
     filtersEl = document.getElementById('filters');
-    // ensure toggle text matches initial state
-    const filtersHidden = filtersEl.classList.contains('hidden');
-    filterToggle.textContent = filtersHidden ? 'Show filters' : 'Hide filters';
-    filterToggle.setAttribute('aria-expanded', filtersHidden ? 'false' : 'true');
+    searchPanel = document.getElementById('searchPanel');
     headerEl = document.querySelector('header');
     toTop = document.getElementById('toTop');
     tablePanel = document.getElementById('tablePanel');
+    closePanelBtn = document.getElementById('closePanel');
     selectedWrap = document.getElementById('selectedWrap');
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
@@ -796,6 +812,9 @@ function setOrigin(lat,lng,label){
         clearSelected();
         selectedId = null;
       });
+    }
+    if(closePanelBtn){
+      closePanelBtn.addEventListener('click', ()=>closePanel());
     }
 
     window.addEventListener('wheel', handleWheel, {passive:false});
@@ -818,18 +837,6 @@ function setOrigin(lat,lng,label){
 
     sortArrow = document.getElementById('sortArrow');
 
-    initMap();
-    applyFilters();
-
-      // toggle filters visibility and button label
-      filterToggle.addEventListener('click', () => {
-        const willOpen = filtersEl.classList.contains('hidden');
-        filtersEl.classList.toggle('hidden');
-        filterToggle.textContent = willOpen ? 'Hide filters' : 'Show filters';
-        filterToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        handleResize();
-      });
-
     editLocation.addEventListener('click', e => {
       e.preventDefault();
       editLocation.classList.add('hidden');
@@ -850,13 +857,6 @@ function setOrigin(lat,lng,label){
 
 
 
-  function updateHeaderOffset(){
-    document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
-  }
-  function handleResize(){
-    updateHeaderOffset();
-    checkShrink();
-  }
   window.addEventListener('resize', handleResize);
   handleResize();
 
@@ -922,6 +922,8 @@ zip.addEventListener('input', async () => {
   SPOTS = await loadSpots();
   await loadImageCredits();
   render();
+  initMap();
+  applyFilters();
 
   window.addEventListener('scroll', () => {
     toTop.classList.toggle('show', window.scrollY > 200);
