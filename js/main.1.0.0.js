@@ -87,7 +87,7 @@ let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, m
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle;
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -446,6 +446,7 @@ function clearSelected(){
   selectedWrap.setAttribute('aria-hidden','true');
   selectedWrap.style.transform='';
   selectedWrap.style.height='';
+  selectedWrap.style.width='';
   if(selectedDetail) selectedDetail.style.maxHeight='';
   sheetOffset = 0;
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
@@ -530,7 +531,7 @@ function startSheetDrag(e){
 function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
-  let newOffset = sheetDragStartOffset + dy;
+  let newOffset = sheetDragStartOffset - dy;
   const max = window.innerHeight - 80;
   if(newOffset < 0) newOffset = 0;
   if(newOffset > max) newOffset = max;
@@ -550,7 +551,7 @@ function endSheetDrag(){
 
 function updateSheetTransform(){
   if(!selectedWrap) return;
-  selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
+  selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
 }
 
 function updateSheetHeight(){
@@ -948,10 +949,44 @@ function setOrigin(lat,lng,label){
         e.preventDefault();
       }, {passive:false});
     }
+    sheetWidthGrip = document.getElementById('sheetWidthGrip');
+    if(sheetWidthGrip && selectedWrap){
+      let startX = 0, startW = 0;
+      const move = e => {
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        let w = startW + (x - startX);
+        const min = 260;
+        const max = window.innerWidth;
+        if(w < min) w = min;
+        if(w > max) w = max;
+        selectedWrap.style.width = w + 'px';
+      };
+      const stop = () => {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', stop);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('touchend', stop);
+      };
+      sheetWidthGrip.addEventListener('mousedown', e => {
+        startX = e.clientX;
+        startW = selectedWrap.offsetWidth;
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', stop);
+        e.preventDefault();
+      });
+      sheetWidthGrip.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startW = selectedWrap.offsetWidth;
+        document.addEventListener('touchmove', move, {passive:false});
+        document.addEventListener('touchend', stop);
+        e.preventDefault();
+      }, {passive:false});
+    }
 
-    if(selectedTop){
-      selectedTop.addEventListener('mousedown', startSheetDrag);
-      selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
+    sheetHeightGrip = document.getElementById('sheetHeightGrip');
+    if(sheetHeightGrip){
+      sheetHeightGrip.addEventListener('mousedown', startSheetDrag);
+      sheetHeightGrip.addEventListener('touchstart', startSheetDrag, {passive:false});
     }
     if(searchToggle && searchWrap && q){
       searchToggle.addEventListener('click', () => {
