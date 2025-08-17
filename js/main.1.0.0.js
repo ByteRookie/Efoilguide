@@ -771,6 +771,7 @@ function applyFilters(){
   const allowedSeason = new Set(seasonChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const allowedSkill = new Set(skillChips.filter(c=>c.classList.contains('active')).map(c=>c.dataset.value));
   const tmax = +mins.value;
+  let anyVisible = false;
   document.querySelectorAll('#tbl tbody tr.parent').forEach(tr=>{
     const id = tr.getAttribute('data-id');
     const s = SPOTS.find(x=>x.id===id);
@@ -790,6 +791,7 @@ function applyFilters(){
       if(!hay.includes(qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
+    if(ok) anyVisible = true;
     const detail = tr.nextElementSibling;
     if(detail && detail.classList.contains('detail-row')){
       detail.classList.toggle('hide', !ok || !tr.classList.contains('open'));
@@ -807,6 +809,18 @@ function applyFilters(){
       }
     }
   });
+  const noRow = document.getElementById('noResultsRow');
+  if(!anyVisible){
+    if(!noRow){
+      const tr = document.createElement('tr');
+      tr.id = 'noResultsRow';
+      tr.className = 'no-results';
+      tr.innerHTML = '<td colspan="5">No results</td>';
+      spotsBody.appendChild(tr);
+    }
+  }else if(noRow){
+    noRow.remove();
+  }
   minsVal.textContent = `≤ ${mins.value} min`;
   if(!selectedId) updateMapView();
 }

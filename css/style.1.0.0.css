@@ -98,6 +98,7 @@
     tbody tr.detail-row{background:transparent}
     .table-wrap tbody tr:hover{background:var(--hover)}
     #selectedWrap tbody tr:hover{background:transparent}
+    tbody tr.no-results td{text-align:center;padding:16px;font-style:italic;color:var(--muted)}
   th.sortable{cursor:pointer}
   #sortArrow{margin-left:4px}
   .spot{font-weight:700}
