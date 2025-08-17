@@ -140,11 +140,13 @@
     .detail-grid .img-box .img-carousel button.next{right:4px}
     .detail-grid .info{flex:2 1 260px}
     .detail-section{margin-bottom:16px}
-    .detail-section h4{margin:0 0 8px;font-size:15px}
+    .detail-section h4{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:4px}
+    .detail-section h4 .icon{font-size:16px}
     .detail-section-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
     .detail-item{background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:8px 12px}
     .detail-item.span-2{grid-column:span 2}
-    .detail-label{font-size:12px;font-weight:600;color:var(--muted)}
+    .detail-label{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
+    .detail-label .icon{font-size:14px}
     .detail-value{font-size:14px;margin-top:4px}
     @media (max-width:700px){
       .detail-grid{flex-direction:column}

@@ -90,17 +90,19 @@ function parseCitations(str=''){
     });
 }
 
-function detail(label, value, spanClass = '', wrapClass = '') {
+function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
   if (value == null || String(value).trim() === '') return '';
   const text = parseCitations(String(value));
   const span = spanClass ? `<span class="${spanClass}">${text}</span>` : text;
-  return `<div class="detail-item ${wrapClass}"><div class="detail-label">${label}</div><div class="detail-value">${span}</div></div>`;
+  const iconSpan = icon ? `<span class="icon" aria-hidden="true">${icon}</span>` : '';
+  return `<div class="detail-item ${wrapClass}"><div class="detail-label">${iconSpan}${label}</div><div class="detail-value">${span}</div></div>`;
 }
 
-function detailSection(title, items) {
+function detailSection(title, items, icon = '') {
   const content = items.filter(Boolean).join('');
   if (!content) return '';
-  return `<div class="detail-section"><h4>${title}</h4><div class="detail-section-grid">${content}</div></div>`;
+  const iconSpan = icon ? `<span class="icon" aria-hidden="true">${icon}</span>` : '';
+  return `<div class="detail-section"><h4>${iconSpan}${title}</h4><div class="detail-section-grid">${content}</div></div>`;
 }
 
 /* ---------- Distance & ETA ---------- */
@@ -270,52 +272,52 @@ function rowHTML(s){
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
   const locationDetails = [
-    detail('City', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.city)}" target="_blank">${s.city}</a>`),
-    detail('Address', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank">${s.addr}</a>`),
-    detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)
+    detail('City', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.city)}" target="_blank">${s.city}</a>`, '', '', '🏙️'),
+    detail('Address', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank">${s.addr}</a>`, '', '', '📍'),
+    detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`, '', '', '🧭')
   ];
   const launchDetails = [
-    detail('Launch', s.launch),
-    detail('Parking', s.parking),
-    detail('Amenities', s.amenities, 'amen')
+    detail('Launch', s.launch, '', '', '⚓️'),
+    detail('Parking', s.parking, '', '', '🅿️'),
+    detail('Amenities', s.amenities, 'amen', '', '🏖️')
   ];
   const safetyDetails = [
-    detail('Pros', s.pros, 'ok'),
-    detail('Cons', s.cons, 'warn'),
-    detail('Crowd Level', s.pop),
-    detail('Best For', s.best),
-    detail('Hazards & Tips', s.tips, '', 'span-2'),
-    detail('Avoid', s.avoid, '', 'span-2'),
-    detail('Best Conditions', s.best_conditions, '', 'span-2')
+    detail('Pros', s.pros, 'ok', '', '✅'),
+    detail('Cons', s.cons, 'warn', '', '⚠️'),
+    detail('Crowd Level', s.pop, '', '', '👥'),
+    detail('Best For', s.best, '', '', '🏆'),
+    detail('Hazards & Tips', s.tips, '', 'span-2', '🚧'),
+    detail('Avoid', s.avoid, '', 'span-2', '⛔'),
+    detail('Best Conditions', s.best_conditions, '', 'span-2', '🌤️')
   ];
   const lawsDetails = [
-    detail('Laws / Regs', s.law, '', 'law span-2')
+    detail('Laws / Regs', s.law, '', 'law span-2', '📜')
   ];
   const routesDetails = [
-    s.routes_beginner ? detail('Routes (Beginner)', s.routes_beginner, '', 'span-2') : '',
-    s.routes_pro ? detail('Routes (Pro)', s.routes_pro, '', 'span-2') : ''
+    s.routes_beginner ? detail('Routes (Beginner)', s.routes_beginner, '', 'span-2', '🧭') : '',
+    s.routes_pro ? detail('Routes (Pro)', s.routes_pro, '', 'span-2', '🚀') : ''
   ];
   const gearDetails = [
-    detail('Gear Fit', s.gear, '', 'span-2'),
-    s.setup_fit ? detail('Setup Fit', s.setup_fit, '', 'span-2') : ''
+    detail('Gear Fit', s.gear, '', 'span-2', '🛠️'),
+    s.setup_fit ? detail('Setup Fit', s.setup_fit, '', 'span-2', '⚙️') : ''
   ];
   const miscDetails = [
-    s.parking_cost ? detail('Parking Cost', s.parking_cost) : '',
-    s.parking_distance_m ? detail('Parking Distance (m)', s.parking_distance_m) : '',
-    s.bathrooms ? detail('Bathrooms', s.bathrooms) : '',
-    s.showers ? detail('Showers', s.showers) : '',
-    s.rinse ? detail('Rinse', s.rinse) : '',
-    s.fees ? detail('Fees', s.fees) : '',
-    s.popularity ? detail('Popularity', s.popularity) : ''
+    s.parking_cost ? detail('Parking Cost', s.parking_cost, '', '', '💲') : '',
+    s.parking_distance_m ? detail('Parking Distance (m)', s.parking_distance_m, '', '', '📏') : '',
+    s.bathrooms ? detail('Bathrooms', s.bathrooms, '', '', '🚻') : '',
+    s.showers ? detail('Showers', s.showers, '', '', '🚿') : '',
+    s.rinse ? detail('Rinse', s.rinse, '', '', '💧') : '',
+    s.fees ? detail('Fees', s.fees, '', '', '💵') : '',
+    s.popularity ? detail('Popularity', s.popularity, '', '', '📈') : ''
   ];
   const sections = [
-    detailSection('Location', locationDetails),
-    detailSection('Launch, Parking & Amenities', launchDetails),
-    detailSection('Safety & Conditions', safetyDetails),
-    detailSection('Laws & Regulations', lawsDetails),
-    detailSection('Routes', routesDetails),
-    detailSection('Setup & Gear', gearDetails),
-    detailSection('Other', miscDetails)
+    detailSection('Location', locationDetails, '📍'),
+    detailSection('Launch, Parking & Amenities', launchDetails, '⚓️'),
+    detailSection('Safety & Conditions', safetyDetails, '⚠️'),
+    detailSection('Laws & Regulations', lawsDetails, '📘'),
+    detailSection('Routes', routesDetails, '🧭'),
+    detailSection('Setup & Gear', gearDetails, '🛠️'),
+    detailSection('Other', miscDetails, '➕')
   ].join('');
   return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
     <td class="spot" data-label="Spot">${s.name}</td>
