@@ -957,6 +957,9 @@ function setOrigin(lat,lng,label){
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
       selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
+      selectedTop.addEventListener('transitionend', e=>{
+        if(e.target.classList.contains('img-box')) updateSheetHeight();
+      });
     }
     if(selectedDetail){
       selectedDetail.addEventListener('scroll', ()=>{
@@ -967,7 +970,7 @@ function setOrigin(lat,lng,label){
         if(scrollTopBtn){
           scrollTopBtn.classList.toggle('hidden', st <= 20);
         }
-        updateSheetHeight();
+        window.requestAnimationFrame(updateSheetHeight);
       });
     }
     if(filterBtn){
