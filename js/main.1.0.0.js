@@ -1,4 +1,3 @@
-/* global Papa */
 /* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
 const ZIP_CENTROIDS = {
   /* SF */
@@ -27,11 +26,41 @@ const ZIP_CENTROIDS = {
 let SPOTS = [];// loaded from CSV
 let IMG_CREDITS = {};// loaded from JSON mapping filenames to credit info
 
+function parseCSV(text){
+  const rows = [];
+  let cur = '', row = [], inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ cur += '"'; i++; }
+        else inQuotes = false;
+      }else{
+        cur += c;
+      }
+    }else{
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(cur); cur = ''; }
+      else if(c === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if(c !== '\r'){ cur += c; }
+    }
+  }
+  if(cur.length || row.length){ row.push(cur); }
+  if(row.length) rows.push(row);
+  const headers = rows.shift().map(h=>h.trim());
+  return rows.filter(r=>r.some(cell=>cell.trim()!==''))
+    .map(r=>{
+      const obj = {};
+      headers.forEach((h,i)=>{ obj[h] = (r[i]||'').trim(); });
+      return obj;
+    });
+}
+
 async function loadSpots(){
   const resp = await fetch('data/locations.csv');
   const text = await resp.text();
-  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-  return parsed.data.map(row => {
+  const parsed = parseCSV(text);
+  return parsed.map(row => {
     const obj = { ...row };
     obj.lat = parseFloat(obj.lat);
     obj.lng = parseFloat(obj.lng);
@@ -111,7 +140,7 @@ const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
 const SHEET_MARGIN = 15; // gap between header and detail sheet
-const PANEL_DEFAULT_W = 400;
+const PANEL_RATIO = 0.5; // default panel width (50% of viewport on desktop)
 const SHEET_DEFAULT_W = 440;
 const EXPAND_ICON = '⤢';
 const COLLAPSE_ICON = '⤡';
@@ -123,29 +152,35 @@ function updateHeaderOffset(){
 function handleResize(){
   updateHeaderOffset();
   checkShrink();
-  if(window.innerWidth <= 700){
-    if(tablePanel && !panelFull) tablePanel.style.width = '';
-    if(selectedWrap && !sheetFull) selectedWrap.style.width = '';
-  }
-  if(panelFull && tablePanel){
-    const w = window.innerWidth;
-    tablePanel.style.width = w + 'px';
-  }
-  if(sheetFull && selectedWrap){
-    selectedWrap.style.width = window.innerWidth + 'px';
-  }
-  if(selectedWrap && selectedWrap.classList.contains('show')){
-    const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-    if(sheetOffset < min) sheetOffset = min;
-    updateSheetTransform();
-    updateSheetHeight();
-    recenterSelected();
-    updateMapControls();
-  }
+  const isMobile = window.innerWidth <= 700;
   if(tablePanel){
+    if(panelFull){
+      tablePanel.style.width = window.innerWidth + 'px';
+    }else if(isMobile){
+      tablePanel.style.width = '100%';
+    }else if(!tablePanel.style.width || tablePanel.style.width === '100%'){
+      tablePanel.style.width = Math.round(window.innerWidth * PANEL_RATIO) + 'px';
+    }
     const w = panelFull ? window.innerWidth : tablePanel.offsetWidth;
     document.documentElement.style.setProperty('--panel-w', w + 'px');
   }
+  if(selectedWrap){
+    if(sheetFull){
+      selectedWrap.style.width = window.innerWidth + 'px';
+    }else if(isMobile){
+      selectedWrap.style.width = '100%';
+    }else if(!selectedWrap.style.width || selectedWrap.style.width === '100%'){
+      selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
+    }
+    if(selectedWrap.classList.contains('show')){
+      const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+      if(sheetOffset < min) sheetOffset = min;
+      updateSheetTransform();
+      updateSheetHeight();
+      recenterSelected();
+    }
+  }
+  updateMapControls();
 }
 
 function togglePanelSize(){
@@ -156,7 +191,7 @@ function togglePanelSize(){
     tablePanel.style.width = w + 'px';
     if(togglePanelBtn) togglePanelBtn.textContent = COLLAPSE_ICON;
   }else{
-    tablePanel.style.width = window.innerWidth <= 700 ? '' : PANEL_DEFAULT_W + 'px';
+    tablePanel.style.width = window.innerWidth <= 700 ? '100%' : Math.round(window.innerWidth * PANEL_RATIO) + 'px';
     if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
   }
   handleResize();
@@ -171,7 +206,7 @@ function toggleSheetSize(){
     selectedWrap.style.width = window.innerWidth + 'px';
     if(toggleSheetBtn) toggleSheetBtn.textContent = COLLAPSE_ICON;
   }else{
-    selectedWrap.style.width = window.innerWidth <= 700 ? '' : SHEET_DEFAULT_W + 'px';
+    selectedWrap.style.width = window.innerWidth <= 700 ? '100%' : SHEET_DEFAULT_W + 'px';
     if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   }
   updateSheetTransform();
@@ -195,7 +230,8 @@ function openPanel(){
     panelOpen = true;
     panelFull = false;
     if(togglePanelBtn) togglePanelBtn.textContent = EXPAND_ICON;
-    if(window.innerWidth > 700) tablePanel.style.width = PANEL_DEFAULT_W + 'px';
+    const w = window.innerWidth <= 700 ? window.innerWidth : Math.round(window.innerWidth * PANEL_RATIO);
+    tablePanel.style.width = window.innerWidth <= 700 ? '100%' : w + 'px';
     document.documentElement.style.setProperty('--panel-w', tablePanel.offsetWidth + 'px');
     lockPageScroll(true);
     if(listCtrlLink){
@@ -204,9 +240,11 @@ function openPanel(){
       listCtrlLink.title = 'Hide list';
     }
   }
+  updateMapControls();
 }
 function closePanel(){
   if(tablePanel){
+    if(tablePanel.contains(document.activeElement)) document.activeElement.blur();
     tablePanel.classList.remove('open');
     tablePanel.setAttribute('aria-hidden','true');
     document.body.classList.remove('panel-open');
@@ -229,6 +267,7 @@ function closePanel(){
       }
     }
   }
+  updateMapControls();
 }
 function togglePanel(){
   panelOpen ? closePanel() : openPanel();
@@ -314,6 +353,7 @@ function rowHTML(s){
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
   const infoDetails = [
+    detail('Distance / Time', distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : null, '', '', '📏'),
     detail('Water', badgeWater(s.water), '', '', '💧'),
     detail('Season', badgeSeason(s.season), '', '', '📅'),
     detail('Skill', chipsSkill(s.skill), '', '', '🎯')
@@ -496,6 +536,7 @@ function showSelected(s, fromList=false){
   sheetFull = false;
   if(toggleSheetBtn) toggleSheetBtn.textContent = EXPAND_ICON;
   if(window.innerWidth > 700) selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
+  else selectedWrap.style.width = '100%';
   const minOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   sheetOffset = minOffset;
   updateSheetTransform();
@@ -511,6 +552,7 @@ function clearSelected(){
   if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
   selectedTopBody.innerHTML='';
   selectedBody.innerHTML='';
+  if(selectedWrap.contains(document.activeElement)) document.activeElement.blur();
   selectedWrap.classList.remove('show');
   selectedWrap.classList.add('hidden');
   selectedWrap.setAttribute('aria-hidden','true');
@@ -662,7 +704,9 @@ function updateMapControls(){
   if(!map) return;
   const corner = map._controlCorners && map._controlCorners.topleft;
   if(!corner) return;
-  const offset = selectedWrap && selectedWrap.classList.contains('show') ? selectedWrap.offsetWidth + 10 : 0;
+  let offset = 0;
+  if(panelOpen && tablePanel) offset += tablePanel.offsetWidth;
+  if(selectedWrap && selectedWrap.classList.contains('show')) offset += selectedWrap.offsetWidth + 10;
   corner.style.left = offset + 'px';
 }
 

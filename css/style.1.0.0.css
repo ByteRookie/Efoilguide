@@ -2,7 +2,7 @@
     color-scheme: light dark;
     --radius:12px; --hover:rgba(0,0,0,.04);
     --header-h:0px;
-    --panel-w:400px;
+    --panel-w:50vw;
     --bg:#ffffff; --card:#f5f7fa; --muted:#556270; --text:#111; --accent:#0047ab;
     --salt:#4aa6ff; --fresh:#41e36e; --brack:#b07bff;
     --yr:#ffb020; --sprfall:#2fd277; --summer:#ffd24d; --winter:#7dd3fc;
@@ -236,7 +236,6 @@
   #selectedDetail .detail-grid .info{overflow:visible;}
 
   .leaflet-top{top:var(--header-h)!important;}
-  body.panel-open .leaflet-left{left:var(--panel-w);}
 
   @media (max-width:700px){
     #tablePanel{width:100%;}
