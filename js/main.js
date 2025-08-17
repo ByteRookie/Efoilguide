@@ -177,31 +177,17 @@ function rowHTML(s){
       <div class="detail-grid">
         <div class="img-box" data-img-id="${s.id}" data-name="${s.name}" data-lat="${s.lat}" data-lng="${s.lng}"></div>
         <div class="info">
-          ${detail('City', s.city)}
-          ${detail('Address', s.addr)}
+${detail('Address', s.addr)}
           ${detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`)}
           ${detail('Launch', s.launch)}
           ${detail('Parking', s.parking)}
           ${detail('Amenities', s.amenities, 'amen')}
           ${detail('Pros', s.pros, 'ok')}
           ${detail('Cons', s.cons, 'warn')}
-          ${detail('Crowd Level', s.pop)}
           ${detail('Best For', s.best)}
           ${detail('Gear Fit', s.gear)}
           ${detail('Hazards & Tips', s.tips)}
           ${detail('Laws / Regs', s.law, '', 'law')}
-          ${s.parking_cost ? detail('Parking Cost', s.parking_cost) : ''}
-          ${s.parking_distance_m ? detail('Parking Distance (m)', s.parking_distance_m) : ''}
-          ${s.bathrooms ? detail('Bathrooms', s.bathrooms) : ''}
-          ${s.showers ? detail('Showers', s.showers) : ''}
-          ${s.rinse ? detail('Rinse', s.rinse) : ''}
-          ${s.fees ? detail('Fees', s.fees) : ''}
-          ${s.routes_beginner ? detail('Routes (Beginner)', s.routes_beginner) : ''}
-          ${s.routes_pro ? detail('Routes (Pro)', s.routes_pro) : ''}
-          ${s.avoid ? detail('Avoid', s.avoid) : ''}
-          ${s.best_conditions ? detail('Best Conditions', s.best_conditions) : ''}
-          ${s.setup_fit ? detail('Setup Fit', s.setup_fit) : ''}
-          ${s.popularity ? detail('Popularity', s.popularity) : ''}
         </div>
       </div>
     </td>
