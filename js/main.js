@@ -30,17 +30,30 @@ function parseCSV(text){
   const lines = text.trim().split(/\r?\n/);
   const headers = lines[0].split(',');
   return lines.slice(1).filter(l=>l.trim()).map(line=>{
-    const values = line.match(/("(?:[^"]|"")*"|[^,]+)/g) || [];
-    const obj = {};
+    const values=[];
+    let cur='', inQuotes=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(inQuotes){
+        if(ch=='"'){
+          if(line[i+1]=='"'){cur+='"'; i++;}
+          else inQuotes=false;
+        }else{cur+=ch;}
+      }else{
+        if(ch=='"'){inQuotes=true;}
+        else if(ch==','){values.push(cur); cur='';}
+        else{cur+=ch;}
+      }
+    }
+    values.push(cur);
+    const obj={};
     headers.forEach((h,i)=>{
-      let v = values[i] || '';
-      v = v.trim();
-      if(v.startsWith('"') && v.endsWith('"')) v = v.slice(1,-1).replace(/""/g,'"');
+      const v=(values[i]||'').trim();
       obj[h]=v;
     });
-    obj.lat = parseFloat(obj.lat);
-    obj.lng = parseFloat(obj.lng);
-    obj.skill = obj.skill ? obj.skill.split('|') : [];
+    obj.lat=parseFloat(obj.lat);
+    obj.lng=parseFloat(obj.lng);
+    obj.skill=obj.skill?obj.skill.split('|'):[];
     return obj;
   });
 }
@@ -77,9 +90,10 @@ function parseCitations(str=''){
     });
 }
 
-function detail(label,value,spanClass='',pClass=''){
-  const text = parseCitations(value||'');
-  const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
+function detail(label, value, spanClass = '', pClass = '') {
+  if (value == null || String(value).trim() === '') return '';
+  const text = parseCitations(String(value));
+  const span = spanClass ? `<span class="${spanClass}">${text}</span>` : text;
   return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
 
@@ -336,6 +350,8 @@ function showSelected(s){
   selectedBody.innerHTML = '';
   if(detail) selectedBody.appendChild(detail);
   selectedDetail.scrollTop = 0;
+  const info = selectedBody.querySelector('.info');
+  if(info) info.scrollTop = 0;
   selectedWrap.style.display='';
   loadImages();
   updateMapHeights();
