@@ -1,4 +1,8 @@
-# Online eFoil Guide
+<h1>
+  <img src="data/img/site%20icon/icon_black.svg#gh-light-mode-only" alt="eFoil Guide icon" width="40" />
+  <img src="data/img/site%20icon/icon_white.svg#gh-dark-mode-only" alt="eFoil Guide icon" width="40" />
+  Online eFoil Guide
+</h1>
 
 A community‑maintained directory of eFoil spots. The site loads all location data from [`data/locations.csv`](data/locations.csv) and renders it in a filterable table and map.
 If you’re just looking for spot information, head to https://byterookie.github.io/Efoilguide/; the sections below are for contributors.
