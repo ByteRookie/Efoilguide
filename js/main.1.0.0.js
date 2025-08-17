@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo;
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -117,6 +117,7 @@ let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let resumeId = null;
+let sheetFull = false;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
@@ -167,9 +168,11 @@ function togglePanel(){
 }
 
 function toggleFilters(){
-  if(!filtersEl) return;
+  if(!filtersEl || !filterBtn) return;
   filtersEl.classList.toggle('hidden');
-  if(filterBtn) filterBtn.classList.toggle('open');
+  const open = !filtersEl.classList.contains('hidden');
+  filterBtn.classList.toggle('open', open);
+  filterBtn.classList.toggle('active', open);
   handleResize();
 }
 
@@ -378,13 +381,14 @@ function showSelected(s, fromList=false){
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
-  const full = window.innerWidth <= 700;
-  if(full){
+  sheetFull = window.innerWidth <= 700;
+  if(sheetFull){
     sheetOffset = 0;
+    selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
   }else{
     sheetOffset = selectedWrap.offsetHeight * 0.4;
+    selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
   }
-  selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
   selectedWrap.classList.add('show');
   loadImages();
   setupDetailDrag();
@@ -536,7 +540,11 @@ function sheetDragMove(e){
   if(newOffset < 0) newOffset = 0;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
-  selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
+  if(sheetFull){
+    selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
+  }else{
+    selectedWrap.style.transform = `translate(-50%, ${sheetOffset}px)`;
+  }
   e.preventDefault();
 }
 
@@ -791,6 +799,11 @@ function setOrigin(lat,lng,label){
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
   updateMapView();
+  if(locationBox){
+    locationBox.classList.add('hidden');
+    if(editLocation) editLocation.classList.remove('active');
+    handleResize();
+  }
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
@@ -833,6 +846,31 @@ function setOrigin(lat,lng,label){
     if(closePanelBtn){
       closePanelBtn.addEventListener('click', ()=>closePanel());
     }
+    panelGrip = document.getElementById('panelGrip');
+    if(panelGrip && tablePanel){
+      let startX = 0, startW = 0;
+      const move = e => {
+        let w = startW + (e.clientX - startX);
+        const min = 260;
+        const max = window.innerWidth * 0.9;
+        if(w < min) w = min;
+        if(w > max) w = max;
+        document.documentElement.style.setProperty('--panel-w', w + 'px');
+        tablePanel.style.width = w + 'px';
+        handleResize();
+      };
+      const stop = () => {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', stop);
+      };
+      panelGrip.addEventListener('mousedown', e => {
+        startX = e.clientX;
+        startW = tablePanel.offsetWidth;
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', stop);
+        e.preventDefault();
+      });
+    }
 
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
@@ -845,12 +883,14 @@ function setOrigin(lat,lng,label){
       infoBtn.addEventListener('click', e => {
         e.preventDefault();
         const hidden = infoPopup.classList.toggle('hidden');
+        infoBtn.classList.toggle('active', !hidden);
         lockPageScroll(!hidden);
       });
     }
-    if(closeInfo && infoPopup){
+    if(closeInfo && infoPopup && infoBtn){
       closeInfo.addEventListener('click', () => {
         infoPopup.classList.add('hidden');
+        infoBtn.classList.remove('active');
         lockPageScroll(false);
       });
     }
@@ -878,14 +918,9 @@ function setOrigin(lat,lng,label){
     editLocation.addEventListener('click', e => {
       e.preventDefault();
       const open = !locationBox.classList.contains('hidden');
-      if(open){
-        locationBox.classList.add('hidden');
-        editLocation.textContent = 'Change location';
-      }else{
-        locationBox.classList.remove('hidden');
-        editLocation.textContent = 'Close location';
-        zip.focus();
-      }
+      locationBox.classList.toggle('hidden', open);
+      editLocation.classList.toggle('active', !open);
+      if(!open) zip.focus();
       handleResize();
     });
 
