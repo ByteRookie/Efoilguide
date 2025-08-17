@@ -99,18 +99,55 @@ async function loadImageCredits(){
 /* global parseCitations */
 
 function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
-  if (value == null || String(value).trim() === '') return '';
-  const text = parseCitations(String(value));
-  const span = spanClass ? `<span class="${spanClass}">${text}</span>` : text;
-  const iconSpan = icon ? `<span class="icon" aria-hidden="true">${icon}</span>` : '';
-  return `<div class="detail-item ${wrapClass}"><div class="detail-label">${iconSpan}${label}</div><div class="detail-value">${span}</div></div>`;
+  if (value == null || (typeof value === 'string' && String(value).trim() === '')) return '';
+  const wrap = document.createElement('div');
+  wrap.className = `detail-item ${wrapClass}`.trim();
+  const labelDiv = document.createElement('div');
+  labelDiv.className = 'detail-label';
+  if (icon) {
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'icon';
+    iconSpan.setAttribute('aria-hidden', 'true');
+    iconSpan.textContent = icon;
+    labelDiv.appendChild(iconSpan);
+  }
+  labelDiv.appendChild(document.createTextNode(label));
+  const valueDiv = document.createElement('div');
+  valueDiv.className = 'detail-value';
+  const target = spanClass ? document.createElement('span') : valueDiv;
+  if (spanClass) target.className = spanClass;
+  if (typeof window !== 'undefined' && value instanceof window.Node) {
+    target.appendChild(value);
+  } else {
+    const nodes = parseCitations(String(value));
+    target.appendChild(nodes);
+  }
+  if (target !== valueDiv) valueDiv.appendChild(target);
+  wrap.appendChild(labelDiv);
+  wrap.appendChild(valueDiv);
+  return wrap.outerHTML;
 }
 
 function detailSection(title, items, icon = '') {
   const content = items.filter(Boolean).join('');
   if (!content) return '';
-  const iconSpan = icon ? `<span class="icon" aria-hidden="true">${icon}</span>` : '';
-  return `<div class="detail-section"><h4>${iconSpan}${title}</h4><div class="detail-section-grid">${content}</div></div>`;
+  const wrap = document.createElement('div');
+  wrap.className = 'detail-section';
+  const h4 = document.createElement('h4');
+  if (icon) {
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'icon';
+    iconSpan.setAttribute('aria-hidden', 'true');
+    iconSpan.textContent = icon;
+    h4.appendChild(iconSpan);
+  }
+  h4.appendChild(document.createTextNode(title));
+  const grid = document.createElement('div');
+  grid.className = 'detail-section-grid';
+  grid.innerHTML = content;
+  wrap.appendChild(h4);
+  wrap.appendChild(grid);
+  return wrap.outerHTML;
 }
 
 /* ---------- Distance & ETA ---------- */
@@ -346,16 +383,33 @@ function updateMapView(){
 function badgeWater(w){
   const cls={salt:'b-salt',fresh:'b-fresh',brackish:'b-brack'}[w]||'b-salt';
   const label={salt:'Salt',fresh:'Fresh',brackish:'Brackish'}[w]||w;
-  return `<span class="badge ${cls}">${label}</span>`;
+  const span=document.createElement('span');
+  span.className=`badge ${cls}`;
+  span.textContent=label;
+  return span;
 }
 function badgeSeason(s){
   const cls={year:'b-yr','spring-fall':'b-sprfall','late-spring-fall':'b-sprfall','summer':'b-sum','winter':'b-win'}[s]||'b-yr';
   const label={year:'Year‑round','spring-fall':'Spring–Fall','late-spring-fall':'Late Spring–Fall','summer':'Summer','winter':'Winter'}[s]||s;
-  return `<span class="badge ${cls}">${label}</span>`;
+  const span=document.createElement('span');
+  span.className=`badge ${cls}`;
+  span.textContent=label;
+  return span;
 }
 function chipsSkill(arr){
   const mapCls={B:['Beginner','b-lvle'],I:['Intermediate','b-lvlm'],A:['Advanced','b-lvlh']};
-  return '<span class="lvl">'+arr.map(k=>{const m=mapCls[k];return m?`<span class="badge ${m[1]}">${m[0]}</span>`:'';}).join('')+'</span>';
+  const wrap=document.createElement('span');
+  wrap.className='lvl';
+  arr.forEach(k=>{
+    const m=mapCls[k];
+    if(m){
+      const b=document.createElement('span');
+      b.className=`badge ${m[1]}`;
+      b.textContent=m[0];
+      wrap.appendChild(b);
+    }
+  });
+  return wrap;
 }
 
 function rowHTML(s){
@@ -368,10 +422,23 @@ function rowHTML(s){
     detail('Season', badgeSeason(s.season), '', '', '📅'),
     detail('Skill', chipsSkill(s.skill), '', '', '🎯')
   ];
+  const cityLink=document.createElement('a');
+  cityLink.href=`https://maps.google.com/?q=${encodeURIComponent(s.city)}`;
+  cityLink.target='_blank';
+  cityLink.textContent=s.city;
+  const addrLink=document.createElement('a');
+  addrLink.href=`https://maps.google.com/?q=${encodeURIComponent(s.addr)}`;
+  addrLink.target='_blank';
+  addrLink.textContent=s.addr;
+  const coordLink=document.createElement('a');
+  coordLink.href=`https://www.google.com/maps?q=${s.lat},${s.lng}`;
+  coordLink.target='_blank';
+  coordLink.className='mono';
+  coordLink.textContent=`${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`;
   const locationDetails = [
-    detail('City', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.city)}" target="_blank">${s.city}</a>`, '', '', '🏙️'),
-    detail('Address', `<a href="https://maps.google.com/?q=${encodeURIComponent(s.addr)}" target="_blank">${s.addr}</a>`, '', '', '📍'),
-    detail('Coordinates', `<a href="https://www.google.com/maps?q=${s.lat},${s.lng}" target="_blank" class="mono">${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</a>`, '', '', '🧭')
+    detail('City', cityLink, '', '', '🏙️'),
+    detail('Address', addrLink, '', '', '📍'),
+    detail('Coordinates', coordLink, '', '', '🧭')
   ];
   const launchDetails = [
     detail('Launch', s.launch, '', '', '⚓️'),
@@ -417,21 +484,63 @@ function rowHTML(s){
     detailSection('Setup & Gear', gearDetails, '🛠️'),
     detailSection('Other', miscDetails, '➕')
   ].join('');
-  return `<tr class="parent" data-id="${s.id}" data-mi="${distMi||9999}" data-eta="${eta||9999}">
-    <td class="spot" data-label="Spot">${s.name}</td>
-    <td data-label="Dist / Time">${distTxt}</td>
-    <td data-label="Water">${badgeWater(s.water)}</td>
-    <td data-label="Season">${badgeSeason(s.season)}</td>
-    <td data-label="Skill">${chipsSkill(s.skill)}</td>
-  </tr>
-  <tr class="detail-row hide">
-    <td colspan="5" class="detail">
-      <div class="detail-grid">
-        <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
-        <div class="info">${sections}</div>
-      </div>
-    </td>
-  </tr>`;
+
+  const temp=document.createElement('tbody');
+  const parent=document.createElement('tr');
+  parent.className='parent';
+  parent.dataset.id=s.id;
+  parent.dataset.mi=distMi||9999;
+  parent.dataset.eta=eta||9999;
+
+  const spotTd=document.createElement('td');
+  spotTd.className='spot';
+  spotTd.setAttribute('data-label','Spot');
+  spotTd.textContent=s.name;
+  parent.appendChild(spotTd);
+
+  const distTd=document.createElement('td');
+  distTd.setAttribute('data-label','Dist / Time');
+  distTd.textContent=distTxt;
+  parent.appendChild(distTd);
+
+  const waterTd=document.createElement('td');
+  waterTd.setAttribute('data-label','Water');
+  waterTd.appendChild(badgeWater(s.water));
+  parent.appendChild(waterTd);
+
+  const seasonTd=document.createElement('td');
+  seasonTd.setAttribute('data-label','Season');
+  seasonTd.appendChild(badgeSeason(s.season));
+  parent.appendChild(seasonTd);
+
+  const skillTd=document.createElement('td');
+  skillTd.setAttribute('data-label','Skill');
+  skillTd.appendChild(chipsSkill(s.skill));
+  parent.appendChild(skillTd);
+
+  temp.appendChild(parent);
+
+  const detailTr=document.createElement('tr');
+  detailTr.className='detail-row hide';
+  const detailTd=document.createElement('td');
+  detailTd.colSpan=5;
+  detailTd.className='detail';
+  const grid=document.createElement('div');
+  grid.className='detail-grid';
+  const imgBox=document.createElement('div');
+  imgBox.className='img-box';
+  imgBox.setAttribute('data-img-id', s.id);
+  imgBox.setAttribute('data-name', s.name);
+  const infoDiv=document.createElement('div');
+  infoDiv.className='info';
+  infoDiv.innerHTML=sections;
+  grid.appendChild(imgBox);
+  grid.appendChild(infoDiv);
+  detailTd.appendChild(grid);
+  detailTr.appendChild(detailTd);
+  temp.appendChild(detailTr);
+
+  return temp.innerHTML;
 }
 
 function findImages(id){
@@ -1009,7 +1118,14 @@ function updateSuggestions(){
     hideSuggestions();
     return;
   }
-  qSuggest.innerHTML = matches.map(m=>`<li data-id="${m.id}" role="option">${m.name}</li>`).join('');
+  qSuggest.innerHTML='';
+  matches.forEach(m=>{
+    const li=document.createElement('li');
+    li.dataset.id=m.id;
+    li.setAttribute('role','option');
+    li.textContent=m.name;
+    qSuggest.appendChild(li);
+  });
   qSuggest.classList.remove('hidden');
   qSuggest.setAttribute('aria-hidden','false');
   suggestIndex = -1;
@@ -1451,3 +1567,7 @@ zip.addEventListener('input', async () => {
 
   window.addEventListener('scroll', checkShrink);
 });
+
+if (typeof module !== 'undefined') {
+  module.exports = { detail, rowHTML };
+}

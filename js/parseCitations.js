@@ -109,7 +109,7 @@ function parseCitations(str = '') {
     }
   }
 
-  const container = document.createElement('span');
+  const container = document.createDocumentFragment();
   tokens.forEach(tok => {
     if (tok.type === 'text') {
       container.appendChild(document.createTextNode(tok.value));
@@ -127,7 +127,7 @@ function parseCitations(str = '') {
       });
     }
   });
-  return container.innerHTML;
+  return container;
 }
 
 if (typeof window !== 'undefined') {
