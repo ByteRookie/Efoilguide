@@ -104,7 +104,7 @@ let originMsg, spotsBody, q, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, useGeo, filtersEl, headerEl, toTop, sortArrow, tableWrap,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, closeLocation, searchRow, filterBtn, searchWrap;
+    editLocation, locationBox, closeLocation, searchRow, panelGrip;
 let selectedId = null;
 let markers = {};
 let panelOpen = false;
@@ -117,12 +117,18 @@ let otherCtrlDiv = null;
 let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
+let panelDragStartX = 0;
+let panelDragStartW = 0;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
-  const sH = searchWrap ? searchWrap.offsetHeight : 0;
+  let sH = 0;
+  if(searchRow){
+    const cs = window.getComputedStyle(searchRow);
+    sH = searchRow.offsetHeight + parseInt(cs.marginTop);
+  }
   document.documentElement.style.setProperty('--header-h', (hTop + sH) + 'px');
 }
 function handleResize(){
@@ -135,6 +141,7 @@ function openPanel(){
     tablePanel.classList.add('open');
     document.body.classList.add('panel-open');
     panelOpen = true;
+    document.documentElement.style.setProperty('--panel-w', tablePanel.offsetWidth + 'px');
     lockPageScroll(true);
   }
 }
@@ -357,8 +364,13 @@ function showSelected(s, fromList=false){
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
-  sheetOffset = 0;
-  selectedWrap.style.transform = 'translateY(0px)';
+  const full = window.innerWidth <= 700;
+  if(full){
+    sheetOffset = 0;
+  }else{
+    sheetOffset = selectedWrap.offsetHeight * 0.4;
+  }
+  selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
   selectedWrap.classList.add('show');
   loadImages();
 }
@@ -538,6 +550,34 @@ function endSheetDrag(){
   document.removeEventListener('mouseup', endSheetDrag);
 }
 
+function startPanelDrag(e){
+  if(!panelOpen) return;
+  panelDragStartX = e.touches ? e.touches[0].clientX : e.clientX;
+  panelDragStartW = tablePanel.offsetWidth;
+  document.addEventListener('touchmove', panelDragMove, {passive:false});
+  document.addEventListener('touchend', endPanelDrag);
+  document.addEventListener('mousemove', panelDragMove);
+  document.addEventListener('mouseup', endPanelDrag);
+}
+
+function panelDragMove(e){
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  let dw = x - panelDragStartX;
+  let newW = panelDragStartW + dw;
+  const max = window.innerWidth - 80;
+  if(newW < 200) newW = 200;
+  if(newW > max) newW = max;
+  document.documentElement.style.setProperty('--panel-w', newW + 'px');
+  e.preventDefault();
+}
+
+function endPanelDrag(){
+  document.removeEventListener('touchmove', panelDragMove);
+  document.removeEventListener('touchend', endPanelDrag);
+  document.removeEventListener('mousemove', panelDragMove);
+  document.removeEventListener('mouseup', endPanelDrag);
+}
+
 function checkShrink(){
   const shouldShrink = window.scrollY>0 || window.innerHeight<700;
   if(shouldShrink !== shrinkTable){
@@ -673,6 +713,18 @@ function initMap(){
   };
   listCtrl.addTo(map);
 
+  const filterCtrl = L.control({position:'topright'});
+  filterCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='⚙';
+    a.title='Filters';
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);toggleFilters();});
+    return div;
+  };
+  filterCtrl.addTo(map);
+
   const otherCtrl = L.control({position:'topright'});
   otherCtrl.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar hidden');
@@ -793,8 +845,7 @@ function setOrigin(lat,lng,label){
     selectedDetail = document.getElementById('selectedDetail');
     closeSelected = document.getElementById('closeSelected');
     tableWrap = document.querySelector('.table-wrap');
-    filterBtn = document.getElementById('filterBtn');
-    searchWrap = document.getElementById('searchWrap');
+    panelGrip = document.getElementById('panelGrip');
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
@@ -805,13 +856,14 @@ function setOrigin(lat,lng,label){
     if(closePanelBtn){
       closePanelBtn.addEventListener('click', ()=>closePanel());
     }
-    if(filterBtn){
-      filterBtn.addEventListener('click', e=>{e.preventDefault();toggleFilters();});
-    }
 
     if(selectedTop){
       selectedTop.addEventListener('mousedown', startSheetDrag);
       selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
+    }
+    if(panelGrip){
+      panelGrip.addEventListener('mousedown', startPanelDrag);
+      panelGrip.addEventListener('touchstart', startPanelDrag, {passive:false});
     }
 
     window.addEventListener('wheel', handleWheel, {passive:false});

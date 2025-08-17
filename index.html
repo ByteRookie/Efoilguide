@@ -13,8 +13,7 @@
   <div class="wrap">
     <h1>Online eFoil Guide</h1>
     <div class="sub">
-      Rig: <strong>Fliteboard Pro + Jet2</strong> • Wings: <strong>MN 1300 C</strong> (front) + <strong>Flow 245 C</strong> (stab) • Battery: <strong>Sport</strong>
-      <br><span id="originInfo" class="hint">
+      <span id="originInfo" class="hint">
         <span id="originMsg">Set your origin to sort by distance & ETA. Your address is never stored.</span>
         <span id="locationBox" class="hidden">
           <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP" />
@@ -30,7 +29,6 @@
 <div id="searchWrap" class="wrap">
   <div id="searchRow">
     <input id="q" placeholder="Search all details" />
-    <button id="filterBtn" aria-label="Filters" type="button">⚙</button>
   </div>
   <div id="filters" class="controls hidden">
     <div class="control">
@@ -66,6 +64,7 @@
   <div id="map"></div>
   <div id="tablePanel" class="panel">
     <button id="closePanel" aria-label="Close">✕</button>
+    <div id="panelGrip"></div>
     <div class="table-wrap">
       <table id="tbl">
         <thead>
