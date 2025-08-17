@@ -119,15 +119,13 @@ let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let panelDragStartX = 0;
 let panelDragStartW = 0;
+let resumeId = null;
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 
 function updateHeaderOffset(){
   const hTop = headerEl ? headerEl.offsetHeight : 0;
   document.documentElement.style.setProperty('--header-h', hTop + 'px');
-  const ctrl = document.querySelector('.leaflet-left');
-  const cH = ctrl ? ctrl.offsetHeight : 0;
-  document.documentElement.style.setProperty('--controls-h', cH + 'px');
 }
 function handleResize(){
   updateHeaderOffset();
@@ -135,6 +133,13 @@ function handleResize(){
 }
 
 function openPanel(){
+  if(selectedWrap && selectedWrap.classList.contains('show')){
+    resumeId = selectedId;
+    clearSelected();
+    selectedId = null;
+  }else{
+    resumeId = null;
+  }
   if(tablePanel){
     tablePanel.classList.add('open');
     document.body.classList.add('panel-open');
@@ -149,6 +154,15 @@ function closePanel(){
     document.body.classList.remove('panel-open');
     panelOpen = false;
     lockPageScroll(false);
+    if(resumeId){
+      const id = resumeId;
+      const spot = SPOTS.find(s=>s.id===id);
+      resumeId = null;
+      if(spot){
+        selectedId = id;
+        showSelected(spot);
+      }
+    }
   }
 }
 function togglePanel(){
@@ -237,6 +251,7 @@ function rowHTML(s){
     <td colspan="5" class="detail">
       <div class="detail-grid">
         <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
+        <div class="detail-grip"></div>
         <div class="info">
           ${detail('City', s.city)}
           ${detail('Address', s.addr)}
@@ -287,6 +302,8 @@ async function loadImages(){
     const name=box.getAttribute('data-name')||'';
     const srcs=findImages(id);
     if(srcs.length===0){
+      const grip=box.nextElementSibling;
+      if(grip && grip.classList.contains('detail-grip')) grip.remove();
       box.remove();
       continue;
     }
@@ -335,6 +352,7 @@ async function loadImages(){
 }
 
 function showSelected(s, fromList=false){
+  resumeId = null;
   if(panelOpen){
     closePanel();
     reopenPanel = true;
@@ -371,6 +389,7 @@ function showSelected(s, fromList=false){
   selectedWrap.style.transform = `translateY(${sheetOffset}px)`;
   selectedWrap.classList.add('show');
   loadImages();
+  setupDetailDrag();
 }
 
 function clearSelected(){
@@ -574,6 +593,59 @@ function endPanelDrag(){
   document.removeEventListener('touchend', endPanelDrag);
   document.removeEventListener('mousemove', panelDragMove);
   document.removeEventListener('mouseup', endPanelDrag);
+}
+
+function setupDetailDrag(){
+  const grip = selectedBody ? selectedBody.querySelector('.detail-grip') : null;
+  const img = selectedBody ? selectedBody.querySelector('.img-box') : null;
+  if(!grip || !img) return;
+  let startX = 0;
+  let startW = 0;
+  grip.addEventListener('mousedown', e=>{
+    startX = e.clientX;
+    startW = img.offsetWidth;
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+    e.preventDefault();
+  });
+  function move(e){
+    const w = startW + (e.clientX - startX);
+    if(w>100) img.style.flex = `0 0 ${w}px`;
+  }
+  function up(){
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+  }
+}
+
+function initColResize(){
+  const table = document.getElementById('tbl');
+  if(!table) return;
+  const cols = table.querySelectorAll('col');
+  const ths = table.querySelectorAll('thead th');
+  ths.forEach((th,i)=>{
+    if(i>=cols.length) return;
+    if(i===ths.length-1) return;
+    const grip = document.createElement('div');
+    grip.className='col-grip';
+    th.appendChild(grip);
+    let startX=0,startW=0;
+    grip.addEventListener('mousedown',e=>{
+      startX = e.clientX;
+      startW = cols[i].offsetWidth || th.offsetWidth;
+      function move(ev){
+        const w = startW + (ev.clientX - startX);
+        if(w>30){ cols[i].style.width = w+'px'; }
+      }
+      function up(){
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+      e.preventDefault();
+    });
+  });
 }
 
 function checkShrink(){
@@ -833,6 +905,7 @@ function setOrigin(lat,lng,label){
     tableWrap = document.querySelector('.table-wrap');
     panelGrip = document.getElementById('panelGrip');
     filterBtn = document.getElementById('filterBtn');
+    initColResize();
 
     if(closeSelected){
       closeSelected.addEventListener('click', ()=>{
