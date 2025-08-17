@@ -101,6 +101,7 @@ let otherCtrlLink = null;
 let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
+let sheetDragFromTop = false;
 let resumeId = null;
 let suggestIndex = -1;
 const MAP_START = [37.7749,-122.4194];
@@ -121,6 +122,7 @@ function handleResize(){
     updateSheetTransform();
     updateSheetHeight();
     recenterSelected();
+    updateMapControls();
   }
 }
 
@@ -437,6 +439,7 @@ function showSelected(s, fromList=false){
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
+  updateMapControls();
   loadImages();
   setupDetailDrag();
   if(s && s.lat && s.lng) flyToSpot([s.lat, s.lng]);
@@ -454,6 +457,7 @@ function clearSelected(){
   selectedWrap.style.width='';
   if(selectedDetail) selectedDetail.style.maxHeight='';
   sheetOffset = 0;
+  updateMapControls();
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -474,7 +478,8 @@ function setMarkerSelected(marker, sel){
 
 function flyToSpot(latlng){
   if(!map) return;
-  map.flyTo(latlng,16);
+  const target = Math.min(map.getMaxZoom(), 18);
+  map.flyTo(latlng, target);
   map.once('moveend',()=>{
     recenterSelected();
   });
@@ -520,6 +525,8 @@ function lockPageScroll(lock){
 
 function startSheetDrag(e){
   if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
+  if(e.target.closest('button') || e.target.closest('#selectedTopScroll')) return;
+  sheetDragFromTop = e.currentTarget === selectedTop;
   sheetDragStartY = e.touches ? e.touches[0].clientY : e.clientY;
   sheetDragStartOffset = sheetOffset;
   selectedWrap.style.transition = 'none';
@@ -532,7 +539,7 @@ function startSheetDrag(e){
 function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
-  let newOffset = sheetDragStartOffset - dy;
+  let newOffset = sheetDragFromTop ? sheetDragStartOffset + dy : sheetDragStartOffset - dy;
   const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   const max = window.innerHeight - 80;
   if(newOffset < min) newOffset = min;
@@ -541,6 +548,7 @@ function sheetDragMove(e){
   updateSheetTransform();
   updateSheetHeight();
   recenterSelected();
+  updateMapControls();
   e.preventDefault();
 }
 
@@ -551,6 +559,7 @@ function endSheetDrag(){
   document.removeEventListener('mousemove', sheetDragMove);
   document.removeEventListener('mouseup', endSheetDrag);
   recenterSelected();
+  updateMapControls();
 }
 
 function updateSheetTransform(){
@@ -579,6 +588,14 @@ function recenterSelected(){
   const offsetX = pt.x - desiredX;
   const offsetY = pt.y - desiredY;
   map.panBy([offsetX, offsetY], {animate:false});
+}
+
+function updateMapControls(){
+  if(!map) return;
+  const corner = map._controlCorners && map._controlCorners.topleft;
+  if(!corner) return;
+  const offset = selectedWrap && selectedWrap.classList.contains('show') ? selectedWrap.offsetWidth + 10 : 0;
+  corner.style.left = offset + 'px';
 }
 
 function setupDetailDrag(){
@@ -778,6 +795,7 @@ function initMap(){
 
   applyFilters();
   updateOtherMarkers();
+  updateMapControls();
   updateHeaderOffset();
 }
 
@@ -978,6 +996,7 @@ function setOrigin(lat,lng,label){
         if(w > max) w = max;
         selectedWrap.style.width = w + 'px';
         recenterSelected();
+        updateMapControls();
       };
       const stop = () => {
         document.removeEventListener('mousemove', move);
@@ -985,6 +1004,7 @@ function setOrigin(lat,lng,label){
         document.removeEventListener('touchmove', move);
         document.removeEventListener('touchend', stop);
         recenterSelected();
+        updateMapControls();
       };
       sheetWidthGrip.addEventListener('mousedown', e => {
         startX = e.clientX;
@@ -1006,6 +1026,10 @@ function setOrigin(lat,lng,label){
     if(sheetHeightGrip){
       sheetHeightGrip.addEventListener('mousedown', startSheetDrag);
       sheetHeightGrip.addEventListener('touchstart', startSheetDrag, {passive:false});
+    }
+    if(selectedTop){
+      selectedTop.addEventListener('mousedown', startSheetDrag);
+      selectedTop.addEventListener('touchstart', startSheetDrag, {passive:false});
     }
     if(searchToggle && searchWrap && q){
       searchToggle.addEventListener('click', () => {

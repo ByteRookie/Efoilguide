@@ -101,7 +101,7 @@
   th.sortable{cursor:pointer}
   #sortArrow{margin-left:4px}
   .spot{font-weight:700}
-  .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border)}
+  .badge{display:inline-flex;padding:2px 8px;border-radius:999px;background:var(--badge);font-size:12px;border:1px solid var(--badge-border);white-space:nowrap;flex:0 0 auto}
   .b-salt{border-left:4px solid var(--salt)}
   .b-fresh{border-left:4px solid var(--fresh)}
   .b-brack{border-left:4px solid var(--brack)}
@@ -112,9 +112,7 @@
   .b-lvle{border-left:4px solid var(--easy)}
   .b-lvlm{border-left:4px solid var(--med)}
   .b-lvlh{border-left:4px solid var(--hard)}
-  .lvl{display:inline-flex;gap:4px}
-  .lvl .dot{width:8px;height:8px;border-radius:50%}
-  .lvle{background:var(--easy)} .lvlm{background:var(--med)} .lvlh{background:var(--hard)}
+  .lvl{display:flex;flex-wrap:wrap;gap:4px}
   .pop{white-space:normal}
     .ok{color:var(--ok)} .warn{color:var(--warn)} .no{color:var(--no)}
   .foot{color:var(--muted);font-size:12px;margin-top:8px}
@@ -146,7 +144,7 @@
     .detail-item.span-2{grid-column:span 2}
     .detail-label{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
     .detail-label .icon{font-size:14px}
-    .detail-value{font-size:14px;margin-top:4px}
+    .detail-value{font-size:14px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
   #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:80;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
   #siteFooter a{color:var(--text)}
   #infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;z-index:200;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
