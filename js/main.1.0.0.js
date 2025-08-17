@@ -987,6 +987,7 @@ function initMap(){
   map = L.map('map').setView(MAP_START, MAP_ZOOM);
 
   applyTileScheme(map);
+  updateMapView();
 
   SPOTS.forEach(s=>{
     const marker = L.marker([s.lat, s.lng]).addTo(map);
@@ -1036,7 +1037,7 @@ function initMap(){
     L.DomEvent.on(a,'click',e=>{
       L.DomEvent.preventDefault(e);
       L.DomEvent.stopPropagation(e);
-      map.setView(MAP_START, MAP_ZOOM);
+      updateMapView();
     });
     return div;
   };
@@ -1407,7 +1408,7 @@ function setOrigin(lat,lng,label){
           hideSuggestions();
           applyFilters();
         }
-        map.setView(MAP_START, MAP_ZOOM);
+        updateMapView();
         updateOtherMarkers();
       });
     }
