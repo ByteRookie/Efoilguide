@@ -90,9 +90,10 @@ function parseCitations(str=''){
     });
 }
 
-function detail(label,value,spanClass='',pClass=''){
-  const text = parseCitations(value||'');
-  const span = spanClass?`<span class="${spanClass}">${text}</span>`:text;
+function detail(label, value, spanClass = '', pClass = '') {
+  if (value == null || String(value).trim() === '') return '';
+  const text = parseCitations(String(value));
+  const span = spanClass ? `<span class="${spanClass}">${text}</span>` : text;
   return `<p class="${pClass}"><strong>${label}:</strong> ${span}</p>`;
 }
 
