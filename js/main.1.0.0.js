@@ -2,6 +2,16 @@
 let ZIP_LOOKUP = {};
 let ZIP_LIST = [];
 
+function haversine(a,b){
+  const toRad = d => d * Math.PI / 180;
+  const R = 3958.761; // miles
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]), lat2 = toRad(b[0]);
+  const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 async function loadZipData(){
   try {
     const resp = await fetch('data/Zip/us-zips.json');
@@ -12,18 +22,10 @@ async function loadZipData(){
   } catch {}
 }
 
-function haversine(lat1,lng1,lat2,lng2){
-  const R=6371;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return 2*R*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
 function findNearestZip(lat,lng){
   let nearest=null,best=Infinity;
   for(const item of ZIP_LIST){
-    const d=haversine(lat,lng,item.lat,item.lng);
+    const d=haversine([lat,lng],[item.lat,item.lng]);
     if(d<best){best=d;nearest=item.z;}
   }
   return nearest;
@@ -160,7 +162,7 @@ let ORIGIN = null; // [lat,lng]
 let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
-    zip, useGeo, filtersEl, headerEl, sortArrow,
+    zip, zipClear, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
     editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
     togglePanelBtn, toggleSheetBtn;
@@ -181,6 +183,7 @@ let panelFull = false;
 let sheetFull = false;
 let resumeId = null;
 let suggestIndex = -1;
+let originMsgDefault = '';
 const MAP_START = [37.7749,-122.4194];
 const MAP_ZOOM = 10;
 const SEARCH_COLLAPSE_W = 150; // px width to collapse search
@@ -372,14 +375,6 @@ function toggleFilters(){
   handleResize();
 }
 
-function haversine(a,b){
-  const toRad = d=>d*Math.PI/180;
-  const R=3958.761; // miles
-  const dLat=toRad(b[0]-a[0]); const dLng=toRad(b[1]-a[1]);
-  const lat1=toRad(a[0]), lat2=toRad(b[0]);
-  const h=Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
-  return 2*R*Math.asin(Math.sqrt(h));
-}
 // Simple road time model: first 10 mi @ 28 mph (urban), next 30 @ 45 mph, remaining @ 60 mph
 function etaMinutes(mi){
   if(mi<=0) return 0;
@@ -1207,6 +1202,7 @@ function setOrigin(lat,lng,label){
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
+    originMsgDefault = originMsg ? originMsg.textContent : '';
     editLocation = document.getElementById('editLocation');
     locationBox = document.getElementById('locationBox');
     spotsBody = document.getElementById('spotsBody');
@@ -1221,6 +1217,8 @@ function setOrigin(lat,lng,label){
     seasonChips = [...document.querySelectorAll('.f-season')];
     skillChips = [...document.querySelectorAll('.f-skill')];
     zip = document.getElementById('zip');
+    zipClear = document.getElementById('zipClear');
+    if(zipClear) zipClear.classList.toggle('hidden', !zip.value);
     useGeo = document.getElementById('useGeo');
     await loadZipData();
     filtersEl = document.getElementById('filters');
@@ -1557,6 +1555,7 @@ setupDrag([...waterChips, ...seasonChips, ...skillChips]);
 zip.addEventListener('input', () => {
   let clean = (zip.value || '').replace(/\D/g,'').slice(0,5);
   if(zip.value !== clean) zip.value = clean;
+  zipClear.classList.toggle('hidden', clean.length===0);
   originMsg.textContent = '';
   if (clean.length !== 5){
     if(clean.length>0) originMsg.textContent = 'Please enter a 5-digit ZIP.';
@@ -1569,6 +1568,18 @@ zip.addEventListener('input', () => {
     originMsg.textContent = `ZIP ${clean} not found.`;
   }
 });
+
+if(zipClear){
+  zipClear.addEventListener('click', e => {
+    e.preventDefault();
+    zip.value='';
+    ORIGIN = null;
+    originMsg.textContent = originMsgDefault;
+    zipClear.classList.add('hidden');
+    render();
+    updateMapView();
+  });
+}
 
   useGeo.addEventListener('click', (e) => {
     e.preventDefault();
@@ -1583,6 +1594,7 @@ zip.addEventListener('input', () => {
         setOrigin(lat, lng, 'your current location');
         const nearest = findNearestZip(lat, lng);
         if(nearest) zip.value = nearest;
+        zipClear.classList.toggle('hidden', !zip.value);
       },
       () => { originMsg.textContent = 'Location permission denied or unavailable.'; }
     );
