@@ -1,3 +1,4 @@
+/* global Papa */
 /* ---------- Minimal ZIP -> lat/lng centroids (Bay Area focused) ---------- */
 const ZIP_CENTROIDS = {
   /* SF */
@@ -114,6 +115,8 @@ function handleResize(){
   updateHeaderOffset();
   checkShrink();
   if(selectedWrap && selectedWrap.classList.contains('show')){
+    const min = headerEl ? headerEl.offsetHeight : 0;
+    if(sheetOffset < min) sheetOffset = min;
     updateSheetTransform();
     updateSheetHeight();
   }
@@ -312,7 +315,6 @@ function rowHTML(s){
     <td colspan="5" class="detail">
       <div class="detail-grid">
         <div class="img-box" data-img-id="${s.id}" data-name="${s.name}"></div>
-        <div class="detail-grip"></div>
         <div class="info">${sections}</div>
       </div>
     </td>
@@ -428,7 +430,8 @@ function showSelected(s, fromList=false){
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
-  sheetOffset = window.innerWidth >= 768 ? window.innerHeight / 2 : 0;
+  const minOffset = headerEl ? headerEl.offsetHeight : 0;
+  sheetOffset = minOffset;
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
@@ -532,8 +535,9 @@ function sheetDragMove(e){
   const y = e.touches ? e.touches[0].clientY : e.clientY;
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragStartOffset - dy;
+  const min = headerEl ? headerEl.offsetHeight : 0;
   const max = window.innerHeight - 80;
-  if(newOffset < 0) newOffset = 0;
+  if(newOffset < min) newOffset = min;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
   updateSheetTransform();
