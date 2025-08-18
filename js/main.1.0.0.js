@@ -412,7 +412,7 @@ function milesFromMinutes(min){
 }
 
 
-function updateMapView(visibleMarkers){
+function updateMapView(visibleMarkers, fly){
   if(!map) return;
   map.invalidateSize();
   if(Array.isArray(visibleMarkers) && visibleMarkers.length){
@@ -427,9 +427,17 @@ function updateMapView(visibleMarkers){
     const circle=L.circle(ORIGIN,{radius:radius*1609.34});
     const bounds=circle.getBounds();
     const zoom=map.getBoundsZoom(bounds);
-    map.setView(ORIGIN, zoom);
+    if(fly){
+      map.flyTo(ORIGIN, zoom);
+    }else{
+      map.setView(ORIGIN, zoom);
+    }
   }else{
-    map.setView(MAP_START, MAP_ZOOM);
+    if(fly){
+      map.flyTo(MAP_START, MAP_ZOOM);
+    }else{
+      map.setView(MAP_START, MAP_ZOOM);
+    }
   }
 }
 
@@ -1053,7 +1061,7 @@ function applyTileScheme(m){
     L.DomEvent.on(a,'click',e=>{
       L.DomEvent.preventDefault(e);
       L.DomEvent.stopPropagation(e);
-      updateMapView();
+      updateMapView(undefined, true);
     });
     return div;
   };
@@ -1225,7 +1233,12 @@ function setOrigin(lat,lng,label){
   render();
   initMap();
   handleResize();
-  updateMapView();
+  updateMapView(undefined, true);
+  if(locationBox){
+    locationBox.classList.remove('hidden');
+    locationBox.setAttribute('aria-hidden','false');
+  }
+  if(editLocation) editLocation.classList.add('active');
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
@@ -1454,7 +1467,7 @@ function setOrigin(lat,lng,label){
           applyFilters();
         }
         updateOtherMarkers();
-        updateMapView();
+        updateMapView(undefined, true);
       });
     }
 
