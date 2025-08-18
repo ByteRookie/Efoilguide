@@ -225,6 +225,10 @@ let sheetDragFromTop = false;
 let sheetDragStartX = 0;
 let sheetDragCheck = false;
 let sheetDragging = false;
+let panelSwipeStartX = 0;
+let panelSwipeStartY = 0;
+let panelSwipeCheck = false;
+let panelSwiping = false;
 let panelFull = false;
 let sheetFull = false;
 let resumeId = null;
@@ -780,6 +784,7 @@ function showSelected(s, fromList=false){
   updateSheetTransform();
   updateSheetHeight();
   selectedWrap.classList.add('show');
+  lockPageScroll(true);
   updateSelectedTopPadding();
   updateSheetIcon();
   updateMapControls();
@@ -805,6 +810,7 @@ function clearSelected(){
   updateSelectedTopPadding();
   updateSheetIcon();
   updateMapControls();
+  lockPageScroll(false);
   document.querySelectorAll('#tbl tbody tr.parent.open').forEach(o=>{
     o.classList.remove('open');
     const d=o.nextElementSibling;
@@ -912,7 +918,7 @@ function sheetDragMove(e){
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragFromTop ? sheetDragStartOffset + dy : sheetDragStartOffset - dy;
   const min = window.innerWidth <= 700 ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-  const max = window.innerHeight - 80;
+  const max = window.innerHeight;
   if(newOffset < min) newOffset = min;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
@@ -932,9 +938,58 @@ function endSheetDrag(){
   document.removeEventListener('mouseup', endSheetDrag);
   sheetDragCheck = false;
   sheetDragging = false;
+  if(sheetOffset > window.innerHeight - 60){
+    clearSelected();
+    selectedId = null;
+    return;
+  }
   recenterSelected();
   updateMapControls();
   updateSheetIcon();
+}
+
+function startPanelSwipe(e){
+  if(!tablePanel || !panelOpen) return;
+  if(e.target.closest('#panelGrip') || e.target.closest('button')) return;
+  const t = e.touches ? e.touches[0] : e;
+  panelSwipeStartX = t.clientX;
+  panelSwipeStartY = t.clientY;
+  panelSwipeCheck = true;
+  document.addEventListener('touchmove', panelSwipeMove, {passive:false});
+  document.addEventListener('touchend', endPanelSwipe, {passive:true});
+  document.addEventListener('mousemove', panelSwipeMove);
+  document.addEventListener('mouseup', endPanelSwipe);
+}
+
+function panelSwipeMove(e){
+  const t = e.touches ? e.touches[0] : e;
+  const dx = t.clientX - panelSwipeStartX;
+  const dy = t.clientY - panelSwipeStartY;
+  if(panelSwipeCheck){
+    if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)){
+      panelSwiping = true;
+    }else if(Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)){
+      endPanelSwipe();
+      return;
+    }else{
+      return;
+    }
+  }
+  if(!panelSwiping) return;
+  if(dx < -50){
+    closePanel();
+    endPanelSwipe();
+  }
+  e.preventDefault();
+}
+
+function endPanelSwipe(){
+  document.removeEventListener('touchmove', panelSwipeMove);
+  document.removeEventListener('touchend', endPanelSwipe);
+  document.removeEventListener('mousemove', panelSwipeMove);
+  document.removeEventListener('mouseup', endPanelSwipe);
+  panelSwipeCheck = false;
+  panelSwiping = false;
 }
 
 function updateSheetTransform(){
@@ -1444,6 +1499,10 @@ function setOrigin(lat,lng,label){
         document.addEventListener('touchend', stop, {passive:true});
         e.preventDefault();
       }, {passive:false});
+    }
+    if(tablePanel){
+      tablePanel.addEventListener('touchstart', startPanelSwipe, {passive:false});
+      tablePanel.addEventListener('mousedown', startPanelSwipe);
     }
     sheetWidthGrip = document.getElementById('sheetWidthGrip');
     if(sheetWidthGrip && selectedWrap){
