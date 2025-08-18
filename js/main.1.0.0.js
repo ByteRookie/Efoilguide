@@ -876,7 +876,7 @@ function startSheetDrag(e){
   sheetDragStartOffset = sheetOffset;
   selectedWrap.style.transition = 'none';
   document.addEventListener('touchmove', sheetDragMove, {passive:false});
-  document.addEventListener('touchend', endSheetDrag);
+  document.addEventListener('touchend', endSheetDrag, {passive:true});
   document.addEventListener('mousemove', sheetDragMove);
   document.addEventListener('mouseup', endSheetDrag);
 }
@@ -967,7 +967,7 @@ function setupDetailDrag(){
     startX = e.touches[0].clientX;
     startW = img.offsetWidth;
     document.addEventListener('touchmove', move, {passive:false});
-    document.addEventListener('touchend', up);
+    document.addEventListener('touchend', up, {passive:true});
     e.preventDefault();
   }, {passive:false});
   function move(e){
@@ -1413,7 +1413,7 @@ function setOrigin(lat,lng,label){
         startX = e.touches[0].clientX;
         startW = tablePanel.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});
-        document.addEventListener('touchend', stop);
+        document.addEventListener('touchend', stop, {passive:true});
         e.preventDefault();
       }, {passive:false});
     }
@@ -1457,7 +1457,7 @@ function setOrigin(lat,lng,label){
         startX = e.touches[0].clientX;
         startW = selectedWrap.offsetWidth;
         document.addEventListener('touchmove', move, {passive:false});
-        document.addEventListener('touchend', stop);
+        document.addEventListener('touchend', stop, {passive:true});
         e.preventDefault();
       }, {passive:false});
     }
