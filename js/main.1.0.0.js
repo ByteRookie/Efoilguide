@@ -415,10 +415,11 @@ function flyToOrigin(animate=true){
   if(!map || !ORIGIN) return;
   const radius=milesFromMinutes(mins ? +mins.value : 180);
   const bounds=L.circle(ORIGIN,{radius:radius*1609.34}).getBounds();
+  const zoom=map.getBoundsZoom(bounds);
   if(animate){
-    map.flyToBounds(bounds);
+    map.flyTo(ORIGIN, zoom);
   }else{
-    map.fitBounds(bounds);
+    map.setView(ORIGIN, zoom);
   }
 }
 
