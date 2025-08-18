@@ -222,6 +222,9 @@ let sheetOffset = 0;
 let sheetDragStartY = 0;
 let sheetDragStartOffset = 0;
 let sheetDragFromTop = false;
+let sheetDragStartX = 0;
+let sheetDragCheck = false;
+let sheetDragging = false;
 let panelFull = false;
 let sheetFull = false;
 let resumeId = null;
@@ -869,22 +872,43 @@ function lockPageScroll(lock){
 
 function startSheetDrag(e){
   if(!selectedWrap || !selectedWrap.classList.contains('show')) return;
-  if(e.target.closest('button') || e.target.closest('#selectedTopScroll')) return;
+  if(e.target.closest('button')) return;
   sheetFull = false;
   updateSheetIcon();
+  const t = e.touches ? e.touches[0] : e;
   sheetDragFromTop = e.currentTarget === selectedTop;
-  sheetDragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+  sheetDragStartX = t.clientX;
+  sheetDragStartY = t.clientY;
   sheetDragStartOffset = sheetOffset;
   selectedWrap.style.transition = 'none';
+  sheetDragCheck = !!e.target.closest('#selectedTopScroll');
+  sheetDragging = !sheetDragCheck;
   document.addEventListener('touchmove', sheetDragMove, {passive:false});
   document.addEventListener('touchend', endSheetDrag, {passive:true});
   document.addEventListener('mousemove', sheetDragMove);
   document.addEventListener('mouseup', endSheetDrag);
-  e.preventDefault();
+  if(sheetDragging) e.preventDefault();
 }
 
 function sheetDragMove(e){
-  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  const t = e.touches ? e.touches[0] : e;
+  const x = t.clientX;
+  const y = t.clientY;
+  if(sheetDragCheck){
+    const dx = Math.abs(x - sheetDragStartX);
+    const dy = Math.abs(y - sheetDragStartY);
+    if(!sheetDragging){
+      if(dy > 10 && dy > dx){
+        sheetDragging = true;
+      }else if(dx > 10 && dx > dy){
+        endSheetDrag();
+        return;
+      }else{
+        return;
+      }
+    }
+  }
+  if(!sheetDragging) return;
   let dy = y - sheetDragStartY;
   let newOffset = sheetDragFromTop ? sheetDragStartOffset + dy : sheetDragStartOffset - dy;
   const min = window.innerWidth <= 700 ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
@@ -906,6 +930,8 @@ function endSheetDrag(){
   document.removeEventListener('touchend', endSheetDrag);
   document.removeEventListener('mousemove', sheetDragMove);
   document.removeEventListener('mouseup', endSheetDrag);
+  sheetDragCheck = false;
+  sheetDragging = false;
   recenterSelected();
   updateMapControls();
   updateSheetIcon();
