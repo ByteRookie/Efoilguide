@@ -95,7 +95,13 @@
             <th class="sortable" data-sort="dist" aria-sort="ascending">
               <span>Dist / Time</span>
               <span class="tip-wrap">
-                <button class="info-btn" type="button" aria-label="ETA calculation info">ℹ</button>
+                <button class="info-btn" type="button" aria-label="ETA calculation info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                </button>
                 <span class="tooltip-box hidden" role="tooltip">ETAs use a simple urban/highway model; check your nav app for exact routing.</span>
               </span>
               <span id="sortArrow">⇅</span>

@@ -127,7 +127,7 @@ function detail(label, value, spanClass = '', wrapClass = '', icon = '', tooltip
     infoBtn.className = 'info-btn';
     infoBtn.setAttribute('type', 'button');
     infoBtn.setAttribute('aria-label', 'Info');
-    infoBtn.textContent = 'ℹ';
+    infoBtn.innerHTML = INFO_ICON;
     const tipBox = document.createElement('span');
     tipBox.className = 'tooltip-box hidden';
     tipBox.textContent = tooltip;
@@ -207,6 +207,7 @@ const PANEL_RATIO = 0.5; // default panel width (50% of viewport on desktop)
 const SHEET_DEFAULT_W = 440;
 const EXPAND_ICON = '⤢';
 const COLLAPSE_ICON = '⤡';
+const INFO_ICON = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 const ETA_TOOLTIP = 'ETAs use a simple urban/highway model; check your nav app for exact routing.';
 
 document.addEventListener('click', e => {
