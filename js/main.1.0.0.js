@@ -178,7 +178,7 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, zipClear, useGeo, filtersEl, headerEl, sortArrow,
-    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
+    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, selectedDetailScroll, closeSelected, map,
     editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
     togglePanelBtn, toggleSheetBtn;
 let selectedId = null;
@@ -718,7 +718,7 @@ function showSelected(s, fromList=false){
   if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
   if(detail) selectedBody.appendChild(detail);
-  selectedDetail.scrollTop = 0;
+  selectedDetailScroll.scrollTop = 0;
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
@@ -754,7 +754,7 @@ function clearSelected(){
   selectedWrap.style.transform='';
   selectedWrap.style.height='';
   selectedWrap.style.width='';
-  if(selectedDetail) selectedDetail.style.maxHeight='';
+  if(selectedDetailScroll) selectedDetailScroll.style.maxHeight='';
   sheetFull = false;
   sheetOffset = 0;
   updateSelectedTopPadding();
@@ -877,9 +877,9 @@ function updateSheetHeight(){
   if(!selectedWrap) return;
   const h = window.innerHeight - sheetOffset;
   selectedWrap.style.height = h + 'px';
-  if(selectedDetail && selectedTop){
+  if(selectedDetailScroll && selectedTop){
     const topH = selectedTop.offsetHeight;
-    selectedDetail.style.maxHeight = (h - topH) + 'px';
+    selectedDetailScroll.style.maxHeight = (h - topH) + 'px';
   }
 }
 
@@ -1261,6 +1261,7 @@ function setOrigin(lat,lng,label){
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
+    selectedDetailScroll = document.getElementById('selectedDetailScroll');
     toggleSheetBtn = document.getElementById('toggleSheetSize');
     selectedButtons = document.getElementById('selectedButtons');
     closeSelected = document.getElementById('closeSelected');
