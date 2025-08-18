@@ -1064,6 +1064,33 @@ function applyTileScheme(m){
   updateHeaderOffset();
 }
 
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i;
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const cost=a[i-1]===b[j-1]?0:1;
+      dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+cost);
+    }
+  }
+  return dp[m][n];
+}
+
+function fuzzyMatch(haystack, needle){
+  const hayTokens = haystack.split(/[^a-z0-9]+/);
+  const qTokens = needle.split(/[^a-z0-9]+/).filter(Boolean);
+  return qTokens.every(qt=>{
+    return hayTokens.some(ht=>{
+      if(ht.includes(qt)) return true;
+      const dist = levenshtein(ht, qt);
+      const maxDist = qt.length>5?2:1;
+      return dist<=maxDist;
+    });
+  });
+}
+
 /* ---------- Filters ---------- */
 function applyFilters(){
   const qv = q.value.toLowerCase().trim();
@@ -1090,7 +1117,7 @@ function applyFilters(){
     }
     if(qv){
       const hay = (s.name+' '+s.city+' '+s.addr+' '+s.launch+' '+s.parking+' '+s.amenities+' '+s.pros+' '+s.cons+' '+s.best+' '+s.gear+' '+s.tips+' '+s.law+' '+s.water+' '+s.season+' '+s.skill.join(' ')+' '+(s.pop||'')).toLowerCase();
-      if(!hay.includes(qv)) ok=false;
+      if(!fuzzyMatch(hay, qv)) ok=false;
     }
     tr.classList.toggle('hide', !ok);
     if(ok) anyVisible = true;
@@ -1150,7 +1177,7 @@ function updateSuggestions(){
     hideSuggestions();
     return;
   }
-  const matches = SPOTS.filter(s=>s.name.toLowerCase().includes(qv)).slice(0,5);
+  const matches = SPOTS.filter(s=>fuzzyMatch(s.name.toLowerCase(), qv)).slice(0,5);
   if(matches.length===0){
     hideSuggestions();
     return;
