@@ -15,11 +15,12 @@ function haversine(a,b){
 async function loadZipData(){
   try {
     const resp = await fetch('data/Zip/us-zips.json');
-    if(resp.ok){
-      ZIP_LOOKUP = await resp.json();
-      ZIP_LIST = Object.entries(ZIP_LOOKUP).map(([z,[lat,lng]])=>({z,lat,lng}));
-    }
-  } catch {}
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    ZIP_LOOKUP = await resp.json();
+    ZIP_LIST = Object.entries(ZIP_LOOKUP).map(([z,[lat,lng]])=>({z,lat,lng}));
+  } catch (err) {
+    console.error('Error loading ZIP data:', err);
+  }
 }
 
 function findNearestZip(lat,lng){
