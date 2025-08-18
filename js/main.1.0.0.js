@@ -414,6 +414,7 @@ function milesFromMinutes(min){
 
 function updateMapView(visibleMarkers){
   if(!map) return;
+  map.invalidateSize();
   if(Array.isArray(visibleMarkers) && visibleMarkers.length){
     if(visibleMarkers.length===1){
       map.flyTo(visibleMarkers[0].getLatLng(), Math.min(map.getMaxZoom(),18));
@@ -422,13 +423,13 @@ function updateMapView(visibleMarkers){
       map.flyToBounds(group.getBounds(),{padding:[20,20],maxZoom:18});
     }
   }else if(ORIGIN){
-    const radius=milesFromMinutes(+mins.value);
+    const radius=milesFromMinutes(mins ? +mins.value : 180);
     const circle=L.circle(ORIGIN,{radius:radius*1609.34});
     const bounds=circle.getBounds();
     const zoom=map.getBoundsZoom(bounds);
-    map.flyTo(ORIGIN, zoom);
+    map.setView(ORIGIN, zoom);
   }else{
-    map.flyTo(MAP_START, MAP_ZOOM);
+    map.setView(MAP_START, MAP_ZOOM);
   }
 }
 
@@ -1223,8 +1224,8 @@ function setOrigin(lat,lng,label){
   originMsg.textContent = `Origin set to ${label}. Table sorted by nearest distance & ETA.`;
   render();
   initMap();
-  updateMapView();
   handleResize();
+  updateMapView();
 }
   document.addEventListener('DOMContentLoaded', async () => {
     originMsg = document.getElementById('originMsg');
