@@ -414,13 +414,11 @@ function milesFromMinutes(min){
 function flyToOrigin(animate=true){
   if(!map || !ORIGIN) return;
   const radius=milesFromMinutes(mins ? +mins.value : 180);
-  const circle=L.circle(ORIGIN,{radius:radius*1609.34});
-  const bounds=circle.getBounds();
-  const zoom=map.getBoundsZoom(bounds);
+  const bounds=L.circle(ORIGIN,{radius:radius*1609.34}).getBounds();
   if(animate){
-    map.flyTo(ORIGIN, zoom);
+    map.flyToBounds(bounds);
   }else{
-    map.setView(ORIGIN, zoom);
+    map.fitBounds(bounds);
   }
 }
 
@@ -1241,7 +1239,7 @@ function setOrigin(lat,lng,label){
   initMap();
   handleResize();
   if(map) map.invalidateSize();
-  updateMapView(undefined, true);
+  flyToOrigin(true);
   if(locationBox){
     locationBox.classList.remove('hidden');
     locationBox.setAttribute('aria-hidden','false');
