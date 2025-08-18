@@ -234,7 +234,7 @@ header h1 .logo{height:64px;width:64px}
 #selectedWrap.show{transform:translateY(0);}
 #sheetWidthGrip{position:absolute;top:40px;right:0;width:20px;height:calc(100% - 40px);cursor:col-resize;touch-action:none}
 #sheetHeightGrip{position:absolute;bottom:0;left:0;width:100%;height:40px;cursor:row-resize;touch-action:none}
-#selectedTop{background:var(--panel-card);display:flex;align-items:center;position:relative;min-height:40px;padding:0;}
+#selectedTop{touch-action:pan-x;background:var(--panel-card);display:flex;align-items:center;position:relative;min-height:40px;padding:0;}
 #selectedTop::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--table-border);z-index:6;}
 #selectedTopScroll{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-right:0;}
 #selectedTopScroll table{border-collapse:separate;border-spacing:0;display:flex;width:fit-content;}
@@ -273,7 +273,7 @@ header h1 .logo{height:64px;width:64px}
   #tablePanel,
   #panelButtons,
   #selectedWrap,
-  #selectedTop{
+  #selectedTop{touch-action:pan-x;
     background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));
     backdrop-filter:saturate(1.2) blur(8px);
   }

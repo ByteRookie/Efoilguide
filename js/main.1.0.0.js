@@ -880,6 +880,7 @@ function startSheetDrag(e){
   document.addEventListener('touchend', endSheetDrag, {passive:true});
   document.addEventListener('mousemove', sheetDragMove);
   document.addEventListener('mouseup', endSheetDrag);
+  e.preventDefault();
 }
 
 function sheetDragMove(e){
