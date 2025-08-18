@@ -103,6 +103,33 @@ async function loadImageCredits(){
   }
 }
 
+function injectJSONLD(spots){
+  const head=document.head;
+  const base=(document.querySelector('link[rel="canonical"]')||{}).href||window.location.href;
+  spots.forEach(s=>{
+    const data={
+      "@context":"https://schema.org",
+      "@type":"Place",
+      "@id":`${base}#${s.id}`,
+      name:s.name,
+      address:{
+        "@type":"PostalAddress",
+        streetAddress:s.addr,
+        addressLocality:s.city
+      },
+      geo:{
+        "@type":"GeoCoordinates",
+        latitude:s.lat,
+        longitude:s.lng
+      }
+    };
+    const script=document.createElement('script');
+    script.type='application/ld+json';
+    script.textContent=JSON.stringify(data);
+    head.appendChild(script);
+  });
+}
+
 
 /* global parseCitations */
 
@@ -1702,6 +1729,7 @@ if(zipClear){
   });
 
     SPOTS = await loadSpots();
+    injectJSONLD(SPOTS);
     await loadImageCredits();
     render();
     initMap();
