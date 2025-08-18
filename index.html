@@ -93,7 +93,11 @@
           <tr>
             <th class="sortable" data-sort="name">Spot</th>
             <th class="sortable" data-sort="dist" aria-sort="ascending">
-              <span title="ETAs use a simple urban/highway model; check your nav app for exact routing.">Dist / Time</span>
+              <span>Dist / Time</span>
+              <span class="tip-wrap">
+                <button class="info-btn" type="button" aria-label="ETA calculation info">ℹ</button>
+                <span class="tooltip-box hidden" role="tooltip">ETAs use a simple urban/highway model; check your nav app for exact routing.</span>
+              </span>
               <span id="sortArrow">⇅</span>
             </th>
             <th class="sortable" data-sort="water">Water</th>

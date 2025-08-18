@@ -106,7 +106,7 @@ async function loadImageCredits(){
 
 /* global parseCitations */
 
-function detail(label, value, spanClass = '', wrapClass = '', icon = '', title = '') {
+function detail(label, value, spanClass = '', wrapClass = '', icon = '', tooltip = '') {
   if (value == null || (typeof value === 'string' && String(value).trim() === '')) return '';
   const wrap = document.createElement('div');
   wrap.className = `detail-item ${wrapClass}`.trim();
@@ -120,7 +120,21 @@ function detail(label, value, spanClass = '', wrapClass = '', icon = '', title =
     labelDiv.appendChild(iconSpan);
   }
   labelDiv.appendChild(document.createTextNode(label));
-  if (title) labelDiv.setAttribute('title', title);
+  if (tooltip) {
+    const infoWrap = document.createElement('span');
+    infoWrap.className = 'tip-wrap';
+    const infoBtn = document.createElement('button');
+    infoBtn.className = 'info-btn';
+    infoBtn.setAttribute('type', 'button');
+    infoBtn.setAttribute('aria-label', 'Info');
+    infoBtn.textContent = 'ℹ';
+    const tipBox = document.createElement('span');
+    tipBox.className = 'tooltip-box hidden';
+    tipBox.textContent = tooltip;
+    infoWrap.appendChild(infoBtn);
+    infoWrap.appendChild(tipBox);
+    labelDiv.appendChild(infoWrap);
+  }
   const valueDiv = document.createElement('div');
   valueDiv.className = 'detail-value';
   const target = spanClass ? document.createElement('span') : valueDiv;
@@ -194,6 +208,18 @@ const SHEET_DEFAULT_W = 440;
 const EXPAND_ICON = '⤢';
 const COLLAPSE_ICON = '⤡';
 const ETA_TOOLTIP = 'ETAs use a simple urban/highway model; check your nav app for exact routing.';
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.info-btn');
+  if (btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    const tip = btn.nextElementSibling;
+    if (tip) tip.classList.toggle('hidden');
+  } else {
+    document.querySelectorAll('.tooltip-box:not(.hidden)').forEach(t => t.classList.add('hidden'));
+  }
+});
 
 function isPanelDefault(){
   if(!tablePanel) return true;
@@ -545,7 +571,6 @@ function rowHTML(s){
   const distTd=document.createElement('td');
   distTd.setAttribute('data-label','Dist / Time');
   distTd.textContent=distTxt;
-  distTd.title=ETA_TOOLTIP;
   parent.appendChild(distTd);
 
   const waterTd=document.createElement('td');
