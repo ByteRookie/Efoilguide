@@ -106,7 +106,7 @@ async function loadImageCredits(){
 
 /* global parseCitations */
 
-function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
+function detail(label, value, spanClass = '', wrapClass = '', icon = '', tooltip = '') {
   if (value == null || (typeof value === 'string' && String(value).trim() === '')) return '';
   const wrap = document.createElement('div');
   wrap.className = `detail-item ${wrapClass}`.trim();
@@ -120,6 +120,21 @@ function detail(label, value, spanClass = '', wrapClass = '', icon = '') {
     labelDiv.appendChild(iconSpan);
   }
   labelDiv.appendChild(document.createTextNode(label));
+  if (tooltip) {
+    const infoWrap = document.createElement('span');
+    infoWrap.className = 'tip-wrap';
+    const infoBtn = document.createElement('button');
+    infoBtn.className = 'info-btn';
+    infoBtn.setAttribute('type', 'button');
+    infoBtn.setAttribute('aria-label', 'Info');
+    infoBtn.innerHTML = INFO_ICON;
+    const tipBox = document.createElement('span');
+    tipBox.className = 'tooltip-text hidden';
+    tipBox.textContent = tooltip;
+    infoWrap.appendChild(infoBtn);
+    infoWrap.appendChild(tipBox);
+    labelDiv.appendChild(infoWrap);
+  }
   const valueDiv = document.createElement('div');
   valueDiv.className = 'detail-value';
   const target = spanClass ? document.createElement('span') : valueDiv;
@@ -163,8 +178,8 @@ let sortCol = 'dist';
 let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, minsVal,
     waterChips, seasonChips, skillChips,
     zip, zipClear, useGeo, filtersEl, headerEl, sortArrow,
-    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
+    tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, selectedDetailScroll, closeSelected, map,
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons, globalTooltip,
     togglePanelBtn, toggleSheetBtn;
 let selectedId = null;
 let markers = {};
@@ -192,6 +207,34 @@ const PANEL_RATIO = 0.5; // default panel width (50% of viewport on desktop)
 const SHEET_DEFAULT_W = 440;
 const EXPAND_ICON = '⤢';
 const COLLAPSE_ICON = '⤡';
+const INFO_ICON = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+const ETA_TOOLTIP = 'ETAs use a simple urban/highway model; check your nav app for exact routing.';
+
+let activeTipBtn = null;
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.info-btn');
+  if (btn) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (activeTipBtn === btn && !globalTooltip.classList.contains('hidden')) {
+      globalTooltip.classList.add('hidden');
+      activeTipBtn = null;
+      return;
+    }
+    const tip = btn.nextElementSibling;
+    if (tip && globalTooltip) {
+      globalTooltip.textContent = tip.textContent;
+      const rect = btn.getBoundingClientRect();
+      globalTooltip.style.left = `${rect.right + 8}px`;
+      globalTooltip.style.top = `${rect.top + rect.height / 2}px`;
+      globalTooltip.classList.remove('hidden');
+      activeTipBtn = btn;
+    }
+  } else if (globalTooltip) {
+    globalTooltip.classList.add('hidden');
+    activeTipBtn = null;
+  }
+});
 
 function isPanelDefault(){
   if(!tablePanel) return true;
@@ -459,7 +502,7 @@ function rowHTML(s){
   const eta = distMi!=null ? etaMinutes(distMi) : null;
   const distTxt = distMi!=null ? `${Math.round(distMi)} mi / ~${eta} min` : '—';
   const infoDetails = [
-    detail('Distance / Time', distTxt, '', '', '📏'),
+    detail('Distance / Time', distTxt, '', '', '📏', ETA_TOOLTIP),
     detail('Water', badgeWater(s.water), '', '', '💧'),
     detail('Season', badgeSeason(s.season), '', '', '📅'),
     detail('Skill', chipsSkill(s.skill), '', '', '🎯')
@@ -689,7 +732,7 @@ function showSelected(s, fromList=false){
   if(topRow) selectedTopBody.appendChild(topRow);
   selectedBody.innerHTML = '';
   if(detail) selectedBody.appendChild(detail);
-  selectedDetail.scrollTop = 0;
+  selectedDetailScroll.scrollTop = 0;
   const info = selectedBody.querySelector('.info');
   if(info) info.scrollTop = 0;
   selectedWrap.classList.remove('hidden');
@@ -725,7 +768,7 @@ function clearSelected(){
   selectedWrap.style.transform='';
   selectedWrap.style.height='';
   selectedWrap.style.width='';
-  if(selectedDetail) selectedDetail.style.maxHeight='';
+  if(selectedDetailScroll) selectedDetailScroll.style.maxHeight='';
   sheetFull = false;
   sheetOffset = 0;
   updateSelectedTopPadding();
@@ -848,9 +891,9 @@ function updateSheetHeight(){
   if(!selectedWrap) return;
   const h = window.innerHeight - sheetOffset;
   selectedWrap.style.height = h + 'px';
-  if(selectedDetail && selectedTop){
+  if(selectedDetailScroll && selectedTop){
     const topH = selectedTop.offsetHeight;
-    selectedDetail.style.maxHeight = (h - topH) + 'px';
+    selectedDetailScroll.style.maxHeight = (h - topH) + 'px';
   }
 }
 
@@ -1259,6 +1302,7 @@ function setOrigin(lat,lng,label){
     selectedTopBody = document.getElementById('selectedTopBody');
     selectedBody = document.getElementById('selectedBody');
     selectedDetail = document.getElementById('selectedDetail');
+    selectedDetailScroll = document.getElementById('selectedDetailScroll');
     toggleSheetBtn = document.getElementById('toggleSheetSize');
     selectedButtons = document.getElementById('selectedButtons');
     closeSelected = document.getElementById('closeSelected');
@@ -1267,6 +1311,7 @@ function setOrigin(lat,lng,label){
     infoPopup = document.getElementById('infoPopup');
     closeInfo = document.getElementById('closeInfo');
     siteTitle = document.querySelector('header h1');
+    globalTooltip = document.getElementById('globalTooltip');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
 

@@ -147,6 +147,10 @@ header h1 .logo{height:64px;width:64px}
     .detail-label{font-size:12px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:4px}
     .detail-label .icon{font-size:14px}
     .detail-value{font-size:14px;margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+    .tip-wrap{position:relative;display:inline-block}
+    .info-btn{background:none;border:none;padding:0;color:var(--muted);cursor:pointer;display:flex;align-items:center}
+    .info-btn svg{display:block;width:12px;height:12px}
+    .tooltip-box{position:fixed;top:0;left:0;transform:translateY(-50%);background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:8px 12px;font-size:13px;line-height:1.4;z-index:1000;display:block;width:300px;white-space:normal}
   #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:30;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
   #siteFooter a{color:var(--text)}
   #infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;z-index:200;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
@@ -227,7 +231,7 @@ header h1 .logo{height:64px;width:64px}
 #panelButtons{position:absolute;top:0;right:0;display:flex;gap:4px;z-index:5;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px;border-radius:0 var(--radius) 0 4px;padding-bottom:8px}
 #selectedButtons{position:absolute;top:0;right:0;display:flex;gap:4px;z-index:5;padding:4px}
 #panelButtons button,#selectedButtons button{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:20px}
-#selectedWrap{position:fixed;left:0;top:0;width:440px;max-width:100%;z-index:60;transform:translateY(100%);transition:transform .3s,width .3s;border-top-right-radius:var(--radius);border-bottom-right-radius:var(--radius);overflow:hidden;border:1px solid var(--table-border);background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);display:flex;flex-direction:column;}
+#selectedWrap{position:fixed;left:0;top:0;width:440px;max-width:100%;z-index:60;transform:translateY(100%);transition:transform .3s,width .3s;border-top-right-radius:var(--radius);border-bottom-right-radius:var(--radius);overflow:visible;border:1px solid var(--table-border);background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);display:flex;flex-direction:column;}
 #selectedWrap.show{transform:translateY(0);}
 #sheetWidthGrip{position:absolute;top:0;right:0;width:20px;height:100%;cursor:col-resize;touch-action:none}
 #sheetHeightGrip{position:absolute;bottom:0;left:0;width:100%;height:20px;cursor:row-resize;touch-action:none}
@@ -242,7 +246,8 @@ header h1 .logo{height:64px;width:64px}
 
   .leaflet-bar a{width:39px;height:39px;line-height:39px;font-size:24px;background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);}
   .leaflet-bar a.active{background:var(--btn-alt-bg);border:1px solid var(--accent);}
-#selectedDetail{flex:1;overflow:auto;}
+#selectedDetail{flex:1;position:relative;}
+#selectedDetailScroll{height:100%;overflow:auto;}
 #selectedDetail table,#selectedDetail tbody,#selectedDetail tr,#selectedDetail td.detail{height:auto;}
 #selectedDetail table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;background:transparent;}
 #selectedDetail .detail-grid{height:auto;}

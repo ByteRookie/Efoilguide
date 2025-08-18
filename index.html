@@ -92,7 +92,20 @@
         <thead>
           <tr>
             <th class="sortable" data-sort="name">Spot</th>
-            <th class="sortable" data-sort="dist" aria-sort="ascending">Dist / Time <span id="sortArrow">⇅</span></th>
+            <th class="sortable" data-sort="dist" aria-sort="ascending">
+              <span>Dist / Time</span>
+              <span class="tip-wrap">
+                <button class="info-btn" type="button" aria-label="ETA calculation info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                </button>
+                <span class="tooltip-text hidden">ETAs use a simple urban/highway model; check your nav app for exact routing.</span>
+              </span>
+              <span id="sortArrow">⇅</span>
+            </th>
             <th class="sortable" data-sort="water">Water</th>
             <th class="sortable" data-sort="season">Season</th>
             <th class="sortable" data-sort="skill">Skill</th>
@@ -115,15 +128,16 @@
         <button id="closeSelected" aria-label="Close">✕</button>
       </div>
     </div>
-    <div id="selectedDetail"><table><tbody id="selectedBody"></tbody></table></div>
+    <div id="selectedDetail"><div id="selectedDetailScroll"><table><tbody id="selectedBody"></tbody></table></div></div>
     <div id="sheetWidthGrip"></div>
     <div id="sheetHeightGrip"></div>
   </div>
-  <p class="foot">ETAs use a simple urban/highway model; check your nav app for exact routing.</p>
 </main>
 
 <footer id="siteFooter">© <a href="https://github.com/byterookie" target="_blank">byterookie</a> <span id="year"></span> — This guide summarizes practical rules. Local postings and harbor patrol instructions always take precedence.</footer>
 
+
+<span id="globalTooltip" class="tooltip-box hidden" role="tooltip"></span>
 
 <div id="infoPopup" class="hidden" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="info-inner">
