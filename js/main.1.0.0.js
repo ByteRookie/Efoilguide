@@ -427,6 +427,10 @@ function flyToOrigin(animate=true){
 function updateMapView(visibleMarkers, fly){
   if(!map) return;
   map.invalidateSize();
+  if(ORIGIN){
+    flyToOrigin(fly);
+    return;
+  }
   if(Array.isArray(visibleMarkers) && visibleMarkers.length){
     if(visibleMarkers.length===1){
       map.flyTo(visibleMarkers[0].getLatLng(), Math.min(map.getMaxZoom(),18));
@@ -434,8 +438,6 @@ function updateMapView(visibleMarkers, fly){
       const group=L.featureGroup(visibleMarkers);
       map.flyToBounds(group.getBounds(),{padding:[20,20],maxZoom:18});
     }
-  }else if(ORIGIN){
-    flyToOrigin(fly);
   }else{
     if(fly){
       map.flyTo(MAP_START, MAP_ZOOM);
@@ -1104,6 +1106,7 @@ function applyTileScheme(m){
   updateOtherMarkers();
   updateMapControls();
   updateHeaderOffset();
+  if(ORIGIN) flyToOrigin(false);
 }
 
 /* ---------- Filters ---------- */
