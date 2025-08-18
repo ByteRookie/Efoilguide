@@ -411,6 +411,19 @@ function milesFromMinutes(min){
   return lo;
 }
 
+function flyToOrigin(animate=true){
+  if(!map || !ORIGIN) return;
+  const radius=milesFromMinutes(mins ? +mins.value : 180);
+  const circle=L.circle(ORIGIN,{radius:radius*1609.34});
+  const bounds=circle.getBounds();
+  const zoom=map.getBoundsZoom(bounds);
+  if(animate){
+    map.flyTo(ORIGIN, zoom);
+  }else{
+    map.setView(ORIGIN, zoom);
+  }
+}
+
 
 function updateMapView(visibleMarkers, fly){
   if(!map) return;
@@ -423,15 +436,7 @@ function updateMapView(visibleMarkers, fly){
       map.flyToBounds(group.getBounds(),{padding:[20,20],maxZoom:18});
     }
   }else if(ORIGIN){
-    const radius=milesFromMinutes(mins ? +mins.value : 180);
-    const circle=L.circle(ORIGIN,{radius:radius*1609.34});
-    const bounds=circle.getBounds();
-    const zoom=map.getBoundsZoom(bounds);
-    if(fly){
-      map.flyTo(ORIGIN, zoom);
-    }else{
-      map.setView(ORIGIN, zoom);
-    }
+    flyToOrigin(fly);
   }else{
     if(fly){
       map.flyTo(MAP_START, MAP_ZOOM);
@@ -1233,7 +1238,8 @@ function setOrigin(lat,lng,label){
   render();
   initMap();
   handleResize();
-  updateMapView(undefined, true);
+  if(map) map.invalidateSize();
+  flyToOrigin(true);
   if(locationBox){
     locationBox.classList.remove('hidden');
     locationBox.setAttribute('aria-hidden','false');
