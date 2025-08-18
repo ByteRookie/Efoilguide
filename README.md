@@ -20,10 +20,11 @@ If you’re just looking for spot information, head to https://byterookie.github
 ## Add a location
 1. Fork this repository.
 2. Add a new line to `data/locations.csv` using the existing headers:
-   `id,name,city,addr,lat,lng,water,season,skill,launch,parking,amenities,pros,cons,pop,best,gear,tips,law`
+   `id,name,city,addr,lat,lng,water,season,skill,launch,parking,amenities,pros,cons,pop,best,gear,tips,law,parking_cost,parking_distance_m,bathrooms,showers,rinse,fees,routes_beginner,routes_pro,avoid,best_conditions,setup_fit,popularity`
    * `skill` uses `|` to separate levels (e.g. `B|I|A`).
    * Wrap text that contains commas in double quotes.
    * Cite rules or facts with `{{Citation: "text" SourceName: "Name" SourceURL: "URL"}}`.
+   * Leave fields blank if information is unavailable.
 
 ### Field-by-field guide to `data/locations.csv`
 
@@ -47,6 +48,18 @@ If you’re just looking for spot information, head to https://byterookie.github
 | `gear`  | Recommended gear choices. |
 | `tips`  | Local knowledge, hazards, or suggestions. |
 | `law`   | Rules or regulations—use citations. |
+| `parking_cost` | Parking fees; leave blank if free. |
+| `parking_distance_m` | Approximate distance from parking to launch (meters). |
+| `bathrooms` | Bathroom availability. |
+| `showers` | Shower availability. |
+| `rinse` | Rinse station availability. |
+| `fees` | Entry or launch fees. |
+| `routes_beginner` | Suggested beginner-friendly routes. |
+| `routes_pro` | Suggested advanced routes. |
+| `avoid` | Hazards or areas to avoid. |
+| `best_conditions` | Ideal wind, tide, or season conditions. |
+| `setup_fit` | Gear setup or fit recommendations. |
+| `popularity` | Overall crowd level or popularity. |
 
 ### Validate your entry
 
@@ -83,13 +96,13 @@ Fields can contain more than one citation by placing them sequentially:
 **Example `locations.csv` row**
 
 ```
-42,Sample Bay,Sampletown,"123 Harbor Rd",47.60,-122.33,flat,Summer,"B|I","South ramp","Lot A","Restrooms","Calm water","Crowded on weekends",Medium,"June","Wing 5.0","Bring extra batteries {{Citation: \"Battery rules\" SourceName: \"Port Authority\" SourceURL: \"https://port.example/rules\"}}","Wear a leash {{Citation: \"Safety advisory\" SourceName: \"State Parks\" SourceURL: \"https://parks.example/safety\"}}"
+42,Sample Bay,Sampletown,"123 Harbor Rd",47.60,-122.33,flat,Summer,"B|I","South ramp","Lot A","Restrooms","Calm water","Crowded on weekends",Medium,"June","Wing 5.0","Bring extra batteries {{Citation: \"Battery rules\" SourceName: \"Port Authority\" SourceURL: \"https://port.example/rules\"}}","Wear a leash {{Citation: \"Safety advisory\" SourceName: \"State Parks\" SourceURL: \"https://parks.example/safety\"}}",5,100,Yes,No,Yes,Day-use fee,Harbor loop,Open bay run,Shallow reef near point,Morning ebb,Wing 5.0 setup,Medium
 ```
 
 ### Pull request expectations
 
 - Open `index.html` and confirm your spot appears in the table and map without console errors.
-- Run any available tests or linters. If none exist, note that manual checks were performed.
+- Run any available tests or linters (e.g. `npm test`). If none exist, note that manual checks were performed.
 - Ensure the CSV remains well‑formed and that your commit contains only the intended change.
 - This project has no separate style or contribution guide; follow the patterns in `data/locations.csv`.
 
