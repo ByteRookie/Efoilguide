@@ -129,7 +129,7 @@ function detail(label, value, spanClass = '', wrapClass = '', icon = '', tooltip
     infoBtn.setAttribute('aria-label', 'Info');
     infoBtn.innerHTML = INFO_ICON;
     const tipBox = document.createElement('span');
-    tipBox.className = 'tooltip-box hidden';
+    tipBox.className = 'tooltip-text hidden';
     tipBox.textContent = tooltip;
     infoWrap.appendChild(infoBtn);
     infoWrap.appendChild(tipBox);
@@ -179,7 +179,7 @@ let originMsg, spotsBody, q, qSuggest, qClear, searchWrap, searchToggle, mins, m
     waterChips, seasonChips, skillChips,
     zip, zipClear, useGeo, filtersEl, headerEl, sortArrow,
     tablePanel, closePanelBtn, selectedWrap, selectedTop, selectedTopScroll, selectedTopBody, selectedBody, selectedDetail, selectedDetailScroll, closeSelected, map,
-    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons,
+    editLocation, locationBox, filterBtn, infoBtn, infoPopup, closeInfo, panelGrip, siteTitle, sheetWidthGrip, sheetHeightGrip, selectedButtons, globalTooltip,
     togglePanelBtn, toggleSheetBtn;
 let selectedId = null;
 let markers = {};
@@ -210,15 +210,29 @@ const COLLAPSE_ICON = '⤡';
 const INFO_ICON = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 const ETA_TOOLTIP = 'ETAs use a simple urban/highway model; check your nav app for exact routing.';
 
+let activeTipBtn = null;
 document.addEventListener('click', e => {
   const btn = e.target.closest('.info-btn');
   if (btn) {
     e.preventDefault();
     e.stopPropagation();
+    if (activeTipBtn === btn && !globalTooltip.classList.contains('hidden')) {
+      globalTooltip.classList.add('hidden');
+      activeTipBtn = null;
+      return;
+    }
     const tip = btn.nextElementSibling;
-    if (tip) tip.classList.toggle('hidden');
-  } else {
-    document.querySelectorAll('.tooltip-box:not(.hidden)').forEach(t => t.classList.add('hidden'));
+    if (tip && globalTooltip) {
+      globalTooltip.textContent = tip.textContent;
+      const rect = btn.getBoundingClientRect();
+      globalTooltip.style.left = `${rect.right + 8}px`;
+      globalTooltip.style.top = `${rect.top + rect.height / 2}px`;
+      globalTooltip.classList.remove('hidden');
+      activeTipBtn = btn;
+    }
+  } else if (globalTooltip) {
+    globalTooltip.classList.add('hidden');
+    activeTipBtn = null;
   }
 });
 
@@ -1270,6 +1284,7 @@ function setOrigin(lat,lng,label){
     infoPopup = document.getElementById('infoPopup');
     closeInfo = document.getElementById('closeInfo');
     siteTitle = document.querySelector('header h1');
+    globalTooltip = document.getElementById('globalTooltip');
     const yearEl = document.getElementById('year');
     if(yearEl) yearEl.textContent = new Date().getFullYear();
 
