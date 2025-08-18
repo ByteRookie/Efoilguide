@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { JSDOM } = require('jsdom');
 const { parseCitations } = require('../js/parseCitations.js');
 
-test('rowHTML neutralizes script tags and event handlers', () => {
+test('rowHTML sanitization neutralizes script tags and event handlers', () => {
   const dom = new JSDOM('<!doctype html><html><body></body></html>');
   global.window = dom.window;
   global.document = dom.window.document;
