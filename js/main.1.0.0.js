@@ -1170,7 +1170,9 @@ function applyFilters(){
 
   minsVal.textContent = `≤ ${mins.value} min`;
   if(!selectedId){
-    if(visibleMarkers.length && (visibleMarkers.length<SPOTS.length || qv)){
+    if(ORIGIN){
+      updateMapView();
+    }else if(visibleMarkers.length && (visibleMarkers.length<SPOTS.length || qv)){
       updateMapView(visibleMarkers);
     }else{
       updateMapView();
@@ -1239,7 +1241,7 @@ function setOrigin(lat,lng,label){
   initMap();
   handleResize();
   if(map) map.invalidateSize();
-  flyToOrigin(true);
+  updateMapView(undefined, true);
   if(locationBox){
     locationBox.classList.remove('hidden');
     locationBox.setAttribute('aria-hidden','false');
