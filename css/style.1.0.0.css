@@ -150,7 +150,7 @@ header h1 .logo{height:64px;width:64px}
     .tip-wrap{position:relative;display:inline-block}
     .info-btn{background:none;border:none;padding:0;color:var(--muted);cursor:pointer;display:flex;align-items:center}
     .info-btn svg{display:block;width:12px;height:12px}
-    .tooltip-box{position:absolute;top:100%;left:50%;transform:translate(-50%,4px);background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:8px 12px;font-size:13px;line-height:1.4;z-index:50;max-width:260px;white-space:normal}
+    .tooltip-box{position:absolute;top:100%;left:50%;transform:translate(-50%,4px);background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:8px 12px;font-size:13px;line-height:1.4;z-index:50;display:block;width:300px;white-space:normal}
   #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:30;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
   #siteFooter a{color:var(--text)}
   #infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;z-index:200;background:linear-gradient(180deg,var(--header-grad1),var(--header-grad2));backdrop-filter:saturate(1.2) blur(8px);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
