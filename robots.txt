@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://byterookie.github.io/eFoilGuide/sitemap.xml
