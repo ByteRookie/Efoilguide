@@ -152,7 +152,7 @@ header h1 .logo{height:64px;width:64px}
     .tooltip-box{position:fixed;top:0;left:0;transform:translateY(-50%);background:var(--card);border:1px solid var(--control-border);border-radius:var(--radius);padding:8px 12px;font-size:13px;line-height:1.4;z-index:1000;display:block;width:300px;white-space:normal}
   #siteFooter{position:fixed;bottom:8px;left:8px;color:var(--text);font-size:12px;z-index:30;background:var(--panel-card);padding:4px 8px;border-radius:var(--radius);border:1px solid var(--table-border)}
   #siteFooter a{color:var(--text)}
-#infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;-webkit-overflow-scrolling:touch;z-index:200;background:var(--panel-card);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
+#infoPopup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:700px;width:90%;max-height:80vh;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;z-index:200;background:var(--panel-card);border:1px solid var(--table-border);border-radius:var(--radius);padding:16px}
   #infoPopup .info-inner{position:relative}
   #infoPopup h2{margin:0 0 12px;font-size:24px;text-align:center}
   #infoPopup h3{margin:16px 0 8px;font-size:18px}

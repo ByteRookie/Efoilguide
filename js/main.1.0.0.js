@@ -225,6 +225,7 @@ let sheetDragFromTop = false;
 let sheetDragStartX = 0;
 let sheetDragCheck = false;
 let sheetDragging = false;
+let sheetRaf = null;
 let panelSwipeStartX = 0;
 let panelSwipeStartY = 0;
 let panelSwipeCheck = false;
@@ -867,11 +868,12 @@ function moveSortArrow(th){
 }
 
 function lockPageScroll(lock){
+  const body = document.body;
   if(lock && !pageLocked){
-    document.documentElement.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
     pageLocked = true;
   }else if(!lock && pageLocked){
-    document.documentElement.style.overflow = '';
+    body.style.overflow = '';
     pageLocked = false;
   }
 }
@@ -904,9 +906,9 @@ function sheetDragMove(e){
     const dx = Math.abs(x - sheetDragStartX);
     const dy = Math.abs(y - sheetDragStartY);
     if(!sheetDragging){
-      if(dy > 10 && dy > dx){
+      if(dy > 4 && dy > dx){
         sheetDragging = true;
-      }else if(dx > 10 && dx > dy){
+      }else if(dx > 4 && dx > dy){
         endSheetDrag();
         return;
       }else{
@@ -922,11 +924,16 @@ function sheetDragMove(e){
   if(newOffset < min) newOffset = min;
   if(newOffset > max) newOffset = max;
   sheetOffset = newOffset;
-  updateSheetTransform();
-  updateSheetHeight();
-  recenterSelected();
-  updateMapControls();
-  updateSheetIcon();
+  if(!sheetRaf){
+    sheetRaf = requestAnimationFrame(() => {
+      updateSheetTransform();
+      updateSheetHeight();
+      recenterSelected();
+      updateMapControls();
+      updateSheetIcon();
+      sheetRaf = null;
+    });
+  }
   e.preventDefault();
 }
 
@@ -1176,6 +1183,7 @@ function applyTileScheme(m){
     }
   });
   map.on('click', () => {
+    if(selectedWrap && selectedWrap.classList.contains('show')) return;
     if(selectedId && markers[selectedId]) setMarkerSelected(markers[selectedId], false);
     selectedId = null;
     clearSelected();
