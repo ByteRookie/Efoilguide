@@ -958,6 +958,7 @@ function endSheetDrag(){
 function startPanelSwipe(e){
   if(!tablePanel || !panelOpen) return;
   if(e.target.closest('#panelGrip') || e.target.closest('button')) return;
+  if(e.target.closest('.table-wrap')) return;
   const t = e.touches ? e.touches[0] : e;
   panelSwipeStartX = t.clientX;
   panelSwipeStartY = t.clientY;
