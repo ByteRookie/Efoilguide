@@ -13,7 +13,7 @@ test('rowHTML sanitization neutralizes script tags and event handlers', () => {
     return origAdd.call(this, ev, cb, opts);
   };
   global.parseCitations = parseCitations;
-  const { rowHTML } = require('../js/main.1.0.0.js');
+  const { rowHTML } = require('../js/rowHTML.js');
   const s = {
     id: '1',
     name: '<script>alert(1)</script>',
