@@ -432,14 +432,27 @@ function togglePanel(){
   panelOpen ? closePanel() : openPanel();
 }
 
+function fadeIn(el){
+  if(!el) return;
+  el.classList.remove('hidden');
+  requestAnimationFrame(()=>el.classList.add('show'));
+}
+
+function fadeOut(el){
+  if(!el) return;
+  el.classList.remove('show');
+  el.addEventListener('transitionend',()=>el.classList.add('hidden'),{once:true});
+}
+
 function toggleFilters(){
   if(!filtersEl || !filterBtn) return;
-  filtersEl.classList.toggle('hidden');
-  const open = !filtersEl.classList.contains('hidden');
+  const open = !filtersEl.classList.contains('show');
+  if(open) fadeIn(filtersEl); else fadeOut(filtersEl);
   filterBtn.classList.toggle('open', open);
   filterBtn.classList.toggle('active', open);
+  filtersEl.setAttribute('aria-hidden', !open);
   if(open && locationBox){
-    locationBox.classList.add('hidden');
+    fadeOut(locationBox);
     locationBox.setAttribute('aria-hidden','true');
     if(editLocation) editLocation.classList.remove('active');
   }
@@ -1117,6 +1130,19 @@ function applyTileScheme(m){
   };
   listCtrl.addTo(map);
 
+  const resetCtrl = L.control({position:'topleft'});
+  resetCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='⟳';
+    a.title='Reset map view';
+    a.setAttribute('aria-label','Reset map view');
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);map.flyTo(MAP_START, MAP_ZOOM);});
+    return div;
+  };
+  resetCtrl.addTo(map);
+
   const otherCtrl = L.control({position:'topright'});
   otherCtrl.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar hidden');
@@ -1296,7 +1322,8 @@ function setOrigin(lat,lng,label){
   render();
   initMap();
   if(locationBox){
-    locationBox.classList.add('hidden');
+    fadeOut(locationBox);
+    locationBox.setAttribute('aria-hidden','true');
     if(editLocation) editLocation.classList.remove('active');
     handleResize();
   }
@@ -1352,14 +1379,14 @@ function setOrigin(lat,lng,label){
       try{
         const seen = localStorage.getItem(INFO_POPUP_KEY);
         if(seen !== INFO_POPUP_VERSION){
-          infoPopup.classList.remove('hidden');
+          fadeIn(infoPopup);
           infoPopup.setAttribute('aria-hidden','false');
           infoBtn.classList.add('active');
           lockPageScroll(true);
           localStorage.setItem(INFO_POPUP_KEY, INFO_POPUP_VERSION);
         }
       }catch(e){
-        infoPopup.classList.remove('hidden');
+        fadeIn(infoPopup);
         infoPopup.setAttribute('aria-hidden','false');
         infoBtn.classList.add('active');
         lockPageScroll(true);
@@ -1488,15 +1515,20 @@ function setOrigin(lat,lng,label){
     if(infoBtn && infoPopup){
       infoBtn.addEventListener('click', e => {
         e.preventDefault();
-        const hidden = infoPopup.classList.toggle('hidden');
-        infoPopup.setAttribute('aria-hidden', hidden);
-        infoBtn.classList.toggle('active', !hidden);
-        lockPageScroll(!hidden);
+        const open = infoPopup.classList.contains('show');
+        if(open){
+          fadeOut(infoPopup);
+        }else{
+          fadeIn(infoPopup);
+        }
+        infoPopup.setAttribute('aria-hidden', open);
+        infoBtn.classList.toggle('active', !open);
+        lockPageScroll(!open);
       });
     }
     if(closeInfo && infoPopup && infoBtn){
       closeInfo.addEventListener('click', () => {
-        infoPopup.classList.add('hidden');
+        fadeOut(infoPopup);
         infoPopup.setAttribute('aria-hidden','true');
         infoBtn.classList.remove('active');
         lockPageScroll(false);
@@ -1509,16 +1541,16 @@ function setOrigin(lat,lng,label){
         clearSelected();
         selectedId = null;
         if(filtersEl){
-          filtersEl.classList.add('hidden');
+          fadeOut(filtersEl);
           if(filterBtn) filterBtn.classList.remove('active','open');
         }
         if(locationBox){
-          locationBox.classList.add('hidden');
+          fadeOut(locationBox);
           locationBox.setAttribute('aria-hidden','true');
           if(editLocation) editLocation.classList.remove('active');
         }
         if(infoPopup){
-          infoPopup.classList.add('hidden');
+          fadeOut(infoPopup);
           infoPopup.setAttribute('aria-hidden','true');
           if(infoBtn) infoBtn.classList.remove('active');
           lockPageScroll(false);
@@ -1551,15 +1583,19 @@ function setOrigin(lat,lng,label){
 
     editLocation.addEventListener('click', e => {
       e.preventDefault();
-      const open = !locationBox.classList.contains('hidden');
-      locationBox.classList.toggle('hidden', open);
+      const open = locationBox.classList.contains('show');
+      if(open){
+        fadeOut(locationBox);
+      }else{
+        fadeIn(locationBox);
+        zip.focus();
+        if(filtersEl){
+          fadeOut(filtersEl);
+          if(filterBtn) filterBtn.classList.remove('active','open');
+        }
+      }
       locationBox.setAttribute('aria-hidden', open);
       editLocation.classList.toggle('active', !open);
-      if(!open){
-        zip.focus();
-        if(filtersEl) filtersEl.classList.add('hidden');
-        if(filterBtn) filterBtn.classList.remove('active','open');
-      }
       handleResize();
     });
 
