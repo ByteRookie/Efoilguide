@@ -690,9 +690,11 @@ async function loadImages(){
     box.innerHTML='';
     const carousel=document.createElement('div');
     carousel.className='img-carousel';
+    const track=document.createElement('div');
+    track.className='slides';
     srcs.forEach((src,idx)=>{
       const slide=document.createElement('div');
-      slide.className='slide'+(idx===0?' active':'');
+      slide.className='slide';
       const img=document.createElement('img');
       img.src=src;
       img.alt=`${name} image`;
@@ -707,8 +709,9 @@ async function loadImages(){
         const html=url?`<a href="${url}" target="_blank">${creditName}</a>`:creditName;
         slide.insertAdjacentHTML('beforeend', `<div class="img-credit">Source: ${html}</div>`);
       }
-      carousel.appendChild(slide);
+      track.appendChild(slide);
     });
+    carousel.appendChild(track);
     if(srcs.length>1){
       const prev=document.createElement('button');
       prev.className='prev';
@@ -718,11 +721,11 @@ async function loadImages(){
       next.textContent='›';
       carousel.appendChild(prev);
       carousel.appendChild(next);
-      const slidesEls=carousel.querySelectorAll('.slide');
+      const slidesCount=track.children.length;
       let idx=0;
       function show(n){
-        idx=(n+slidesEls.length)%slidesEls.length;
-        slidesEls.forEach((sl,i)=>sl.classList.toggle('active', i===idx));
+        idx=(n+slidesCount)%slidesCount;
+        track.style.transform=`translateX(-${idx*100}%)`;
       }
       prev.addEventListener('click',()=>show(idx-1));
       next.addEventListener('click',()=>show(idx+1));
