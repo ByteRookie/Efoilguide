@@ -282,8 +282,8 @@ function isSheetDefault(){
   if(!selectedWrap) return true;
   const isMobile = window.innerWidth <= 700;
   const defaultW = isMobile ? window.innerWidth : SHEET_DEFAULT_W;
-  const defaultOffset = isMobile ? 0 : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
-  const defaultFull = isMobile;
+  const defaultOffset = isMobile ? Math.round(window.innerHeight * 0.25) : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  const defaultFull = false;
   return sheetFull === defaultFull &&
     Math.abs(selectedWrap.clientWidth - defaultW) < 2 &&
     Math.abs(sheetOffset - defaultOffset) < 2;
@@ -324,7 +324,7 @@ function handleResize(){
       sheetOffset = 0;
     }else if(isMobile){
       selectedWrap.style.width = '100%';
-      const min = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+      const min = 0;
       if(sheetOffset < min) sheetOffset = min;
     }else if(!selectedWrap.style.width || selectedWrap.style.width === '100%'){
       selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
@@ -364,7 +364,7 @@ function togglePanelSize(){
 function toggleSheetSize(){
   if(!selectedWrap) return;
   const isMobile = window.innerWidth <= 700;
-  const defaultOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
+  const defaultOffset = isMobile ? Math.round(window.innerHeight * 0.25) : (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
   if(sheetFull || !isSheetDefault()){
     sheetFull = false;
     sheetOffset = defaultOffset;
@@ -774,10 +774,10 @@ function showSelected(s, fromList=false){
   selectedWrap.classList.remove('hidden');
   selectedWrap.setAttribute('aria-hidden','false');
   const isMobile = window.innerWidth <= 700;
-  sheetFull = isMobile;
+  sheetFull = false;
   if(isMobile){
     selectedWrap.style.width = '100%';
-    sheetOffset = 0;
+    sheetOffset = Math.round(window.innerHeight * 0.25);
   }else{
     selectedWrap.style.width = SHEET_DEFAULT_W + 'px';
     sheetOffset = (headerEl ? headerEl.offsetHeight : 0) + SHEET_MARGIN;
