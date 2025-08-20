@@ -1116,6 +1116,19 @@ function applyTileScheme(m){
     updateOtherMarkers();
   });
 
+  const resetCtrl = L.control({position:'topleft'});
+  resetCtrl.onAdd = function(){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    const a = L.DomUtil.create('a','',div);
+    a.href='#';
+    a.innerHTML='⟳';
+    a.title='Reset map view';
+    a.setAttribute('aria-label','Reset map view');
+    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);map.flyTo(MAP_START, MAP_ZOOM);});
+    return div;
+  };
+  resetCtrl.addTo(map);
+
   const listCtrl = L.control({position:'topleft'});
   listCtrl.onAdd = function(){
     const div = L.DomUtil.create('div','leaflet-bar');
@@ -1129,19 +1142,6 @@ function applyTileScheme(m){
     return div;
   };
   listCtrl.addTo(map);
-
-  const resetCtrl = L.control({position:'topleft'});
-  resetCtrl.onAdd = function(){
-    const div = L.DomUtil.create('div','leaflet-bar');
-    const a = L.DomUtil.create('a','',div);
-    a.href='#';
-    a.innerHTML='⟳';
-    a.title='Reset map view';
-    a.setAttribute('aria-label','Reset map view');
-    L.DomEvent.on(a,'click',e=>{L.DomEvent.preventDefault(e);L.DomEvent.stopPropagation(e);map.flyTo(MAP_START, MAP_ZOOM);});
-    return div;
-  };
-  resetCtrl.addTo(map);
 
   const otherCtrl = L.control({position:'topright'});
   otherCtrl.onAdd = function(){
