@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Flite Community — Public Sessions (Unofficial)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <header>
+    <h1>Flite Community — Public Sessions (Unofficial)</h1>
+    <div class="meta">Shows only public data. Login is optional and never displays your private data.</div>
+  </header>
+
+  <section id="auth">
+    <details>
+      <summary>Login (optional)</summary>
+      <div class="row">
+        <label>Base URL</label>
+        <input id="baseUrl" value="https://app-api.fliteboard.com" size="40"/>
+        <label class="ml">CORS Proxy (optional)</label>
+        <input id="proxyUrl" placeholder="http://localhost:8787" size="30"/>
+      </div>
+      <div class="row">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@example.com" size="30"/>
+        <label class="ml">Password</label>
+        <input id="password" type="password" placeholder="******" size="20"/>
+        <button id="btnLogin">Get Token</button>
+        <button id="btnRefresh">Refresh Token</button>
+        <button id="btnLogout" class="secondary">Logout</button>
+      </div>
+      <div class="row small">
+        <span>Access Token:</span>
+        <code id="tokenPreview">(none)</code>
+      </div>
+    </details>
+  </section>
+
+  <section id="controls">
+  <div class="row">
+    <strong>Diagnostics:</strong>
+    <button id="btnPingPublic" class="secondary">Ping /app/sessions/public</button>
+    <button id="btnPingPinmap" class="secondary">Ping /app/sessions/pinmap</button>
+    <button id="btnClearDiag" class="secondary">Clear</button>
+  </div>
+    <div class="row">
+      <button id="btnLoadPinmap">Load Community Pinmap</button>
+      <button id="btnListPublic">List Public Sessions</button>
+      <input id="q" placeholder="Search query (e.g., Byron)" size="28"/>
+      <button id="btnSearch">Search</button>
+      <label class="ml">From</label><input id="from" type="datetime-local"/>
+      <label class="ml">To</label><input id="to" type="datetime-local"/>
+      <label class="ml">BBOX</label><input id="bbox" placeholder="west,south,east,north" size="26"/>
+    </div>
+  </section>
+
+  <section class="layout">
+    <div class="col col-map">
+      <div id="map"></div>
+    </div>
+    <div class="col col-panel">
+      <div id="panel">
+        <h3>Results</h3>
+        <div id="stats"></div>
+        <div id="list"></div>
+        <hr/>
+        <h3>Session Detail</h3>
+        <div id="detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <small>Unofficial viewer for public data. Respect privacy and terms. This app never calls profile/my-sessions endpoints.</small>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/pako@2.1.0/dist/pako.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
